@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <img src="{{ profile_pic_url }}" alt="Profile Picture" class="profile-pic">
+            <h1>Welcome, {{ username }}!</h1>
+        </div>
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+        <br>
+        <br>
+        <div class="card">
+            <p>You are connected to your parent, <strong>{{ parent.username }}</strong>.</p>
+            <p id="location-status">Location status: Waiting for location...</p>
+        </div>
+        <div class="card">
+            <h3>Upload Profile Picture</h3>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" name="file" id="profile-pic-input" accept="image/*">
+                <button type="submit" class="button">Upload</button>
+            </form>
+            <p id="upload-status"></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Location Update Script
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(sendPosition, showError, {
+                    enableHighAccuracy: true
+                });
+            } else {
+                document.getElementById("location-status").innerHTML = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        function sendPosition(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            $.ajax({
+                url: "{{ url_for('update_location') }}",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    lat: lat,
+                    lng: lng
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        document.getElementById("location-status").innerHTML = "Location status: Location sent!";
+                    } else {
+                        document.getElementById("location-status").innerHTML = "Location status: Failed to send.";
+                    }
+                },
+                error: function() {
+                    document.getElementById("location-status").innerHTML = "Location status: Error sending location.";
+                }
+            });
+        }
+
+        function showError(error) {
+            let statusText = "";
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    statusText = "User denied the request for Geolocation. Please enable it in your browser settings.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    statusText = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    statusText = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    statusText = "An unknown error occurred.";
+                    break;
+            }
+            document.getElementById("location-status").innerHTML = `Location status: ${statusText}`;
+        }
+
+        setInterval(getLocation, 10000);
+        getLocation();
+
+        // Profile Picture Upload Script
+        $('#upload-form').on('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = $('#profile-pic-input')[0];
+            
+            if (fileInput.files.length === 0) {
+                $('#upload-status').text("Please select a file to upload.");
+                return;
+            }
+
+            formData.append('file', fileInput.files[0]);
+
+            $.ajax({
+                url: "{{ url_for('upload_profile_pic') }}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        $('#upload-status').text("Profile picture uploaded successfully!");
+                        $('.profile-pic').attr('src', response.profile_pic_url);
+                    } else {
+                        $('#upload-status').text("Failed to upload: " + response.message);
+                    }
+                },
+                error: function(jqXHR) {
+                    $('#upload-status').text("Upload error: " + jqXHR.responseJSON.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

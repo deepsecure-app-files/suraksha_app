@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Geofences</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        #mapid {
+            height: 500px;
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Set Safe Zones</h1>
+        <p>Click on the map to set a safe zone.</p>
+        <div id="mapid"></div>
+
+        <form id="geofence-form" style="margin-top: 20px;">
+            <input type="hidden" id="lat" name="lat">
+            <input type="hidden" id="lng" name="lng">
+            <label for="location_name">Location Name:</label>
+            <input type="text" id="location_name" name="location_name" required>
+            <label for="radius">Radius (meters):</label>
+            <input type="number" id="radius" name="radius" value="500" required>
+            <button type="submit" class="button">Save Safe Zone</button>
+        </form>
+        
+        <h2>Your Safe Zones</h2>
+        <ul id="geofence-list">
+            </ul>
+        
+        <a href="{{ url_for('parent_dashboard', username=username) }}" class="button">Back to Dashboard</a>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var mymap;
+        var markers = [];
+        var circles = [];
+
+        $(document).ready(function() {
+            initializeMap();
+            loadGeofences();
+        });
+
+        function initializeMap() {
+            mymap = L.map('mapid').setView([25.5941, 85.1376], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(mymap);
+
+            mymap.on('click', function(e) {
+                if (markers.length > 0) {
+                    mymap.removeLayer(markers.pop());
+                }
+                var marker = L.marker(e.latlng).addTo(mymap);
+                markers.push(marker);
+
+                document.getElementById('lat').value = e.latlng.lat;
+                document.getElementById('lng').value = e.latlng.lng;
+            });
+
+            $('#geofence-form').on('submit', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const lat = $('#lat').val();
+                const lng = $('#lng').val();
+
+                if (!lat || !lng) {
+                    alert('Please click on the map to select a location.');
+                    return;
+                }
+                
+                $.ajax({
+                    url: '/save_geofence',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        lat: lat,
+                        lng: lng,
+                        location_name: form.find('#location_name').val(),
+                        radius: form.find('#radius').val()
+                    }),
+                    success: function(data) {
+                        if (data.success) {
+                            alert('Geofence saved successfully!');
+                            loadGeofences();
+                        } else {
+                            alert('Failed to save geofence.');
+                        }
+                    }
+                });
+            });
+        }
+
+        function loadGeofences() {
+            $.getJSON("/api/get_geofences", function(data) {
+                $('#geofence-list').empty();
+                if (circles.length > 0) {
+                    circles.forEach(circle => mymap.removeLayer(circle));
+                    circles = [];
+                }
+                data.geofences.forEach(function(geofence) {
+                    $('#geofence-list').append(`<li>${geofence.location_name} (Radius: ${geofence.radius}m)</li>`);
+                    var circle = L.circle([geofence.lat, geofence.lng], {
+                        color: 'red',
+                        fillColor: '#f03',
+                        fillOpacity: 0.5,
+                        radius: geofence.radius
+                    }).addTo(mymap).bindPopup(`<b>${geofence.location_name}</b><br>Radius: ${geofence.radius}m`);
+                    circles.push(circle);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

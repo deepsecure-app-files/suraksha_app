@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pair with Parent</title>
+</head>
+<body>
+    <h2>Connect to your Parent</h2>
+    <p>Please enter the pairing code given by your parent.</p>
+    
+    <form method="post" action="{{ url_for('pair_child') }}">
+        <label for="pairing_code">Pairing Code:</label><br>
+        <input type="text" id="pairing_code" name="pairing_code" required><br><br>
+        <button type="submit">Connect</button>
+    </form>
+</body>
+</html>

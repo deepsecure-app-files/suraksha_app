@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parent Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        #mapid {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <img src="{{ profile_pic_url }}" alt="Profile Picture" class="profile-pic">
+            <h1>Welcome to your Dashboard, {{ username }}!</h1>
+        </div>
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+        <br>
+        <br>
+        
+        <div class="button-group">
+            <a href="{{ url_for('geofence_page') }}" class="button">Manage Geofences</a>
+        </div>
+
+        <div class="card">
+            <h2>Upload Profile Picture</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" name="file" id="profile-pic-input" accept="image/*">
+                <button type="submit" class="button">Upload</button>
+            </form>
+            <p id="upload-status"></p>
+        </div>
+
+        <div class="card">
+            <h2>Add a new child</h2>
+            <form action="{{ url_for('add_child') }}" method="post">
+                <input type="text" name="child_name" placeholder="Child's Name" required>
+                <button type="submit">Add Child</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Your Children</h2>
+            <div id="children-list">
+                </div>
+        </div>
+        
+        <div id="mapid"></div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var mymap;
+        $(document).ready(function() {
+            function updateChildrenData() {
+                $.getJSON("/api/get_children_data", function(data) {
+                    var childrenListHtml = '';
+                    var mapMarkers = [];
+                    data.children.forEach(function(child) {
+                        childrenListHtml += `
+                            <div class="child-card">
+                                <div class="child-card-header">
+                                    <img src="${child.profile_pic_url}" alt="${child.name}'s profile picture" class="child-profile-pic">
+                                    <h3>${child.name}</h3>
+                                </div>
+                                <p><strong>Pairing Code:</strong> <code>${child.pairing_code}</code></p>
+                                <p><strong>Last Seen:</strong> ${child.last_seen ? new Date(child.last_seen).toLocaleString() : 'N/A'}</p>
+                                ${child.phone_number ? `<a href="tel:${child.phone_number}" class="call-button">Call Child</a>` : ''}
+                                <form action="/refresh_pairing_code/${child.id}" method="post" style="display:inline;">
+                                    <button type="submit" class="button-small">Refresh Code</button>
+                                </form>
+                            </div>
+                        `;
+                        if (child.last_latitude && child.last_longitude) {
+                            mapMarkers.push([child.last_latitude, child.last_longitude, child.name]);
+                        }
+                    });
+                    $('#children-list').html(childrenListHtml);
+                    
+                    if (mymap) {
+                        mymap.remove();
+                    }
+                    if (mapMarkers.length > 0) {
+                        initializeMap(mapMarkers);
+                    }
+                });
+            }
+
+            // Profile Picture Upload Script
+            $('#upload-form').on('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData();
+                const fileInput = $('#profile-pic-input')[0];
+                
+                if (fileInput.files.length === 0) {
+                    $('#upload-status').text("Please select a file to upload.");
+                    return;
+                }
+
+                formData.append('file', fileInput.files[0]);
+
+                $.ajax({
+                    url: "{{ url_for('upload_profile_pic') }}",
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            $('#upload-status').text("Profile picture uploaded successfully!");
+                            $('.profile-pic').attr('src', response.profile_pic_url);
+                        } else {
+                            $('#upload-status').text("Failed to upload: " + response.message);
+                        }
+                    },
+                    error: function(jqXHR) {
+                        $('#upload-status').text("Upload error: " + jqXHR.responseJSON.message);
+                    }
+                });
+            });
+
+            updateChildrenData();
+            setInterval(updateChildrenData, 10000);
+        });
+
+        function initializeMap(markers) {
+            mymap = L.map('mapid').setView([markers[0][0], markers[0][1]], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(mymap);
+
+            markers.forEach(marker => {
+                L.marker([marker[0], marker[1]])
+                    .addTo(mymap)
+                    .bindPopup(`<b>${marker[2]}</b>'s Last Known Location`);
+            });
+        }
+    </script>
+</body>
+</html>
