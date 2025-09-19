@@ -1,0 +1,21 @@
+{
+    "name": "Suraksha App",
+    "short_name": "Suraksha",
+    "description": "A safety app for parents and children.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f4f7f6",
+    "theme_color": "#3498db",
+    "icons": [
+        {
+            "src": "icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
