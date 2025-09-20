@@ -16,6 +16,10 @@ app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 db = SQLAlchemy(app)
 
+# This ensures database tables are created on Render
+with app.app_context():
+    db.create_all()
+
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -286,7 +290,5 @@ def upload_profile_pic():
     return jsonify(success=False, message="Failed to upload file."), 500
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(host='0.0.0.0', debug=True, threaded=True)
 
