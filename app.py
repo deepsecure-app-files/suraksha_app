@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, g
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import webbrowser
 import secrets
 import datetime
 import uuid
@@ -287,6 +286,5 @@ def upload_profile_pic():
     return jsonify(success=False, message="Failed to upload file."), 500
 
 if __name__ == '__main__':
-    # Ensure upload directory exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(host='0.0.0.0', debug=True, threaded=True)
