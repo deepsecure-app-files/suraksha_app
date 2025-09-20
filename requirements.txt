@@ -3,3 +3,4 @@ Flask-SQLAlchemy
 werkzeug
 gunicorn
 psycopg2-binary
+alembic
