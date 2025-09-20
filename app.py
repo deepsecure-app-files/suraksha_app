@@ -15,10 +15,6 @@ app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 db = SQLAlchemy(app)
 
-# यह कोड सुनिश्चित करता है कि डेटाबेस टेबलें Render पर बन जाएं
-with app.app_context():
-    db.create_all()
-
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
 
