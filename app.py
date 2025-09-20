@@ -16,7 +16,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 db = SQLAlchemy(app)
 
-# This block ensures that database tables are created when the app starts.
+# This block ensures that database tables are created on app startup.
 # It's crucial for platforms like Render where the 'if __name__ == "__main__":' block isn't executed.
 with app.app_context():
     db.create_all()
