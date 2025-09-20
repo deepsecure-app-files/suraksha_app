@@ -16,6 +16,11 @@ app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 db = SQLAlchemy(app)
 
+# This block ensures that database tables are created when the app starts.
+# It's crucial for platforms like Render where the 'if __name__ == "__main__":' block isn't executed.
+with app.app_context():
+    db.create_all()
+
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -287,6 +292,6 @@ def upload_profile_pic():
 
 if __name__ == '__main__':
     with app.app_context():
+        # This part will not run on Render, but is kept for local testing.
         db.create_all()
     app.run(host='0.0.0.0', debug=True, threaded=True)
-
