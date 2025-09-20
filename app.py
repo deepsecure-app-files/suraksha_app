@@ -265,7 +265,7 @@ def upload_profile_pic():
         return jsonify(success=False, message="User not found."), 404
         
     if 'file' not in request.files:
-        return jsonify(success=False, message="No file part."), 400
+            return jsonify(success=False, message="No file part."), 400
     
     file = request.files['file']
     if file.filename == '':
