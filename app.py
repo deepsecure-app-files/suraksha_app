@@ -7,17 +7,15 @@ import datetime
 import uuid
 from functools import wraps
 import os
-import ssl # SSL library ko import karein
+import ssl
 
 app = Flask(__name__)
 
 # Environment variables se configurations load karein
-# Database URI ko PRODUCTION environment ke liye badla gaya hai
-# SQLite ki jagah PostgreSQL/अन्य production-ready database ka istemal hoga
-# Iske liye Render dashboard par DATABASE_URL ko set karna hoga
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///users.db') # LOCAL fallback ke liye SQLite rakha hai
+# Iske liye Render dashboard par DATABASE_URL aur SECRET_KEY ko set karna hoga
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_strong_secret_key_here_for_security') # Secret key ko environment variable se load karein
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_strong_secret_key_here_for_security')
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
@@ -25,6 +23,12 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
+
+# --- यह वह महत्वपूर्ण बदलाव है जो डेटाबेस टेबल को बनाएगा ---
+# यह कोड ऐप शुरू होते ही चलेगा और सुनिश्चित करेगा कि टेबल मौजूद हों
+with app.app_context():
+    db.create_all()
+# ------------------------------------------------------------------
 
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
@@ -76,11 +80,13 @@ def is_parent(f):
         return "Access Denied: Not a parent or not logged in.", 403
     return wrapper
 
-# Routes (inme bhi koi badlav nahi hai)
+# Routes
 @app.route('/')
 def home():
     return render_template('home.html')
 
+# --- साइनअप और लॉगिन रास्तों को JSON जवाब देने के लिए बदला गया ---
+# अब ये Android ऐप के लिए बेहतर काम करेंगे
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -92,7 +98,7 @@ def signup():
         
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
-            return "Username already exists! Please choose a different one."
+            return jsonify({"success": False, "message": "Username already exists! Please choose a different one."}), 409
             
         new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
         new_user.set_password(password)
@@ -100,7 +106,7 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
         
-        return redirect(url_for('login'))
+        return jsonify({"success": True, "message": "User registered successfully."}), 201
 
     return render_template('signup.html')
 
@@ -114,14 +120,12 @@ def login():
         if user and user.check_password(password):
             session['username'] = user.username
             session.permanent = True
-            if user.is_parent:
-                return redirect(url_for('parent_dashboard'))
-            else:
-                return redirect(url_for('child_dashboard'))
+            return jsonify({"success": True, "message": "Login successful.", "is_parent": user.is_parent, "username": user.username})
         else:
-            return "Invalid username or password."
+            return jsonify({"success": False, "message": "Invalid username or password."}), 401
             
     return render_template('login.html')
+# ------------------------------------------------------------------
 
 @app.route('/parent')
 @is_parent
@@ -291,11 +295,3 @@ def upload_profile_pic():
         return jsonify(success=True, profile_pic_url=user.profile_pic_url)
     
     return jsonify(success=False, message="Failed to upload file."), 500
-
-# Production deployment ke liye is block ko hata dein
-# Gunicorn isse replace kar dega
-# if __name__ == '__main__':
-#     with app.app_context():
-#         db.create_all()
-#     app.run(host='0.0.0.0', debug=True, threaded=True)
-
