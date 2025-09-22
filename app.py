@@ -1,24 +1,35 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, g
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+import webbrowser
 import secrets
 import datetime
 import uuid
 from functools import wraps
 import os
+import ssl # SSL library ko import karein
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL") or "sqlite:///users.db"
+
+# Environment variables se configurations load karein
+# Database URI ko PRODUCTION environment ke liye badla gaya hai
+# SQLite ki jagah PostgreSQL/अन्य production-ready database ka istemal hoga
+# Iske liye Render dashboard par DATABASE_URL ko set karna hoga
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///users.db') # LOCAL fallback ke liye SQLite rakha hai
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_strong_secret_key_here_for_security'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_strong_secret_key_here_for_security') # Secret key ko environment variable se load karein
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+# Ensure upload directory exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 db = SQLAlchemy(app)
 
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
 
-# Database models
+# Database models (inme koi badlav nahi hai)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -65,7 +76,7 @@ def is_parent(f):
         return "Access Denied: Not a parent or not logged in.", 403
     return wrapper
 
-# Routes
+# Routes (inme bhi koi badlav nahi hai)
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -265,7 +276,7 @@ def upload_profile_pic():
         return jsonify(success=False, message="User not found."), 404
         
     if 'file' not in request.files:
-            return jsonify(success=False, message="No file part."), 400
+        return jsonify(success=False, message="No file part."), 400
     
     file = request.files['file']
     if file.filename == '':
@@ -281,6 +292,10 @@ def upload_profile_pic():
     
     return jsonify(success=False, message="Failed to upload file."), 500
 
-if __name__ == '__main__':
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    app.run(host='0.0.0.0', debug=True, threaded=True)
+# Production deployment ke liye is block ko hata dein
+# Gunicorn isse replace kar dega
+# if __name__ == '__main__':
+#     with app.app_context():
+#         db.create_all()
+#     app.run(host='0.0.0.0', debug=True, threaded=True)
+
