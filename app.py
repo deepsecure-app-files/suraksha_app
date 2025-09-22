@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # Environment variables se configurations load karein
 # Iske liye Render dashboard par DATABASE_URL aur SECRET_KEY ko set karna hoga
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///users.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///user.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_strong_secret_key_here_for_security')
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
