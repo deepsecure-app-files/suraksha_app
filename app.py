@@ -1,15 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, g
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import webbrowser
 import secrets
 import datetime
-import uuid
 from functools import wraps
 import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///user.db'
+
+# Use PostgreSQL on Render, SQLite locally
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    "DATABASE_URL",  # Render पर PostgreSQL URL
+    "sqlite:///user.db"  # Local fallback
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_strong_secret_key_here_for_security'
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
@@ -24,6 +27,7 @@ def generate_pairing_code():
 
 # Database models
 class User(db.Model):
+    __tablename__ = "user"  # force table name "user"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
@@ -40,6 +44,7 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 class Child(db.Model):
+    __tablename__ = "child"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     pairing_code = db.Column(db.String(6), unique=True, nullable=True)
@@ -51,6 +56,7 @@ class Child(db.Model):
     last_longitude = db.Column(db.Float, nullable=True)
 
 class Geofence(db.Model):
+    __tablename__ = "geofence"
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     location_name = db.Column(db.String(100), nullable=False)
@@ -208,7 +214,6 @@ def get_children_data():
     parent_user = User.query.filter_by(username=session['username']).first()
     if not parent_user or not parent_user.is_parent:
         return jsonify(children=[])
-
     children_list = []
     for child in parent_user.children:
         child_user = User.query.get(child.child_user_id)
@@ -289,4 +294,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, threaded=True)
-
