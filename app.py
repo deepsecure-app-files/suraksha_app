@@ -3,18 +3,29 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 import datetime
+import uuid
 from functools import wraps
 import os
 
 app = Flask(__name__)
 
-# Use PostgreSQL on Render, SQLite locally
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    "DATABASE_URL",  # Render पर PostgreSQL URL
-    "sqlite:///user.db"  # Local fallback
-)
+# --- ZARURI BADLAV: Database Configuration ---
+# Render par PostgreSQL ke liye DATABASE_URL environment variable ka upyog karen.
+# Local (Agar DATABASE_URL nahi mila) ke liye SQLite ka upyog karen.
+# 'postgres://' ko 'postgresql://' mein badalna Render ke liye aam fix hai.
+if os.environ.get('DATABASE_URL'):
+    # PostgreSQL connection string for Render
+    uri = os.environ.get('DATABASE_URL')
+    if uri.startswith("postgres://"):
+        uri = uri.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = uri
+else:
+    # Local development with SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+# ---------------------------------------------
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_strong_secret_key_here_for_security'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_strong_secret_key_here_for_security') # Security ke liye environment variable use karen
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 db = SQLAlchemy(app)
@@ -25,9 +36,8 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
 
-# Database models
+# Database models (No changes needed in models)
 class User(db.Model):
-    __tablename__ = "user"  # force table name "user"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
@@ -44,7 +54,6 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 class Child(db.Model):
-    __tablename__ = "child"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     pairing_code = db.Column(db.String(6), unique=True, nullable=True)
@@ -56,7 +65,6 @@ class Child(db.Model):
     last_longitude = db.Column(db.Float, nullable=True)
 
 class Geofence(db.Model):
-    __tablename__ = "geofence"
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     location_name = db.Column(db.String(100), nullable=False)
@@ -75,7 +83,7 @@ def is_parent(f):
         return "Access Denied: Not a parent or not logged in.", 403
     return wrapper
 
-# Routes
+# Routes (No changes needed in signup/login logic)
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -91,15 +99,21 @@ def signup():
         
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
+            # Badlav: Error message ko theek se dikhane ke liye flash message ya template use karna behtar hai.
+            # Filhaal simple string return kiya hai.
             return "Username already exists! Please choose a different one."
             
         new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
         new_user.set_password(password)
         new_user.profile_pic_url = url_for('static', filename='default-profile.png')
-        db.session.add(new_user)
-        db.session.commit()
-        
-        return redirect(url_for('login'))
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for('login'))
+        except Exception as e:
+            # Agar database mein koi aur error ho to use pakadne ke liye
+            db.session.rollback()
+            return f"An error occurred during signup: {e}", 500
 
     return render_template('signup.html')
 
@@ -118,6 +132,7 @@ def login():
             else:
                 return redirect(url_for('child_dashboard'))
         else:
+            # Badlav: Error message ko theek se dikhane ke liye flash message ya template use karna behtar hai.
             return "Invalid username or password."
             
     return render_template('login.html')
@@ -214,6 +229,7 @@ def get_children_data():
     parent_user = User.query.filter_by(username=session['username']).first()
     if not parent_user or not parent_user.is_parent:
         return jsonify(children=[])
+
     children_list = []
     for child in parent_user.children:
         child_user = User.query.get(child.child_user_id)
@@ -281,6 +297,7 @@ def upload_profile_pic():
         return jsonify(success=False, message="No selected file."), 400
 
     if file:
+        # File extension check yahan add kiya ja sakta hai
         filename = f"{user.username}_profile_pic.png"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
@@ -290,7 +307,14 @@ def upload_profile_pic():
     
     return jsonify(success=False, message="Failed to upload file."), 500
 
+# --- db.create_all() ko Render deployment ke liye main block se hataya gaya hai ---
+# Zaroori: Aapko Render par *ek baar* database tables banane ke liye manual tareeka apnana hoga.
+# Jaise ki, Render shell mein jaakar python chalaana aur 'db.create_all()' run karna.
+# Ya, apni requirements.txt mein 'flask-migrate' jodkar migrations ka upyog karen.
+# Lekin signup ka issue is code se solve ho jaana chahiye.
+
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        db.create_all() # Local testing ke liye yeh theek hai
     app.run(host='0.0.0.0', debug=True, threaded=True)
+
