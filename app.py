@@ -9,15 +9,11 @@ import os
 
 app = Flask(__name__)
 
-# --- DATABASE CONFIGURATION (CORRECTED) ---
-# Environment variable se Database URL lena (Render ke liye)
+# --- DATABASE SETUP ---
 database_url = os.environ.get('DATABASE_URL')
-
-# Render postgres:// deta hai, lekin SQLAlchemy ko postgresql:// chahiye hota hai
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-# Agar online hai to Render DB, nahi to Local SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_change_this')
@@ -25,25 +21,27 @@ app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 db = SQLAlchemy(app)
-
-# Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
 
-# --- DATABASE MODELS (UPDATED) ---
+# --- MODELS (Fixed Length Issues) ---
 
 class User(db.Model):
-    __tablename__ = 'users'  # ZARURI: Table ka naam 'users' kiya taaki Postgres error na de
+    # Table ka naam badal diya taaki nayi settings apply hon
+    __tablename__ = 'app_users'  
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    
+    # FIX: Password ki limit 128 se badhakar 256 kar di hai
+    password_hash = db.Column(db.String(256), nullable=False)
+    
     is_parent = db.Column(db.Boolean, default=False)
     phone_number = db.Column(db.String(20), nullable=True)
     profile_pic_url = db.Column(db.String(200), nullable=True)
     
-    # Relationships
     children = db.relationship('Child', foreign_keys='Child.parent_id', backref='parent', lazy=True)
     geofences = db.relationship('Geofence', backref='parent', lazy=True)
 
@@ -58,9 +56,9 @@ class Child(db.Model):
     name = db.Column(db.String(80), nullable=False)
     pairing_code = db.Column(db.String(6), unique=True, nullable=True)
     
-    # Updated ForeignKeys to point to 'users.id'
-    parent_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    child_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    # ForeignKey ko 'app_users.id' se link kiya
+    parent_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=True)
+    child_user_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=True)
     
     child_user = db.relationship('User', foreign_keys=[child_user_id])
     last_seen = db.Column(db.DateTime, nullable=True)
@@ -69,14 +67,14 @@ class Child(db.Model):
 
 class Geofence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # Updated ForeignKey to point to 'users.id'
-    parent_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    # ForeignKey ko 'app_users.id' se link kiya
+    parent_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=False)
     location_name = db.Column(db.String(100), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     radius = db.Column(db.Float, nullable=False)
 
-# --- HELPER FUNCTIONS ---
+# --- HELPERS ---
 
 def is_parent(f):
     @wraps(f)
@@ -85,7 +83,7 @@ def is_parent(f):
             g.user = User.query.filter_by(username=session['username']).first()
             if g.user and g.user.is_parent:
                 return f(*args, **kwargs)
-        return "Access Denied: Not a parent or not logged in.", 403
+        return "Access Denied", 403
     return wrapper
 
 # --- ROUTES ---
@@ -106,7 +104,7 @@ def signup():
         try:
             existing_user = User.query.filter_by(username=username).first()
             if existing_user:
-                return "Username already exists! Please choose a different one."
+                return "Username already exists!"
                 
             new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
             new_user.set_password(password)
@@ -115,7 +113,7 @@ def signup():
             db.session.commit()
             return redirect(url_for('login'))
         except Exception as e:
-            return f"Error during signup: {str(e)}"
+            return f"Error: {e}"
 
     return render_template('signup.html')
 
@@ -129,10 +127,7 @@ def login():
         if user and user.check_password(password):
             session['username'] = user.username
             session.permanent = True
-            if user.is_parent:
-                return redirect(url_for('parent_dashboard'))
-            else:
-                return redirect(url_for('child_dashboard'))
+            return redirect(url_for('parent_dashboard' if user.is_parent else 'child_dashboard'))
         else:
             return "Invalid username or password."
             
@@ -142,19 +137,16 @@ def login():
 @is_parent
 def parent_dashboard():
     user = g.user
-    children = user.children
-    return render_template('parent_dashboard.html', username=user.username, children=children, profile_pic_url=user.profile_pic_url)
+    return render_template('parent_dashboard.html', username=user.username, children=user.children, profile_pic_url=user.profile_pic_url)
 
 @app.route('/add_child', methods=['POST'])
 @is_parent
 def add_child():
     user = g.user
     child_name = request.form['child_name']
-    
     new_child = Child(name=child_name, pairing_code=generate_pairing_code(), parent=user)
     db.session.add(new_child)
     db.session.commit()
-    
     return redirect(url_for('parent_dashboard'))
 
 @app.route('/refresh_pairing_code/<int:child_id>', methods=['POST'])
@@ -168,35 +160,26 @@ def refresh_pairing_code(child_id):
 
 @app.route('/child')
 def child_dashboard():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    
+    if 'username' not in session: return redirect(url_for('login'))
     user = User.query.filter_by(username=session['username']).first_or_404()
-    
     child_entry = Child.query.filter_by(child_user_id=user.id).first()
     if child_entry:
         parent = User.query.get(child_entry.parent_id)
         return render_template('child_dashboard.html', username=user.username, parent=parent, profile_pic_url=user.profile_pic_url)
-    
     return redirect(url_for('pair_child'))
 
 @app.route('/pair_child', methods=['GET', 'POST'])
 def pair_child():
     if request.method == 'POST':
         pairing_code = request.form['pairing_code']
-        
         child_user = User.query.filter_by(username=session.get('username')).first()
-        if not child_user:
-            return redirect(url_for('login'))
-            
         child_to_pair = Child.query.filter_by(pairing_code=pairing_code).first()
-        if child_to_pair and child_to_pair.child_user_id is None:
+        
+        if child_to_pair and not child_to_pair.child_user_id:
             child_to_pair.child_user_id = child_user.id
             db.session.commit()
             return redirect(url_for('child_dashboard'))
-        else:
-            return "Invalid or already used pairing code."
-            
+        return "Invalid Code"
     return render_template('child_pairing.html')
 
 @app.route('/logout')
@@ -206,9 +189,7 @@ def logout():
 
 @app.route('/update_location', methods=['POST'])
 def update_location():
-    if 'username' not in session:
-        return jsonify(success=False, message="Not logged in.")
-    
+    if 'username' not in session: return jsonify(success=False)
     user = User.query.filter_by(username=session['username']).first()
     if user and not user.is_parent:
         child_entry = Child.query.filter_by(child_user_id=user.id).first()
@@ -219,22 +200,18 @@ def update_location():
             child_entry.last_seen = datetime.datetime.now()
             db.session.commit()
             return jsonify(success=True)
-
     return jsonify(success=False)
 
 @app.route('/api/get_children_data')
 def get_children_data():
-    if 'username' not in session:
-        return jsonify(children=[])
-    
-    parent_user = User.query.filter_by(username=session['username']).first()
-    if not parent_user or not parent_user.is_parent:
-        return jsonify(children=[])
+    if 'username' not in session: return jsonify(children=[])
+    parent = User.query.filter_by(username=session['username']).first()
+    if not parent or not parent.is_parent: return jsonify(children=[])
 
-    children_list = []
-    for child in parent_user.children:
+    data = []
+    for child in parent.children:
         child_user = User.query.get(child.child_user_id)
-        children_list.append({
+        data.append({
             'id': child.id,
             'name': child.name,
             'pairing_code': child.pairing_code,
@@ -242,9 +219,9 @@ def get_children_data():
             'last_longitude': child.last_longitude,
             'last_seen': child.last_seen.isoformat() if child.last_seen else None,
             'phone_number': child_user.phone_number if child_user else None,
-            'profile_pic_url': child_user.profile_pic_url if child_user and child_user.profile_pic_url else url_for('static', filename='default-profile.png')
+            'profile_pic_url': child_user.profile_pic_url if child_user else url_for('static', filename='default-profile.png')
         })
-    return jsonify(children=children_list)
+    return jsonify(children=data)
 
 @app.route('/geofence')
 @is_parent
@@ -255,65 +232,33 @@ def geofence_page():
 @is_parent
 def save_geofence():
     data = request.get_json()
-    new_geofence = Geofence(
-        parent=g.user,
-        location_name=data.get('location_name'),
-        latitude=data.get('lat'),
-        longitude=data.get('lng'),
-        radius=data.get('radius')
-    )
-    db.session.add(new_geofence)
+    db.session.add(Geofence(parent=g.user, location_name=data['location_name'], latitude=data['lat'], longitude=data['lng'], radius=data['radius']))
     db.session.commit()
     return jsonify(success=True)
 
 @app.route('/api/get_geofences')
 @is_parent
 def get_geofences():
-    geofences = Geofence.query.filter_by(parent_id=g.user.id).all()
-    geofence_list = []
-    for fence in geofences:
-        geofence_list.append({
-            'id': fence.id,
-            'location_name': fence.location_name,
-            'lat': fence.latitude,
-            'lng': fence.longitude,
-            'radius': fence.radius
-        })
-    return jsonify(geofences=geofence_list)
+    return jsonify(geofences=[{'id': f.id, 'location_name': f.location_name, 'lat': f.latitude, 'lng': f.longitude, 'radius': f.radius} for f in Geofence.query.filter_by(parent_id=g.user.id).all()])
 
 @app.route('/upload_profile_pic', methods=['POST'])
 def upload_profile_pic():
-    if 'username' not in session:
-        return jsonify(success=False, message="Not logged in."), 401
-    
+    if 'username' not in session: return jsonify(success=False), 401
     user = User.query.filter_by(username=session['username']).first()
-    if not user:
-        return jsonify(success=False, message="User not found."), 404
-        
-    if 'file' not in request.files:
-        return jsonify(success=False, message="No file part."), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify(success=False, message="No selected file."), 400
-
+    file = request.files.get('file')
     if file:
-        filename = f"{user.username}_profile_pic.png"
+        filename = f"{user.username}_profile.png"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         user.profile_pic_url = url_for('static', filename=f'uploads/{filename}')
         db.session.commit()
-        return jsonify(success=True, profile_pic_url=user.profile_pic_url)
-    
-    return jsonify(success=False, message="Failed to upload file."), 500
+        return jsonify(success=True, url=user.profile_pic_url)
+    return jsonify(success=False), 400
 
-# --- MAIN EXECUTION ---
-# Yahan 'with app.app_context()' ko 'if __name__' se bahar rakha hai
-# Taaki Render par bhi tables apne aap ban jayein.
-
+# --- AUTO-CREATE TABLES ---
 with app.app_context():
     db.create_all()
-    print("Database tables created/checked successfully!")
+    print("New Tables (app_users) Created Successfully!")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, threaded=True)
