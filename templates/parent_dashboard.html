@@ -2,156 +2,208 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Parent Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Suraksha OneView</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
     <style>
-        #mapid {
-            height: 400px;
-            width: 100%;
-            margin-top: 20px;
-            border-radius: 8px;
+        /* --- INTERNAL CSS (Taaki Design Turant Update Ho) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        
+        body { 
+            background-color: #f0f2f5; 
+            height: 100vh; /* Pura Screen Use Karega */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Bahar ka scroll band */
         }
+
+        /* 1. COMPACT BLUE HEADER */
+        .header {
+            background: #2c3e50; /* Professional Blue */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+            z-index: 1001;
+        }
+        .header h2 { font-size: 1.2rem; margin: 0; }
+        .logout-btn { color: #e74c3c; text-decoration: none; font-size: 0.9rem; }
+
+        /* 2. TOP SECTION (Add Child + List) */
+        .top-section {
+            padding: 10px;
+            background: white;
+            flex-shrink: 0; /* Isko Shrink mat karo */
+            max-height: 40vh; /* Screen ka 40% hissa */
+            overflow-y: auto; /* Agar list lambi ho to scroll kare */
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Add Child Form (Compact) */
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .input-box {
+            flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; outline: none;
+        }
+        .btn-add {
+            background: #2c3e50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;
+        }
+
+        /* Child Card (Horizontal Style) */
+        .child-card {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .profile-area { display: flex; align-items: center; gap: 10px; }
+        
+        /* PHOTO FIX: Chhota aur Gol */
+        .child-img {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #2c3e50;
+        }
+        
+        .info h4 { font-size: 1rem; color: #333; margin-bottom: 2px; }
+        .info p { font-size: 0.75rem; color: #666; margin: 0; }
+        .status-dot { height: 8px; width: 8px; background: #ccc; border-radius: 50%; display: inline-block; }
+
+        .locate-btn {
+            background: white; border: 1px solid #2c3e50; color: #2c3e50;
+            padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;
+        }
+        .locate-btn:active { background: #2c3e50; color: white; }
+
+        /* 3. MAP SECTION (Remaining Space) */
+        .map-container {
+            flex-grow: 1; /* Bachi hui sari jagah lega */
+            position: relative;
+            background: #e0e0e0;
+        }
+        #map { height: 100%; width: 100%; }
+
+        /* 4. BOTTOM NAV (Floating) */
+        .bottom-nav {
+            background: white;
+            height: 60px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+        .nav-item { text-align: center; color: #7f8c8d; text-decoration: none; font-size: 0.7rem; }
+        .nav-item i { font-size: 1.2rem; display: block; margin-bottom: 3px; }
+        .nav-item.active { color: #2c3e50; }
+
     </style>
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
-                .then(reg => console.log('Service Worker registered', reg))
-                .catch(err => console.log('Service Worker registration failed', err));
-        }
-    </script>
 </head>
 <body>
-    <div class="container">
-        <div class="header-container">
-            <img src="{{ profile_pic_url }}" alt="Profile Picture" class="profile-pic">
-            <h1>Welcome to your Dashboard, {{ username }}!</h1>
-        </div>
-        <a href="{{ url_for('logout') }}" class="button">Logout</a>
-        <br>
-        <br>
-        
-        <div class="button-group">
-            <a href="{{ url_for('geofence_page') }}" class="button">Manage Geofences</a>
-        </div>
 
-        <div class="card">
-            <h2>Upload Profile Picture</h2>
-            <form id="upload-form" enctype="multipart/form-data">
-                <input type="file" name="file" id="profile-pic-input" accept="image/*">
-                <button type="submit" class="button">Upload</button>
-            </form>
-            <p id="upload-status"></p>
-        </div>
-
-        <div class="card">
-            <h2>Add a new child</h2>
-            <form action="{{ url_for('add_child') }}" method="post">
-                <input type="text" name="child_name" placeholder="Child's Name" required>
-                <button type="submit">Add Child</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>Your Children</h2>
-            <div id="children-list">
-                </div>
-        </div>
-        
-        <div id="mapid"></div>
-
+    <div class="header">
+        <h2>Dashboard</h2>
+        <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa-solid fa-power-off"></i> Logout</a>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <div class="top-section">
+        <form action="{{ url_for('add_child') }}" method="POST" class="add-form">
+            <input type="text" name="child_name" placeholder="Child Name..." class="input-box" required>
+            <button type="submit" class="btn-add"><i class="fa-solid fa-plus"></i></button>
+        </form>
+
+        {% if children %}
+            {% for child in children %}
+            <div class="child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
+                <div class="profile-area">
+                    {% if child.child_user and child.child_user.profile_pic_url %}
+                        <img src="{{ child.child_user.profile_pic_url }}" class="child-img">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='default-profile.png') }}" class="child-img">
+                    {% endif %}
+                    
+                    <div class="info">
+                        <h4>{{ child.name }}</h4>
+                        <p>Code: <b>{{ child.pairing_code }}</b></p>
+                        <p>
+                            <span class="status-dot" style="background: {{ 'green' if child.last_seen else 'grey' }}"></span>
+                            {{ 'Online' if child.last_seen else 'Offline' }}
+                        </p>
+                    </div>
+                </div>
+                <button class="locate-btn"><i class="fa-solid fa-location-arrow"></i> Track</button>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align:center; font-size:0.9rem; color:#888;">No children added.</p>
+        {% endif %}
+    </div>
+
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i>Home</a>
+        <a href="{{ url_for('geofence_page') }}" class="nav-item"><i class="fa-solid fa-shield-halved"></i>Zone</a>
+        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-rotate"></i>Refresh</a>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        var mymap;
-        $(document).ready(function() {
-            function updateChildrenData() {
-                $.getJSON("/api/get_children_data", function(data) {
-                    var childrenListHtml = '';
-                    var mapMarkers = [];
-                    data.children.forEach(function(child) {
-                        childrenListHtml += `
-                            <div class="child-card">
-                                <div class="child-card-header">
-                                    <img src="${child.profile_pic_url}" alt="${child.name}'s profile picture" class="child-profile-pic">
-                                    <h3>${child.name}</h3>
-                                </div>
-                                <p><strong>Pairing Code:</strong> <code>${child.pairing_code}</code></p>
-                                <p><strong>Last Seen:</strong> ${child.last_seen ? new Date(child.last_seen).toLocaleString() : 'N/A'}</p>
-                                ${child.phone_number ? `<a href="tel:${child.phone_number}" class="call-button">Call Child</a>` : ''}
-                                <form action="/refresh_pairing_code/${child.id}" method="post" style="display:inline;">
-                                    <button type="submit" class="button-small">Refresh Code</button>
-                                </form>
-                            </div>
-                        `;
-                        if (child.last_latitude && child.last_longitude) {
-                            mapMarkers.push([child.last_latitude, child.last_longitude, child.name]);
+        var map = L.map('map').setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+
+        var markers = {};
+
+        function updateLocations() {
+            fetch('/api/get_children_data')
+                .then(res => res.json())
+                .then(data => {
+                    data.children.forEach(child => {
+                        if (child.last_latitude) {
+                            var lat = child.last_latitude;
+                            var lng = child.last_longitude;
+                            
+                            if (markers[child.id]) {
+                                markers[child.id].setLatLng([lat, lng]);
+                            } else {
+                                var marker = L.marker([lat, lng]).addTo(map).bindPopup(child.name);
+                                markers[child.id] = marker;
+                            }
                         }
                     });
-                    $('#children-list').html(childrenListHtml);
-                    
-                    if (mymap) {
-                        mymap.remove();
-                    }
-                    if (mapMarkers.length > 0) {
-                        initializeMap(mapMarkers);
-                    }
                 });
-            }
-
-            // Profile Picture Upload Script
-            $('#upload-form').on('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData();
-                const fileInput = $('#profile-pic-input')[0];
-                
-                if (fileInput.files.length === 0) {
-                    $('#upload-status').text("Please select a file to upload.");
-                    return;
-                }
-
-                formData.append('file', fileInput.files[0]);
-
-                $.ajax({
-                    url: "{{ url_for('upload_profile_pic') }}",
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.success) {
-                            $('#upload-status').text("Profile picture uploaded successfully!");
-                            $('.profile-pic').attr('src', response.profile_pic_url);
-                        } else {
-                            $('#upload-status').text("Failed to upload: " + response.message);
-                        }
-                    },
-                    error: function(jqXHR) {
-                        $('#upload-status').text("Upload error: " + jqXHR.responseJSON.message);
-                    }
-                });
-            });
-
-            updateChildrenData();
-            setInterval(updateChildrenData, 10000);
-        });
-
-        function initializeMap(markers) {
-            mymap = L.map('mapid').setView([markers[0][0], markers[0][1]], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(mymap);
-
-            markers.forEach(marker => {
-                L.marker([marker[0], marker[1]])
-                    .addTo(mymap)
-                    .bindPopup(`<b>${marker[2]}</b>'s Last Known Location`);
-            });
         }
+
+        function focusMap(lat, lng) {
+            if(lat && lng && lat != 'None') {
+                map.setView([lat, lng], 16);
+            } else {
+                alert("Location waiting...");
+            }
+        }
+        
+        setInterval(updateLocations, 5000);
+        updateLocations();
     </script>
+
 </body>
 </html>
