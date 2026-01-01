@@ -1,17 +1,16 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
-import json
+import math # Zone calculation ke liye
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'suraksha_key_secret_123'
 
-# --- DATABASE CONFIGURATION ---
-# Render par internal URL use karein, local par sqlite
+# --- 1. DATABASE CONFIGURATION ---
 db_url = os.environ.get('DATABASE_URL')
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
@@ -19,7 +18,7 @@ if db_url and db_url.startswith("postgres://"):
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///suraksha.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# --- PHOTO UPLOAD SETTINGS ---
+# --- 2. PHOTO UPLOAD CONFIG ---
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -28,15 +27,15 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# --- MODELS ---
+# --- 3. MODELS (Tables) ---
 class User(UserMixin, db.Model):
-    __tablename__ = 'app_users'  # Table name fixed
+    __tablename__ = 'app_users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(150), nullable=False)
-    role = db.Column(db.String(50), nullable=False) # 'parent' or 'child'
+    role = db.Column(db.String(50), nullable=False)
     
-    # NEW: Photo save karne ke liye column
+    # NEW: Photo URL Column
     profile_pic_url = db.Column(db.String(500), nullable=True)
 
 class Child(db.Model):
@@ -44,18 +43,20 @@ class Child(db.Model):
     name = db.Column(db.String(100), nullable=False)
     pairing_code = db.Column(db.String(10), unique=True, nullable=False)
     
-    # Connection to Parent
+    # Rishtey (Relationships)
     parent_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=True)
-    
-    # Connection to Child User Account (Jo login karega)
     child_user_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=True)
     
-    # Tracking Data
+    # Location Data
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Zone Settings (Ye Logic Wapas Aa Gayi Hai)
+    safe_zone_lat = db.Column(db.Float, nullable=True)
+    safe_zone_lng = db.Column(db.Float, nullable=True)
+    safe_zone_radius = db.Column(db.Integer, default=500) # Meters mein
 
-    # Relationships
     parent = db.relationship('User', foreign_keys=[parent_id], backref='children_added')
     child_user = db.relationship('User', foreign_keys=[child_user_id], backref='child_profile')
 
@@ -63,7 +64,23 @@ class Child(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# --- ROUTES ---
+# --- 4. HELPER FUNCTIONS ---
+# Do points ke beech ki doori nikalne ka formula (Haversine)
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371000 # Earth radius in meters
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_phi = math.radians(lat2 - lat1)
+    delta_lambda = math.radians(lon2 - lon1)
+    
+    a = math.sin(delta_phi / 2.0) ** 2 + \
+        math.cos(phi1) * math.cos(phi2) * \
+        math.sin(delta_lambda / 2.0) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    
+    return R * c # Distance in meters
+
+# --- 5. ROUTES ---
 
 @app.route('/')
 def home():
@@ -77,12 +94,11 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
-        
         if user and check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for('dashboard'))
         else:
-            flash('Login failed. Check username and password.')
+            flash('Login failed. Check details.')
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -90,17 +106,14 @@ def signup():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        role = request.form.get('role') # 'parent' ya 'child'
-        
+        role = request.form.get('role')
         if User.query.filter_by(username=username).first():
-            flash('Username already exists.')
+            flash('Username exists.')
             return redirect(url_for('signup'))
-        
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(username=username, password=hashed_password, role=role)
+        hashed_pw = generate_password_hash(password, method='pbkdf2:sha256')
+        new_user = User(username=username, password=hashed_pw, role=role)
         db.session.add(new_user)
         db.session.commit()
-        
         login_user(new_user)
         return redirect(url_for('dashboard'))
     return render_template('signup.html')
@@ -110,54 +123,44 @@ def signup():
 def dashboard():
     if current_user.role == 'parent':
         children = Child.query.filter_by(parent_id=current_user.id).all()
-        # Photo URL pass kar rahe hain template ko
         return render_template('parent_dashboard.html', 
                                username=current_user.username,
                                user_profile_pic=current_user.profile_pic_url,
                                children=children)
     else:
-        # Child Dashboard Logic
         child_profile = Child.query.filter_by(child_user_id=current_user.id).first()
         return render_template('child_dashboard.html', 
                                username=current_user.username,
                                user_profile_pic=current_user.profile_pic_url,
                                child_info=child_profile)
 
-# --- NEW: PROFILE PIC UPLOAD ROUTE ---
+# --- NEW: PROFILE PIC UPLOAD ---
 @app.route('/upload_profile_pic', methods=['POST'])
 @login_required
 def upload_profile_pic():
     if 'profile_pic' not in request.files:
         return redirect(url_for('dashboard'))
-    
     file = request.files['profile_pic']
     if file.filename == '':
         return redirect(url_for('dashboard'))
-        
     if file:
         filename = secure_filename(file.filename)
-        # Unique name: user_123_photo.jpg
-        new_filename = f"user_{current_user.id}_{int(datetime.now().timestamp())}_{filename}"
+        # Timestamp lagaya taki naam unique rahe
+        new_filename = f"u{current_user.id}_{int(datetime.now().timestamp())}_{filename}"
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
         file.save(file_path)
         
-        # Save link to DB
         current_user.profile_pic_url = url_for('static', filename='uploads/' + new_filename)
         db.session.commit()
-        
         return redirect(url_for('dashboard'))
 
 # --- PARENT FEATURES ---
 @app.route('/add_child', methods=['POST'])
 @login_required
 def add_child():
-    if current_user.role != 'parent':
-        return "Unauthorized", 403
-    
+    if current_user.role != 'parent': return "No", 403
     name = request.form.get('child_name')
-    # Generate unique code (Last 6 chars of timestamp)
     code = str(int(datetime.utcnow().timestamp()))[-6:]
-    
     new_child = Child(name=name, pairing_code=code, parent_id=current_user.id)
     db.session.add(new_child)
     db.session.commit()
@@ -166,13 +169,20 @@ def add_child():
 @app.route('/api/get_children_data')
 @login_required
 def get_children_data():
-    if current_user.role != 'parent':
-        return jsonify({})
-    
+    if current_user.role != 'parent': return jsonify({})
     children = Child.query.filter_by(parent_id=current_user.id).all()
     data = []
     for child in children:
-        # Check photo
+        # Distance calculation logic (Zone Check)
+        status = "Safe"
+        distance = 0
+        if child.last_latitude and child.safe_zone_lat:
+            dist = calculate_distance(child.last_latitude, child.last_longitude, 
+                                      child.safe_zone_lat, child.safe_zone_lng)
+            distance = round(dist, 2)
+            if dist > (child.safe_zone_radius or 500):
+                status = "Alert: Out of Zone!"
+        
         pic = None
         if child.child_user:
             pic = child.child_user.profile_pic_url
@@ -184,9 +194,36 @@ def get_children_data():
             'last_latitude': child.last_latitude,
             'last_longitude': child.last_longitude,
             'last_seen': child.last_seen.isoformat() if child.last_seen else None,
-            'profile_pic': pic
+            'profile_pic': pic,
+            'zone_status': status,
+            'distance_from_home': distance
         })
     return jsonify({'children': data})
+
+# --- GEFENCE SETTING (Zone Set Karna) ---
+@app.route('/set_geofence', methods=['POST'])
+@login_required
+def set_geofence():
+    child_id = request.form.get('child_id')
+    lat = request.form.get('latitude')
+    lng = request.form.get('longitude')
+    radius = request.form.get('radius')
+    
+    child = Child.query.get(child_id)
+    if child and child.parent_id == current_user.id:
+        child.safe_zone_lat = float(lat)
+        child.safe_zone_lng = float(lng)
+        child.safe_zone_radius = int(radius)
+        db.session.commit()
+        flash('Safe Zone Updated!')
+    return redirect(url_for('geofence_page'))
+
+@app.route('/geofence')
+@login_required
+def geofence_page():
+    if current_user.role != 'parent': return redirect(url_for('dashboard'))
+    children = Child.query.filter_by(parent_id=current_user.id).all()
+    return render_template('geofence.html', children=children) # Iske liye alag HTML chahiye hoga baad me
 
 # --- CHILD FEATURES ---
 @app.route('/pair_device', methods=['POST'])
@@ -194,24 +231,20 @@ def get_children_data():
 def pair_device():
     code = request.form.get('pairing_code')
     child_entry = Child.query.filter_by(pairing_code=code).first()
-    
     if child_entry:
         child_entry.child_user_id = current_user.id
         db.session.commit()
-        flash('Device Paired Successfully!')
+        flash('Connected!')
     else:
         flash('Invalid Code')
-        
     return redirect(url_for('dashboard'))
 
 @app.route('/api/update_location', methods=['POST'])
 def update_location():
     data = request.json
-    print("Location Data Received:", data) # Debugging ke liye
-    
     if not current_user.is_authenticated:
-        return jsonify({'status': 'error', 'message': 'Login required'}), 401
-
+        return jsonify({'status': 'error'}), 401
+    
     child_entry = Child.query.filter_by(child_user_id=current_user.id).first()
     if child_entry:
         child_entry.last_latitude = data.get('latitude')
@@ -219,8 +252,7 @@ def update_location():
         child_entry.last_seen = datetime.utcnow()
         db.session.commit()
         return jsonify({'status': 'success'})
-    
-    return jsonify({'status': 'error', 'message': 'Device not paired'})
+    return jsonify({'status': 'error', 'message': 'Not paired'})
 
 @app.route('/logout')
 @login_required
@@ -228,19 +260,13 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# --- DB FIX ROUTE (One Time Use) ---
+# --- DB FIX (IMPORTANT) ---
 @app.route('/fix_db_now')
 def fix_db_now():
     with app.app_context():
         db.drop_all()
         db.create_all()
-    return "Database Reset Successful! Purana data delete ho gaya. Naya account banayein."
-
-# --- ZONE/GEOFENCE PAGE (Placeholder) ---
-@app.route('/geofence')
-@login_required
-def geofence_page():
-    return render_template('parent_dashboard.html', username=current_user.username) # Temporary
+    return "Database RESET Complete. Create new account."
 
 if __name__ == '__main__':
     with app.app_context():
