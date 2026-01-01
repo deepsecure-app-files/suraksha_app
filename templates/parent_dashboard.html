@@ -2,94 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Suraksha App</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2.0">
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
 
     <div class="header">
-        <div class="profile-info">
-            <h1>PROFILE</h1>
+        <div class="user-info">
+            <h1>Dashboard</h1>
             <p>{{ username }}</p>
         </div>
-        <div class="header-icons">
-            <i class="fa-solid fa-bars"></i>
-            <i class="fa-solid fa-gear"></i>
+        <div class="header-icon">
+            <i class="fa-solid fa-bell"></i>
         </div>
     </div>
 
     <div class="container">
         
-        <div class="add-btn-card">
+        <div class="add-box">
             <form action="{{ url_for('add_child') }}" method="POST" style="display:flex; width:100%; gap:10px;">
-                <input type="text" name="child_name" placeholder="Child Name" class="input-field" required>
-                <button type="submit" class="btn-add">ADD</button>
+                <input type="text" name="child_name" placeholder="Child Name" class="app-input" required>
+                <button type="submit" class="btn-go"><i class="fa-solid fa-plus"></i></button>
             </form>
         </div>
 
-        <h3>Your Children</h3>
+        <h3 style="margin: 10px 5px; color:#7f8c8d; font-size:0.9rem;">TRACKING</h3>
+
         {% if children %}
             {% for child in children %}
             <div class="child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
-                {% if child.child_user and child.child_user.profile_pic_url %}
-                    <img src="{{ child.child_user.profile_pic_url }}" class="child-img" alt="img">
-                {% else %}
-                    <img src="{{ url_for('static', filename='default-profile.png') }}" class="child-img" alt="img">
-                {% endif %}
                 
+                {% if child.child_user and child.child_user.profile_pic_url %}
+                    <img src="{{ child.child_user.profile_pic_url }}" class="child-img" alt="user">
+                {% else %}
+                    <img src="{{ url_for('static', filename='default-profile.png') }}" class="child-img" alt="user">
+                {% endif %}
+
                 <div class="child-details">
                     <div class="child-name">{{ child.name }}</div>
-                    <div class="child-meta">
-                        Code: <b>{{ child.pairing_code }}</b>
-                    </div>
-                    <div class="child-meta">
-                        <span class="status-dot" style="background-color: {{ 'green' if child.last_seen else 'grey' }}"></span>
-                        {{ 'Online' if child.last_seen else 'Offline' }}
-                    </div>
+                    <div class="child-code">Code: <b>{{ child.pairing_code }}</b></div>
+                    
+                    {% if child.last_seen %}
+                        <span class="status-badge" style="background:#e8f5e9; color:#2e7d32;">
+                            <i class="fa-solid fa-circle" style="font-size:6px; vertical-align:middle;"></i> Online
+                        </span>
+                    {% else %}
+                        <span class="status-badge" style="background:#eceff1; color:#607d8b;">Offline</span>
+                    {% endif %}
                 </div>
-                <button class="locate-btn"><i class="fa-solid fa-location-arrow"></i></button>
+
+                <button class="action-btn"><i class="fa-solid fa-location-arrow"></i></button>
             </div>
             {% endfor %}
         {% else %}
-            <p style="text-align:center; color:#999;">No children added.</p>
+            <p style="text-align:center; color:#aaa; margin:20px;">No devices connected.</p>
         {% endif %}
 
-        <h3>Live Map</h3>
-        <div class="map-card">
+        <h3 style="margin: 20px 5px 10px 5px; color:#7f8c8d; font-size:0.9rem;">LIVE LOCATION</h3>
+        <div class="map-section">
             <div id="map"></div>
         </div>
-
+        <br>
     </div>
 
     <div class="bottom-nav">
-        <a href="#" class="nav-icon active">
-            <i class="fa-solid fa-house"></i> Home
+        <a href="#" class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
         </a>
-        <a href="#" class="nav-icon">
-            <i class="fa-solid fa-chart-simple"></i> Stats
+
+        <a href="#" onclick="document.getElementById('map').scrollIntoView({behavior: 'smooth'})" class="nav-item">
+            <i class="fa-solid fa-map"></i>
+            <span>Map</span>
         </a>
-        <a href="{{ url_for('geofence_page') }}" class="nav-icon">
-            <i class="fa-solid fa-shield-halved"></i> Zone
+
+        <a href="{{ url_for('geofence_page') }}" class="nav-item">
+            <i class="fa-solid fa-draw-polygon"></i>
+            <span>Zone</span>
         </a>
-        <a href="{{ url_for('logout') }}" class="nav-icon">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
+
+        <a href="{{ url_for('logout') }}" class="nav-item">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
         </a>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // Map Setup
-        var map = L.map('map').setView([20.5937, 78.9629], 5);
+        var map = L.map('map').setView([20.5937, 78.9629], 4); // India Center
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'OpenStreetMap'
+            attribution: '© OpenStreetMap'
         }).addTo(map);
 
         var markers = {};
 
-        // Function to update markers
         function updateLocations() {
             fetch('/api/get_children_data')
                 .then(res => res.json())
@@ -103,7 +115,7 @@
                                 markers[child.id].setLatLng([lat, lng]);
                             } else {
                                 var marker = L.marker([lat, lng]).addTo(map)
-                                    .bindPopup(child.name);
+                                    .bindPopup(`<b>${child.name}</b><br>Last seen: ${child.last_seen}`);
                                 markers[child.id] = marker;
                             }
                         }
@@ -111,13 +123,12 @@
                 });
         }
 
-        // Focus Map Function
         function focusMap(lat, lng) {
             if(lat && lng && lat != 'None') {
-                map.setView([lat, lng], 15);
+                map.setView([lat, lng], 16);
                 document.getElementById('map').scrollIntoView({behavior: "smooth"});
             } else {
-                alert("Location waiting...");
+                alert("Location not available yet.");
             }
         }
 
