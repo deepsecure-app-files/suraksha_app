@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Suraksha Pro</title>
+    <title>Suraksha OneView</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         
         body { 
             background-color: #f0f2f5; 
-            height: 100vh; 
-            display: flex; flex-direction: column; 
-            overflow: hidden; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        /* --- 1. NEW PARENT HEADER (Maja Aa Jayega!) --- */
+        /* --- 1. HEADER (Parent Profile Upload Added) --- */
         .header {
             background: #2c3e50;
             color: white;
@@ -27,137 +29,149 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             flex-shrink: 0;
             z-index: 1001;
         }
-
+        
+        /* Parent Profile Section */
         .parent-profile {
             display: flex;
             align-items: center;
             gap: 12px;
         }
         
+        .parent-img-box {
+            position: relative;
+            cursor: pointer; /* Clickable */
+        }
+        
         .parent-img {
             width: 45px; height: 45px;
             border-radius: 50%;
-            border: 2px solid #3498db; /* Blue Border */
+            border: 2px solid white;
             object-fit: cover;
         }
+        
+        /* Edit Icon on Parent Photo */
+        .edit-icon {
+            position: absolute;
+            bottom: 0; right: -2px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 18px; height: 18px;
+            font-size: 10px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid white;
+        }
 
-        .parent-info h2 { font-size: 1rem; font-weight: 700; margin: 0; }
-        .parent-info span { font-size: 0.75rem; opacity: 0.8; }
-
-        .header-actions i { font-size: 1.2rem; color: white; cursor: pointer; }
+        .header h2 { font-size: 1.1rem; margin: 0; }
+        .header p { font-size: 0.75rem; opacity: 0.8; margin: 0; }
 
         /* --- 2. TOP SECTION --- */
         .top-section {
             padding: 10px;
             background: white;
             flex-shrink: 0;
-            max-height: 45vh; /* Thoda bada kiya */
+            max-height: 40vh;
             overflow-y: auto;
             border-bottom: 1px solid #ddd;
         }
 
         /* Add Child Form */
-        .add-form { display: flex; gap: 10px; margin-bottom: 15px; }
-        .input-box { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; background: #f9f9f9; }
-        .btn-add { background: #2c3e50; color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer; }
+        .add-form { display: flex; gap: 10px; margin-bottom: 10px; }
+        .input-box { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; background: #f8f9fa; }
+        .btn-add { background: #2c3e50; color: white; border: none; padding: 0 18px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
 
-        /* --- 3. UPDATED CHILD CARD --- */
+        /* Child Card */
         .child-card {
-            background: white;
-            border-radius: 12px;
+            background: #ffffff;
+            border-left: 5px solid #2c3e50; /* Blue Border Strip */
+            border-radius: 10px;
             padding: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: 0.2s;
         }
+        .child-card:active { background: #f0f2f5; }
         
-        /* Photo Upload Area */
-        .profile-wrapper {
-            position: relative;
-            width: 55px; height: 55px;
-            margin-right: 12px;
-            cursor: pointer;
-        }
+        .profile-area { display: flex; align-items: center; gap: 12px; flex: 1; }
+        
+        /* Child Image (Clean - No Upload Icon) */
         .child-img {
-            width: 100%; height: 100%;
+            width: 50px; height: 50px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #eee;
         }
-        .camera-icon {
-            position: absolute;
-            bottom: 0; right: 0;
-            background: #2c3e50;
-            color: white;
-            font-size: 10px;
-            width: 20px; height: 20px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid white;
-        }
         
-        .info { flex: 1; }
-        .info h4 { font-size: 1.1rem; color: #2c3e50; margin-bottom: 2px; }
-        .code-badge { background: #ecf0f1; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; color: #7f8c8d; }
-        .status-on { color: #27ae60; font-size: 0.75rem; font-weight: 600; }
-        .status-off { color: #95a5a6; font-size: 0.75rem; }
-
-        /* Action Buttons */
-        .actions { display: flex; gap: 8px; }
+        .info h4 { font-size: 1.05rem; color: #2c3e50; margin-bottom: 2px; font-weight: 600; }
+        .info .code { font-size: 0.75rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
         
-        .btn-icon {
-            width: 35px; height: 35px;
-            border-radius: 50%;
-            border: none;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-track { background: #e8f6f3; color: #1abc9c; } /* Green Tone */
-        .btn-zone { background: #fef5e7; color: #e67e22; }  /* Orange Tone */
+        /* Status Text Styling */
+        .status-text { font-size: 0.75rem; margin-top: 3px; font-weight: 500; }
+        .online { color: #27ae60; } /* Green */
+        .offline { color: #7f8c8d; } /* Grey */
 
-        /* --- 4. MAP SECTION --- */
-        .map-container { flex-grow: 1; position: relative; background: #ddd; }
+        .locate-btn {
+            background: #e1f5fe; color: #0288d1;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: none; cursor: pointer;
+        }
+
+        /* --- 3. MAP SECTION --- */
+        .map-container { flex-grow: 1; position: relative; background: #e0e0e0; }
         #map { height: 100%; width: 100%; }
 
-        /* --- 5. BOTTOM NAV --- */
+        /* --- 4. BOTTOM NAV --- */
         .bottom-nav {
-            background: white; height: 60px;
-            display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid #eee; flex-shrink: 0;
+            background: white;
+            height: 65px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
         }
-        .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.7rem; }
+        .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; }
         .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
         .nav-item.active { color: #2c3e50; }
-        
-        /* Hidden File Input for Image Update */
-        #fileInput { display: none; }
+
+        /* Hidden File Input for Parent */
+        #parent_file_input { display: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="parent-profile">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="parent-img" alt="Parent">
-            <div class="parent-info">
-                <h2>{{ username }}</h2> <span>Parent Dashboard</span>
+            <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="profile_pic" id="parent_file_input" accept="image/*" onchange="document.getElementById('profileForm').submit()">
+            </form>
+
+            <div class="parent-img-box" onclick="document.getElementById('parent_file_input').click()">
+                {% if user_profile_pic %}
+                    <img src="{{ user_profile_pic }}" class="parent-img">
+                {% else %}
+                    <img src="{{ url_for('static', filename='default-profile.png') }}" class="parent-img">
+                {% endif %}
+                <div class="edit-icon"><i class="fa-solid fa-pen"></i></div>
+            </div>
+
+            <div>
+                <h2>{{ username }}</h2>
+                <p>Parent Dashboard</p>
             </div>
         </div>
-        <div class="header-actions">
-            <a href="{{ url_for('logout') }}" style="color:white;"><i class="fa-solid fa-right-from-bracket"></i></a>
-        </div>
+        
+        <a href="{{ url_for('logout') }}" style="color:white; font-size:1.2rem;"><i class="fa-solid fa-right-from-bracket"></i></a>
     </div>
 
     <div class="top-section">
-        
         <form action="{{ url_for('add_child') }}" method="POST" class="add-form">
             <input type="text" name="child_name" placeholder="Enter Child Name..." class="input-box" required>
             <button type="submit" class="btn-add"><i class="fa-solid fa-plus"></i></button>
@@ -165,40 +179,28 @@
 
         {% if children %}
             {% for child in children %}
-            <div class="child-card">
-                <div class="profile-wrapper" onclick="document.getElementById('fileInput').click()">
+            <div class="child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
+                <div class="profile-area">
                     {% if child.child_user and child.child_user.profile_pic_url %}
                         <img src="{{ child.child_user.profile_pic_url }}" class="child-img">
                     {% else %}
                         <img src="{{ url_for('static', filename='default-profile.png') }}" class="child-img">
                     {% endif %}
-                    <div class="camera-icon"><i class="fa-solid fa-camera"></i></div>
-                </div>
-
-                <div class="info" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
-                    <h4>{{ child.name }}</h4>
-                    <span class="code-badge">Code: {{ child.pairing_code }}</span>
-                    <div style="margin-top:2px;">
-                        {% if child.last_seen %}
-                            <span class="status-on"><i class="fa-solid fa-circle" style="font-size:6px;"></i> Online</span>
-                        {% else %}
-                            <span class="status-off">Offline</span>
-                        {% endif %}
+                    
+                    <div class="info">
+                        <h4>{{ child.name }}</h4>
+                        <span class="code">Code: {{ child.pairing_code }}</span>
+                        
+                        <div id="status-{{ child.id }}" class="status-text offline">
+                            Waiting for update...
+                        </div>
                     </div>
                 </div>
-
-                <div class="actions">
-                    <a href="{{ url_for('geofence_page') }}" class="btn-icon btn-zone">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </a>
-                    <button class="btn-icon btn-track" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
-                        <i class="fa-solid fa-location-arrow"></i>
-                    </button>
-                </div>
+                <button class="locate-btn"><i class="fa-solid fa-location-arrow"></i></button>
             </div>
             {% endfor %}
         {% else %}
-            <p style="text-align:center; padding:20px; color:#aaa;">Add a child to start tracking.</p>
+            <p style="text-align:center; color:#aaa; margin-top:20px;">No children added yet.</p>
         {% endif %}
     </div>
 
@@ -206,10 +208,15 @@
         <div id="map"></div>
     </div>
 
-    <input type="file" id="fileInput" accept="image/*" onchange="alert('Photo select ho gayi! Ise server par save karne ke liye Python code chahiye hoga. Kya main wo dun?')">
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i>Home</a>
+        <a href="{{ url_for('geofence_page') }}" class="nav-item"><i class="fa-solid fa-shield-halved"></i>Zone</a>
+        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-rotate"></i>Refresh</a>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
+        // Map Init
         var map = L.map('map').setView([20.5937, 78.9629], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
@@ -220,6 +227,7 @@
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
+                        // 1. UPDATE MAP MARKER
                         if (child.last_latitude) {
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
@@ -231,6 +239,36 @@
                                 markers[child.id] = marker;
                             }
                         }
+
+                        // 2. UPDATE STATUS TEXT (Online vs Last Seen)
+                        var statusElem = document.getElementById(`status-${child.id}`);
+                        if (statusElem) {
+                            if (child.last_seen) {
+                                // Server ka time check karein (Agar 2 min se kam purana hai to Online)
+                                // Abhi ke liye simple logic: Agar data me 'last_seen' hai to dikhao
+                                
+                                // Note: Behtar logic ke liye hum maan lete hain server format string bhej raha hai
+                                // Yahan hum seedha text update karenge
+                                
+                                // Agar backend se 'is_online' flag aata to best hota, 
+                                // par abhi hum Last Seen time dikhayenge
+                                
+                                // Check if string contains "Just now" or recent time (Simple Logic)
+                                // Aapke backend se 'last_seen' format kaisa aata hai us par depend karega.
+                                
+                                // Maan lete hain child.last_seen me Time aa raha hai
+                                statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Last seen: ${child.last_seen}`;
+                                statusElem.className = "status-text offline";
+                                
+                                // Agar aap chahte hain "Online" dikhe jab active ho:
+                                // Iske liye backend logic chahiye. 
+                                // Abhi ke liye:
+                                // statusElem.innerHTML = `● Online`; 
+                                // statusElem.className = "status-text online";
+                            } else {
+                                statusElem.innerHTML = "Offline";
+                            }
+                        }
                     });
                 });
         }
@@ -238,13 +276,12 @@
         function focusMap(lat, lng) {
             if(lat && lng && lat != 'None') {
                 map.setView([lat, lng], 16);
-            } else {
-                alert("Waiting for location...");
             }
         }
         
         setInterval(updateLocations, 5000);
         updateLocations();
     </script>
+
 </body>
 </html>
