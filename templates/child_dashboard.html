@@ -2,133 +2,159 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Child Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
-                .then(reg => console.log('Service Worker registered', reg))
-                .catch(err => console.log('Service Worker registration failed', err));
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Suraksha Profile</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2.0">
+
+    <style>
+        /* Child Specific Overrides */
+        body { background: #f0f2f5; display: flex; flex-direction: column; height: 100vh; }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-    </script>
+
+        /* Profile Pic Big & Center for Child */
+        .profile-section {
+            margin-top: -50px; /* Header ke upar chadhana */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .img-container {
+            position: relative;
+            width: 120px; height: 120px;
+        }
+
+        .my-pic {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .camera-btn {
+            position: absolute; bottom: 5px; right: 5px;
+            background: #3498db; color: white;
+            width: 35px; height: 35px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid white; cursor: pointer;
+        }
+
+        /* Info Cards */
+        .card {
+            background: white;
+            margin: 10px 20px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .status-active {
+            color: #27ae60; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        
+        .pulse {
+            width: 10px; height: 10px; background: #27ae60; border-radius: 50%;
+            box-shadow: 0 0 0 rgba(39, 174, 96, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+        }
+
+        .code-box {
+            background: #f8f9fa; border: 2px dashed #ccc;
+            padding: 10px; border-radius: 10px; margin-top: 10px;
+            font-size: 1.5rem; font-weight: bold; color: #333; letter-spacing: 2px;
+        }
+        
+        .btn-primary {
+            background: #2c3e50; color: white; padding: 12px 20px; border: none; border-radius: 10px; width: 100%; font-size: 1rem; cursor: pointer;
+        }
+
+        #file_input { display: none; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header-container">
-            <img src="{{ profile_pic_url }}" alt="Profile Picture" class="profile-pic">
-            <h1>Welcome, {{ username }}!</h1>
-        </div>
-        <a href="{{ url_for('logout') }}" class="button">Logout</a>
-        <br>
-        <br>
-        <div class="card">
-            <p>You are connected to your parent, <strong>{{ parent.username }}</strong>.</p>
-            <p id="location-status">Location status: Waiting for location...</p>
-        </div>
-        <div class="card">
-            <h3>Upload Profile Picture</h3>
-            <form id="upload-form" enctype="multipart/form-data">
-                <input type="file" name="file" id="profile-pic-input" accept="image/*">
-                <button type="submit" class="button">Upload</button>
-            </form>
-            <p id="upload-status"></p>
+
+    <div class="header">
+        <h2>Hi, {{ username }}</h2>
+        <p>You are protected</p>
+        <br><br> </div>
+
+    <div class="profile-section">
+        <form id="childProfileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
+            <input type="file" name="profile_pic" id="file_input" accept="image/*" onchange="document.getElementById('childProfileForm').submit()">
+        </form>
+
+        <div class="img-container" onclick="document.getElementById('file_input').click()">
+            {% if user_profile_pic %}
+                <img src="{{ user_profile_pic }}" class="my-pic">
+            {% else %}
+                <img src="{{ url_for('static', filename='default-profile.png') }}" class="my-pic">
+            {% endif %}
+            <div class="camera-btn"><i class="fa-solid fa-camera"></i></div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <div class="card">
+        {% if child_info %}
+            <h3>Connected ✅</h3>
+            <p style="color:#777; margin-bottom:10px;">Sharing location with Parent</p>
+            <div class="status-active">
+                <div class="pulse"></div> Live Tracking On
+            </div>
+        {% else %}
+            <h3>Not Connected ❌</h3>
+            <p>Enter the code from Parent's phone</p>
+            
+            <form action="{{ url_for('pair_device') }}" method="POST" style="margin-top:15px;">
+                <input type="text" name="pairing_code" placeholder="Enter 6-Digit Code" 
+                       style="padding:12px; border:1px solid #ddd; border-radius:8px; width:100%; text-align:center; font-size:1.2rem; letter-spacing:2px; margin-bottom:10px;" required>
+                <button type="submit" class="btn-primary">Connect</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <div style="margin:auto 20px 30px 20px;">
+        <a href="{{ url_for('logout') }}" style="text-decoration:none;">
+            <button style="background:#e74c3c; color:white; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold;">
+                <i class="fa-solid fa-power-off"></i> Logout
+            </button>
+        </a>
+    </div>
+
     <script>
-        // Location Update Script
-        function getLocation() {
+        function sendLocation() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(sendPosition, showError, {
-                    enableHighAccuracy: true
+                navigator.geolocation.getCurrentPosition(position => {
+                    fetch('/api/update_location', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        })
+                    });
                 });
-            } else {
-                document.getElementById("location-status").innerHTML = "Geolocation is not supported by this browser.";
             }
         }
-
-        function sendPosition(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            
-            $.ajax({
-                url: "{{ url_for('update_location') }}",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    lat: lat,
-                    lng: lng
-                }),
-                success: function(response) {
-                    if (response.success) {
-                        document.getElementById("location-status").innerHTML = "Location status: Location sent!";
-                    } else {
-                        document.getElementById("location-status").innerHTML = "Location status: Failed to send.";
-                    }
-                },
-                error: function() {
-                    document.getElementById("location-status").innerHTML = "Location status: Error sending location.";
-                }
-            });
-        }
-
-        function showError(error) {
-            let statusText = "";
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    statusText = "User denied the request for Geolocation. Please enable it in your browser settings.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    statusText = "Location information is unavailable.";
-                    break;
-                case error.TIMEOUT:
-                    statusText = "The request to get user location timed out.";
-                    break;
-                case error.UNKNOWN_ERROR:
-                    statusText = "An unknown error occurred.";
-                    break;
-            }
-            document.getElementById("location-status").innerHTML = `Location status: ${statusText}`;
-        }
-
-        setInterval(getLocation, 10000);
-        getLocation();
-
-        // Profile Picture Upload Script
-        $('#upload-form').on('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData();
-            const fileInput = $('#profile-pic-input')[0];
-            
-            if (fileInput.files.length === 0) {
-                $('#upload-status').text("Please select a file to upload.");
-                return;
-            }
-
-            formData.append('file', fileInput.files[0]);
-
-            $.ajax({
-                url: "{{ url_for('upload_profile_pic') }}",
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        $('#upload-status').text("Profile picture uploaded successfully!");
-                        $('.profile-pic').attr('src', response.profile_pic_url);
-                    } else {
-                        $('#upload-status').text("Failed to upload: " + response.message);
-                    }
-                },
-                error: function(jqXHR) {
-                    $('#upload-status').text("Upload error: " + jqXHR.responseJSON.message);
-                }
-            });
-        });
+        setInterval(sendLocation, 5000); // Har 5 second me location bhejo
     </script>
 </body>
 </html>
