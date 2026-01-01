@@ -21,7 +21,7 @@
             overflow: hidden;
         }
 
-        /* --- 1. HEADER (Parent Profile Upload Added) --- */
+        /* --- 1. HEADER (Clean Version) --- */
         .header {
             background: #2c3e50;
             color: white;
@@ -34,40 +34,31 @@
             z-index: 1001;
         }
         
-        /* Parent Profile Section */
-        .parent-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .parent-profile { display: flex; align-items: center; gap: 15px; } /* Gap badhaya taki saaf dikhe */
         
-        .parent-img-box {
-            position: relative;
-            cursor: pointer; /* Clickable */
-        }
+        .parent-img-box { position: relative; cursor: pointer; }
         
         .parent-img {
-            width: 45px; height: 45px;
+            width: 50px; height: 50px; /* Photo thodi badi ki */
             border-radius: 50%;
             border: 2px solid white;
             object-fit: cover;
         }
         
-        /* Edit Icon on Parent Photo */
         .edit-icon {
-            position: absolute;
-            bottom: 0; right: -2px;
-            background: #3498db;
-            color: white;
-            border-radius: 50%;
-            width: 18px; height: 18px;
-            font-size: 10px;
+            position: absolute; bottom: 0; right: -2px;
+            background: #3498db; color: white; border-radius: 50%;
+            width: 20px; height: 20px; font-size: 11px;
             display: flex; align-items: center; justify-content: center;
             border: 1px solid white;
         }
 
-        .header h2 { font-size: 1.1rem; margin: 0; }
-        .header p { font-size: 0.75rem; opacity: 0.8; margin: 0; }
+        /* Naam ko bada aur center kiya */
+        .header h2 { 
+            font-size: 1.3rem; 
+            margin: 0; 
+            font-weight: 500;
+        }
 
         /* --- 2. TOP SECTION --- */
         .top-section {
@@ -79,28 +70,23 @@
             border-bottom: 1px solid #ddd;
         }
 
-        /* Add Child Form */
         .add-form { display: flex; gap: 10px; margin-bottom: 10px; }
         .input-box { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; background: #f8f9fa; }
         .btn-add { background: #2c3e50; color: white; border: none; padding: 0 18px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
 
-        /* Child Card */
         .child-card {
             background: #ffffff;
-            border-left: 5px solid #2c3e50; /* Blue Border Strip */
+            border-left: 5px solid #2c3e50;
             border-radius: 10px;
             padding: 12px;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: 0.2s;
         }
-        .child-card:active { background: #f0f2f5; }
         
         .profile-area { display: flex; align-items: center; gap: 12px; flex: 1; }
         
-        /* Child Image (Clean - No Upload Icon) */
         .child-img {
             width: 50px; height: 50px;
             border-radius: 50%;
@@ -111,11 +97,8 @@
         .info h4 { font-size: 1.05rem; color: #2c3e50; margin-bottom: 2px; font-weight: 600; }
         .info .code { font-size: 0.75rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
         
-        /* Status Text Styling */
-        .status-text { font-size: 0.75rem; margin-top: 3px; font-weight: 500; }
-        .online { color: #27ae60; } /* Green */
-        .offline { color: #7f8c8d; } /* Grey */
-
+        .status-text { font-size: 0.75rem; margin-top: 3px; font-weight: 500; color: #555; }
+        
         .locate-btn {
             background: #e1f5fe; color: #0288d1;
             width: 40px; height: 40px; border-radius: 50%;
@@ -123,11 +106,11 @@
             border: none; cursor: pointer;
         }
 
-        /* --- 3. MAP SECTION --- */
+        /* --- 3. MAP --- */
         .map-container { flex-grow: 1; position: relative; background: #e0e0e0; }
         #map { height: 100%; width: 100%; }
 
-        /* --- 4. BOTTOM NAV --- */
+        /* --- 4. NAV --- */
         .bottom-nav {
             background: white;
             height: 65px;
@@ -141,7 +124,6 @@
         .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
         .nav-item.active { color: #2c3e50; }
 
-        /* Hidden File Input for Parent */
         #parent_file_input { display: none; }
     </style>
 </head>
@@ -152,7 +134,6 @@
             <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
                 <input type="file" name="profile_pic" id="parent_file_input" accept="image/*" onchange="document.getElementById('profileForm').submit()">
             </form>
-
             <div class="parent-img-box" onclick="document.getElementById('parent_file_input').click()">
                 {% if user_profile_pic %}
                     <img src="{{ user_profile_pic }}" class="parent-img">
@@ -161,13 +142,11 @@
                 {% endif %}
                 <div class="edit-icon"><i class="fa-solid fa-pen"></i></div>
             </div>
-
+            
             <div>
                 <h2>{{ username }}</h2>
-                <p>Parent Dashboard</p>
             </div>
         </div>
-        
         <a href="{{ url_for('logout') }}" style="color:white; font-size:1.2rem;"><i class="fa-solid fa-right-from-bracket"></i></a>
     </div>
 
@@ -191,8 +170,8 @@
                         <h4>{{ child.name }}</h4>
                         <span class="code">Code: {{ child.pairing_code }}</span>
                         
-                        <div id="status-{{ child.id }}" class="status-text offline">
-                            Waiting for update...
+                        <div id="status-{{ child.id }}" class="status-text">
+                            Waiting...
                         </div>
                     </div>
                 </div>
@@ -216,18 +195,26 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // Map Init
         var map = L.map('map').setView([20.5937, 78.9629], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
         var markers = {};
+
+        // Helper: Convert Server Time to Local Time
+        function formatLocalTime(utcDateString) {
+            if (!utcDateString) return "Offline";
+            if (!utcDateString.endsWith('Z')) utcDateString += 'Z';
+            var date = new Date(utcDateString);
+            if (isNaN(date.getTime())) return "Offline";
+            // Returns: 10:30 PM
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
 
         function updateLocations() {
             fetch('/api/get_children_data')
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
-                        // 1. UPDATE MAP MARKER
                         if (child.last_latitude) {
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
@@ -240,33 +227,15 @@
                             }
                         }
 
-                        // 2. UPDATE STATUS TEXT (Online vs Last Seen)
                         var statusElem = document.getElementById(`status-${child.id}`);
                         if (statusElem) {
                             if (child.last_seen) {
-                                // Server ka time check karein (Agar 2 min se kam purana hai to Online)
-                                // Abhi ke liye simple logic: Agar data me 'last_seen' hai to dikhao
-                                
-                                // Note: Behtar logic ke liye hum maan lete hain server format string bhej raha hai
-                                // Yahan hum seedha text update karenge
-                                
-                                // Agar backend se 'is_online' flag aata to best hota, 
-                                // par abhi hum Last Seen time dikhayenge
-                                
-                                // Check if string contains "Just now" or recent time (Simple Logic)
-                                // Aapke backend se 'last_seen' format kaisa aata hai us par depend karega.
-                                
-                                // Maan lete hain child.last_seen me Time aa raha hai
-                                statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Last seen: ${child.last_seen}`;
-                                statusElem.className = "status-text offline";
-                                
-                                // Agar aap chahte hain "Online" dikhe jab active ho:
-                                // Iske liye backend logic chahiye. 
-                                // Abhi ke liye:
-                                // statusElem.innerHTML = `● Online`; 
-                                // statusElem.className = "status-text online";
+                                var localTime = formatLocalTime(child.last_seen);
+                                statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Last seen: ${localTime}`;
+                                statusElem.style.color = "#555"; 
                             } else {
                                 statusElem.innerHTML = "Offline";
+                                statusElem.style.color = "#999";
                             }
                         }
                     });
@@ -282,6 +251,5 @@
         setInterval(updateLocations, 5000);
         updateLocations();
     </script>
-
 </body>
 </html>
