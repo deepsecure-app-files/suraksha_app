@@ -2,104 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Suraksha Dashboard</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
 
-    <div class="app-header">
-        <div class="header-title">
-            <h2>Namaste, {{ username }}! 👋</h2>
-            <div class="header-subtitle">Suraksha App Dashboard</div>
+    <div class="header">
+        <div class="profile-info">
+            <h1>PROFILE</h1>
+            <p>{{ username }}</p>
+        </div>
+        <div class="header-icons">
+            <i class="fa-solid fa-bars"></i>
+            <i class="fa-solid fa-gear"></i>
         </div>
     </div>
 
     <div class="container">
         
-        <h3 class="section-title">My Children</h3>
-        
-        {% if children %}
-            {% for child in children %}
-            <div class="child-card" onclick="focusOnChild('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
-                
-                {% if child.child_user and child.child_user.profile_pic_url %}
-                    <img src="{{ child.child_user.profile_pic_url }}" class="child-avatar" alt="Child">
-                {% else %}
-                    <img src="{{ url_for('static', filename='default-profile.png') }}" class="child-avatar" alt="Child">
-                {% endif %}
-
-                <div class="child-info">
-                    <div class="child-name">{{ child.name }}</div>
-                    <div class="child-status">
-                        <span class="status-indicator" style="background-color: {{ 'green' if child.last_seen else 'grey' }}"></span>
-                        {{ 'Online' if child.last_seen else 'Offline' }}
-                    </div>
-                    <small style="color: #888;">Code: <b>{{ child.pairing_code }}</b></small>
-                </div>
-                
-                <button class="action-btn"><i class="fa-solid fa-location-dot"></i></button>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="child-card" style="justify-content: center; color: #888;">
-                <p>No children added yet.</p>
-            </div>
-        {% endif %}
-
-        <h3 class="section-title">Add New</h3>
-        <div class="form-card">
-            <form action="{{ url_for('add_child') }}" method="POST" class="input-group">
-                <input type="text" name="child_name" placeholder="Child Name" class="app-input" required>
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Add</button>
+        <div class="add-btn-card">
+            <form action="{{ url_for('add_child') }}" method="POST" style="display:flex; width:100%; gap:10px;">
+                <input type="text" name="child_name" placeholder="Child Name" class="input-field" required>
+                <button type="submit" class="btn-add">ADD</button>
             </form>
         </div>
 
-        <h3 class="section-title">Live Location</h3>
-        <div id="map"></div>
-        <br><br>
+        <h3>Your Children</h3>
+        {% if children %}
+            {% for child in children %}
+            <div class="child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
+                {% if child.child_user and child.child_user.profile_pic_url %}
+                    <img src="{{ child.child_user.profile_pic_url }}" class="child-img" alt="img">
+                {% else %}
+                    <img src="{{ url_for('static', filename='default-profile.png') }}" class="child-img" alt="img">
+                {% endif %}
+                
+                <div class="child-details">
+                    <div class="child-name">{{ child.name }}</div>
+                    <div class="child-meta">
+                        Code: <b>{{ child.pairing_code }}</b>
+                    </div>
+                    <div class="child-meta">
+                        <span class="status-dot" style="background-color: {{ 'green' if child.last_seen else 'grey' }}"></span>
+                        {{ 'Online' if child.last_seen else 'Offline' }}
+                    </div>
+                </div>
+                <button class="locate-btn"><i class="fa-solid fa-location-arrow"></i></button>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align:center; color:#999;">No children added.</p>
+        {% endif %}
+
+        <h3>Live Map</h3>
+        <div class="map-card">
+            <div id="map"></div>
+        </div>
+
     </div>
 
     <div class="bottom-nav">
-        <a href="#" class="nav-item active">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
+        <a href="#" class="nav-icon active">
+            <i class="fa-solid fa-house"></i> Home
         </a>
-        <a href="#" onclick="window.scrollTo(0, document.body.scrollHeight);" class="nav-item">
-            <i class="fa-solid fa-map-location-dot"></i>
-            <span>Map</span>
+        <a href="#" class="nav-icon">
+            <i class="fa-solid fa-chart-simple"></i> Stats
         </a>
-        <a href="{{ url_for('geofence_page') }}" class="nav-item">
-            <i class="fa-solid fa-shield-halved"></i>
-            <span>Zone</span>
+        <a href="{{ url_for('geofence_page') }}" class="nav-icon">
+            <i class="fa-solid fa-shield-halved"></i> Zone
         </a>
-        <a href="{{ url_for('logout') }}" class="nav-item" style="color: #FF6B6B;">
-            <i class="fa-solid fa-right-from-bracket"></i>
-            <span>Logout</span>
+        <a href="{{ url_for('logout') }}" class="nav-icon">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
         </a>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
+        // Map Setup
         var map = L.map('map').setView([20.5937, 78.9629], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
+            attribution: 'OpenStreetMap'
         }).addTo(map);
 
         var markers = {};
 
+        // Function to update markers
         function updateLocations() {
             fetch('/api/get_children_data')
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
-                        // Check if valid lat/lng exists
-                        if (child.last_latitude != null && child.last_longitude != null) {
+                        if (child.last_latitude) {
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
                             
@@ -107,7 +103,7 @@
                                 markers[child.id].setLatLng([lat, lng]);
                             } else {
                                 var marker = L.marker([lat, lng]).addTo(map)
-                                    .bindPopup(`<b>${child.name}</b><br>Last seen: ${child.last_seen}`);
+                                    .bindPopup(child.name);
                                 markers[child.id] = marker;
                             }
                         }
@@ -115,13 +111,13 @@
                 });
         }
 
-        function focusOnChild(lat, lng) {
-            if(lat && lng && lat != 'None' && lat != 'null') {
-                map.setView([lat, lng], 18);
-                // Scroll to map smoothly
+        // Focus Map Function
+        function focusMap(lat, lng) {
+            if(lat && lng && lat != 'None') {
+                map.setView([lat, lng], 15);
                 document.getElementById('map').scrollIntoView({behavior: "smooth"});
             } else {
-                alert("Location not available yet.");
+                alert("Location waiting...");
             }
         }
 
