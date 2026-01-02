@@ -30,7 +30,7 @@ db = SQLAlchemy(app)
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
 
-# --- 2. DATABASE MODELS (Aapka Wala Structure) ---
+# --- 2. DATABASE MODELS ---
 
 class User(db.Model):
     __tablename__ = 'app_users'
@@ -90,7 +90,7 @@ def is_parent(f):
 
 @app.route('/')
 def home():
-    # Login check (Taki baar baar login na karna pade)
+    # Login check
     if 'username' in session:
         user = User.query.filter_by(username=session['username']).first()
         if user:
@@ -98,16 +98,7 @@ def home():
                 return redirect(url_for('parent_dashboard'))
             else:
                 return redirect(url_for('child_dashboard'))
-    return render_template('home.html') # Ya login.html
-
-@app.route('/fix_db_now')
-def fix_db_now():
-    try:
-        db.drop_all()
-        db.create_all()
-        return "Success! Database has been reset and fixed. Please Sign Up again."
-    except Exception as e:
-        return f"Error fixing database: {str(e)}"
+    return render_template('home.html') 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -190,10 +181,10 @@ def child_dashboard():
     return render_template('child_dashboard.html', 
                            username=user.username, 
                            parent=parent_data, 
-                           child_info=child_entry, # Pairing info bhejna jaruri hai
+                           child_info=child_entry, 
                            profile_pic_url=user.profile_pic_url)
 
-@app.route('/pair_device', methods=['POST']) # Iska route 'pair_child' ki jagah 'pair_device' kar diya taki HTML se match ho
+@app.route('/pair_device', methods=['POST'])
 def pair_device():
     if 'username' not in session: return redirect(url_for('login'))
     
@@ -214,7 +205,7 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
-# --- API FOR TRACKING (Aapke Logic se) ---
+# --- API FOR TRACKING ---
 @app.route('/api/update_location', methods=['POST'])
 def update_location():
     if 'username' not in session:
@@ -227,7 +218,7 @@ def update_location():
         child_entry = Child.query.filter_by(child_user_id=user.id).first()
         if child_entry:
             data = request.get_json()
-            child_entry.last_latitude = data.get('latitude') # HTML me 'latitude' bhej rahe hain
+            child_entry.last_latitude = data.get('latitude')
             child_entry.last_longitude = data.get('longitude')
             child_entry.last_seen = datetime.datetime.utcnow()
             db.session.commit()
@@ -266,7 +257,7 @@ def upload_profile_pic():
     if 'username' not in session: return redirect(url_for('home'))
     
     user = User.query.filter_by(username=session['username']).first()
-    file = request.files.get('profile_pic') # HTML me name='profile_pic' hai
+    file = request.files.get('profile_pic')
     
     if file and file.filename != '':
         filename = secure_filename(file.filename)
@@ -283,12 +274,13 @@ def upload_profile_pic():
     else:
         return redirect(url_for('child_dashboard'))
 
-# Geofence Page Route (Link error na de isliye)
+# ✅ UPDATED Geofence Route
 @app.route('/geofence')
 @is_parent
 def geofence_page():
-    # Abhi wapas bhejte hain, baad me page banayenge
-    return redirect(url_for('parent_dashboard'))
+    user = g.user
+    # Sahi HTML page render kar rahe hain
+    return render_template('geofence.html', username=user.username)
 
 if __name__ == '__main__':
     with app.app_context():
