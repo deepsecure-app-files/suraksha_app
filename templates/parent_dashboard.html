@@ -34,12 +34,12 @@
             z-index: 1001;
         }
         
-        .parent-profile { display: flex; align-items: center; gap: 15px; } /* Gap badhaya taki saaf dikhe */
+        .parent-profile { display: flex; align-items: center; gap: 15px; } 
         
         .parent-img-box { position: relative; cursor: pointer; }
         
         .parent-img {
-            width: 50px; height: 50px; /* Photo thodi badi ki */
+            width: 50px; height: 50px; 
             border-radius: 50%;
             border: 2px solid white;
             object-fit: cover;
@@ -53,7 +53,6 @@
             border: 1px solid white;
         }
 
-        /* Naam ko bada aur center kiya */
         .header h2 { 
             font-size: 1.3rem; 
             margin: 0; 
@@ -134,9 +133,10 @@
             <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
                 <input type="file" name="profile_pic" id="parent_file_input" accept="image/*" onchange="document.getElementById('profileForm').submit()">
             </form>
+            
             <div class="parent-img-box" onclick="document.getElementById('parent_file_input').click()">
-                {% if user_profile_pic %}
-                    <img src="{{ user_profile_pic }}" class="parent-img">
+                {% if profile_pic_url %}
+                    <img src="{{ profile_pic_url }}" class="parent-img">
                 {% else %}
                     <img src="{{ url_for('static', filename='default-profile.png') }}" class="parent-img">
                 {% endif %}
