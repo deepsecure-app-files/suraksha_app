@@ -21,7 +21,7 @@
             overflow: hidden;
         }
 
-        /* --- 1. HEADER (Clean Version) --- */
+        /* --- 1. HEADER --- */
         .header {
             background: #2c3e50;
             color: white;
@@ -53,13 +53,9 @@
             border: 1px solid white;
         }
 
-        .header h2 { 
-            font-size: 1.3rem; 
-            margin: 0; 
-            font-weight: 500;
-        }
+        .header h2 { font-size: 1.3rem; margin: 0; font-weight: 500; }
 
-        /* --- 2. TOP SECTION --- */
+        /* --- 2. TOP SECTION (Child List) --- */
         .top-section {
             padding: 10px;
             background: white;
@@ -82,6 +78,7 @@
             display: flex;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative; /* Distance badge ke liye */
         }
         
         .profile-area { display: flex; align-items: center; gap: 12px; flex: 1; }
@@ -97,6 +94,15 @@
         .info .code { font-size: 0.75rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
         
         .status-text { font-size: 0.75rem; margin-top: 3px; font-weight: 500; color: #555; }
+
+        /* 🔥 Distance Badge Style */
+        .distance-badge {
+            font-size: 0.8rem;
+            color: #e67e22; /* Orange color */
+            font-weight: bold;
+            margin-top: 2px;
+            display: block;
+        }
         
         .locate-btn {
             background: #e1f5fe; color: #0288d1;
@@ -106,19 +112,28 @@
         }
 
         /* --- 3. MAP --- */
-        .map-container { flex-grow: 1; position: relative; background: #e0e0e0; }
+        .map-container { 
+            flex-grow: 1; 
+            position: relative; 
+            background: #e0e0e0;
+            margin-bottom: 70px; 
+        }
         #map { height: 100%; width: 100%; }
 
-        /* --- 4. NAV --- */
+        /* --- 4. NAV (FIXED) --- */
         .bottom-nav {
             background: white;
-            height: 65px;
+            height: 70px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             border-top: 1px solid #eee;
-            flex-shrink: 0;
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            z-index: 9999;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
         }
+        
         .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; }
         .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
         .nav-item.active { color: #2c3e50; }
@@ -173,6 +188,9 @@
                         <div id="status-{{ child.id }}" class="status-text">
                             Waiting...
                         </div>
+                        <span id="dist-{{ child.id }}" class="distance-badge">
+                            <i class="fa-solid fa-location-crosshairs"></i> Calculating...
+                        </span>
                     </div>
                 </div>
                 <button class="locate-btn"><i class="fa-solid fa-location-arrow"></i></button>
@@ -195,22 +213,42 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
+        // Map Setup
         var map = L.map('map').setView([20.5937, 78.9629], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
         var markers = {};
+        var parentLat = null;
+        var parentLng = null;
 
-        // Helper: Convert Server Time to Local Time
+        // 1. Parent ki Location lena
+        function getParentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    parentLat = position.coords.latitude;
+                    parentLng = position.coords.longitude;
+                    // Agar aap chahein to Parent ka marker bhi dikha sakte hain (Optional)
+                    // L.marker([parentLat, parentLng]).addTo(map).bindPopup("You are here");
+                });
+            }
+        }
+        // Page load hote hi parent location lo
+        getParentLocation();
+
+        // 2. Format Time
         function formatLocalTime(utcDateString) {
             if (!utcDateString) return "Offline";
             if (!utcDateString.endsWith('Z')) utcDateString += 'Z';
             var date = new Date(utcDateString);
             if (isNaN(date.getTime())) return "Offline";
-            // Returns: 10:30 PM
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
+        // 3. Distance Calculate Logic (Hawa Mahal)
         function updateLocations() {
+            // Har baar parent location update karo taki accurate rahe
+            getParentLocation();
+
             fetch('/api/get_children_data')
                 .then(res => res.json())
                 .then(data => {
@@ -219,14 +257,33 @@
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
                             
+                            // Map update
                             if (markers[child.id]) {
                                 markers[child.id].setLatLng([lat, lng]);
                             } else {
                                 var marker = L.marker([lat, lng]).addTo(map).bindPopup(child.name);
                                 markers[child.id] = marker;
                             }
+
+                            // 🔥 Distance Calculation Magic
+                            var distElem = document.getElementById(`dist-${child.id}`);
+                            if (parentLat && parentLng && distElem) {
+                                // Leaflet ka magic tool use kar rahe hain
+                                var from = L.latLng(parentLat, parentLng);
+                                var to = L.latLng(lat, lng);
+                                var distMeters = from.distanceTo(to);
+                                
+                                var distText = "";
+                                if (distMeters < 1000) {
+                                    distText = Math.round(distMeters) + " m away";
+                                } else {
+                                    distText = (distMeters / 1000).toFixed(1) + " km away";
+                                }
+                                distElem.innerHTML = `<i class="fa-solid fa-route"></i> ${distText}`;
+                            }
                         }
 
+                        // Last Seen Update
                         var statusElem = document.getElementById(`status-${child.id}`);
                         if (statusElem) {
                             if (child.last_seen) {
@@ -235,7 +292,6 @@
                                 statusElem.style.color = "#555"; 
                             } else {
                                 statusElem.innerHTML = "Offline";
-                                statusElem.style.color = "#999";
                             }
                         }
                     });
@@ -253,3 +309,4 @@
     </script>
 </body>
 </html>
+
