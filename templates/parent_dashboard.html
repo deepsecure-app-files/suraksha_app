@@ -11,26 +11,29 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
         
+        input, textarea { -webkit-user-select: text !important; user-select: text !important; }
+
         body { 
             background-color: #f0f2f5; 
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
 
-        input, textarea { -webkit-user-select: text !important; user-select: text !important; }
-
-        /* --- 1. HEADER (Premium Look) --- */
+        /* --- 1. HEADER (Premium Gradient) --- */
         .header {
             background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
-            padding: 15px 20px;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -41,68 +44,57 @@
             border-bottom-right-radius: 15px;
         }
         
-        .parent-profile { display: flex; align-items: center; gap: 15px; } 
-        .parent-img-box { position: relative; cursor: pointer; }
+        .parent-profile { display: flex; align-items: center; gap: 12px; } 
         .parent-img {
-            width: 50px; height: 50px; 
+            width: 45px; height: 45px; 
             border-radius: 50%;
             border: 2px solid white;
             object-fit: cover;
         }
-        
-        .edit-icon {
-            position: absolute; bottom: 0; right: -2px;
-            background: #1877F2; color: white; border-radius: 50%;
-            width: 20px; height: 20px; font-size: 11px;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid white;
-        }
+        .header h2 { font-size: 1.1rem; margin: 0; font-weight: 500; }
 
-        .header h2 { font-size: 1.2rem; margin: 0; font-weight: 500; }
-
-        /* --- 2. TOP SECTION --- */
+        /* --- 2. TOP SECTION (Compact Child List) --- */
         .top-section {
-            padding: 10px;
+            padding: 8px 12px;
             background: white;
             flex-shrink: 0;
-            max-height: 35vh;
+            max-height: 180px !important; /* 🔥 मैप को बड़ा रखने के लिए लिस्ट छोटी की */
             overflow-y: auto;
+            border-bottom: 1px solid #ddd;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .add-form { display: flex; gap: 10px; margin-bottom: 10px; }
-        .input-box { flex: 1; padding: 12px; border: 1px solid #eee; border-radius: 10px; outline: none; background: #f8f9fa; }
-        .btn-add { background: #1877F2; color: white; border: none; padding: 0 18px; border-radius: 10px; cursor: pointer; }
+        .add-form { display: flex; gap: 8px; margin-bottom: 8px; }
+        .input-box { flex: 1; padding: 10px; border: 1px solid #eee; border-radius: 10px; outline: none; background: #f8f9fa; font-size: 0.9rem; }
+        .btn-add { background: #1877F2; color: white; border: none; padding: 0 15px; border-radius: 10px; cursor: pointer; }
 
         .child-card {
             background: #ffffff;
-            border-left: 5px solid #1877F2;
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
+            border-left: 4px solid #1877F2;
+            border-radius: 10px;
+            padding: 8px 12px !important; /* 🔥 कार्ड अब पतला और छोटा है */
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         
-        .profile-area { display: flex; align-items: center; gap: 12px; flex: 1; }
-        .child-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #eee; }
-        .info h4 { font-size: 1rem; color: #2c3e50; font-weight: 600; }
-        .info .code { font-size: 0.7rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
-        .status-text { font-size: 0.75rem; color: #555; margin-top: 3px; }
-        .distance-badge { font-size: 0.8rem; color: #1877F2; font-weight: bold; display: block; margin-top: 2px; }
+        .profile-area { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .child-img { width: 40px !important; height: 40px !important; border-radius: 50%; object-fit: cover; border: 1px solid #eee; }
+        .info h4 { font-size: 0.95rem; color: #2c3e50; font-weight: 600; }
+        .info .code { font-size: 0.65rem; color: #7f8c8d; background: #f0f2f5; padding: 1px 5px; border-radius: 4px; }
+        .status-text, .distance-badge { font-size: 0.7rem !important; margin-top: 1px; font-weight: 500; }
+        .distance-badge { color: #1877F2; font-weight: bold; }
         
         .locate-btn {
             background: #eef2ff; color: #1877F2;
-            width: 40px; height: 40px; border-radius: 50%;
+            width: 35px; height: 35px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            border: none; cursor: pointer;
+            border: none; cursor: pointer; font-size: 0.9rem;
         }
 
-        /* --- 3. MAP --- */
+        /* --- 3. MAP (Rounded Top) --- */
         .map-container { 
             flex-grow: 1; 
             position: relative; 
@@ -136,20 +128,8 @@
         #parent_file_input { display: none; }
 
         /* Custom Markers */
-        .child-marker-img {
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            object-fit: cover;
-        }
-        .parent-dot-icon {
-            width: 16px; height: 16px;
-            background: #1877F2;
-            border: 3px solid white;
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(24, 119, 242, 0.6);
-        }
+        .child-marker-img { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); object-fit: cover; }
+        .parent-dot-icon { width: 16px; height: 16px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(24, 119, 242, 0.6); }
     </style>
 </head>
 <body>
@@ -159,22 +139,17 @@
             <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
                 <input type="file" name="profile_pic" id="parent_file_input" accept="image/*" onchange="document.getElementById('profileForm').submit()">
             </form>
-            
             <div class="parent-img-box" onclick="document.getElementById('parent_file_input').click()">
                 <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="parent-img">
-                <div class="edit-icon"><i class="fa-solid fa-camera"></i></div>
             </div>
-            
-            <div>
-                <h2>{{ username }}</h2>
-            </div>
+            <div><h2>{{ username }}</h2></div>
         </div>
         <a href="{{ url_for('logout') }}" style="color:white; font-size:1.2rem;"><i class="fa-solid fa-power-off"></i></a>
     </div>
 
     <div class="top-section">
         <form action="{{ url_for('add_child') }}" method="POST" class="add-form">
-            <input type="text" name="child_name" placeholder="Enter Child Name..." class="input-box" required>
+            <input type="text" name="child_name" placeholder="Add child..." class="input-box" required>
             <button type="submit" class="btn-add"><i class="fa-solid fa-plus"></i></button>
         </form>
 
@@ -182,14 +157,12 @@
             {% for child in children %}
             <div class="child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
                 <div class="profile-area">
-                    <img src="{{ child.child_user.profile_pic_url if child.child_user and child.child_user.profile_pic_url else url_for('static', filename='default-profile.png') }}" class="child-img">
+                    <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="child-img">
                     <div class="info">
                         <h4>{{ child.name }}</h4>
                         <span class="code">ID: {{ child.pairing_code }}</span>
-                        <div id="status-{{ child.id }}" class="status-text">Waiting...</div>
-                        <span id="dist-{{ child.id }}" class="distance-badge">
-                            <i class="fa-solid fa-location-arrow"></i> Tracking...
-                        </span>
+                        <div id="status-{{ child.id }}" class="status-text">...</div>
+                        <span id="dist-{{ child.id }}" class="distance-badge">Tracking...</span>
                     </div>
                 </div>
                 <button class="locate-btn"><i class="fa-solid fa-crosshairs"></i></button>
@@ -210,9 +183,8 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // --- 1. MAP INITIALIZATION (Google Style) ---
+        // --- 1. HIGH ACCURACY MAP SETUP ---
         var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 5);
-        
         L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
         }).addTo(map);
@@ -222,7 +194,7 @@
         var parentMarker = null;
         var parentLat = null, parentLng = null;
 
-        // --- 2. PARENT LOCATION (Blue Dot) ---
+        // 🔥 सुधार 2: High Accuracy Location
         function updateParentMarker() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
@@ -233,12 +205,16 @@
                         parentMarker.setLatLng([parentLat, parentLng]);
                     } else {
                         var parentIcon = L.divIcon({
-                            className: 'parent-div',
+                            className: 'p-div',
                             html: '<div class="parent-dot-icon"></div>',
                             iconSize: [16, 16], iconAnchor: [8, 8]
                         });
                         parentMarker = L.marker([parentLat, parentLng], {icon: parentIcon}).addTo(map);
                     }
+                }, error => { console.log(error); }, {
+                    enableHighAccuracy: true, // 🔥 सटीक GPS के लिए
+                    maximumAge: 0,
+                    timeout: 5000
                 });
             }
         }
@@ -250,7 +226,7 @@
             return isNaN(date.getTime()) ? "Offline" : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        // --- 3. AUTO UPDATE LOGIC (Every 5 Sec) ---
+        // --- 3. AUTO UPDATE (Every 5 Sec) ---
         function updateLocations() {
             updateParentMarker();
 
@@ -262,9 +238,8 @@
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
                             
-                            // Child Marker with Photo
                             var childIcon = L.divIcon({
-                                className: 'child-div',
+                                className: 'c-div',
                                 html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-img">`,
                                 iconSize: [45, 45], iconAnchor: [22, 22]
                             });
@@ -275,24 +250,24 @@
                                 markers[child.id] = L.marker([lat, lng], {icon: childIcon}).addTo(map);
                             }
 
-                            // 🔥 LIVE LINE & DISTANCE
+                            // 🔥 LIVE DASH LINE & ACCURATE DISTANCE
                             if (parentLat && parentLng) {
                                 if (polylines[child.id]) { map.removeLayer(polylines[child.id]); }
                                 polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], {
-                                    color: '#1877F2', weight: 3, opacity: 0.5, dashArray: '8, 8'
+                                    color: '#1877F2', weight: 2, opacity: 0.5, dashArray: '5, 10'
                                 }).addTo(map);
 
                                 var distElem = document.getElementById(`dist-${child.id}`);
                                 if (distElem) {
                                     var d = L.latLng(parentLat, parentLng).distanceTo(L.latLng(lat, lng));
-                                    distElem.innerHTML = `<i class="fa-solid fa-route"></i> ${d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km"} away`;
+                                    distElem.innerHTML = `<i class="fa-solid fa-route"></i> ${d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km"}`;
                                 }
                             }
                         }
 
                         var statusElem = document.getElementById(`status-${child.id}`);
                         if (statusElem && child.last_seen) {
-                            statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Active: ${formatLocalTime(child.last_seen)}`;
+                            statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> ${formatLocalTime(child.last_seen)}`;
                         }
                     });
                 });
