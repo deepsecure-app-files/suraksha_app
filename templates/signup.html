@@ -2,36 +2,114 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
-                .then(reg => console.log('Service Worker registered', reg))
-                .catch(err => console.log('Service Worker registration failed', err));
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sign Up for Suraksha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
-    </script>
+
+        .signup-card {
+            background: white;
+            width: 100%;
+            max-width: 432px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+        }
+
+        .card-header { border-bottom: 1px solid #dadde1; padding-bottom: 10px; margin-bottom: 15px; }
+        .card-header h2 { font-size: 2rem; color: #1c1e21; }
+        .card-header p { color: #606770; font-size: 0.95rem; }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            margin-bottom: 10px;
+            border: 1px solid #dddfe2;
+            border-radius: 5px;
+            background-color: #f5f6f7;
+            font-size: 0.95rem;
+        }
+
+        .role-selection {
+            margin: 10px 0;
+            text-align: left;
+        }
+        .role-selection label { color: #606770; font-size: 0.9rem; display: block; margin-bottom: 5px; }
+        .radio-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .radio-item {
+            flex: 1;
+            border: 1px solid #dddfe2;
+            padding: 8px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 10px;
+            background-color: #00a400;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .footer-link {
+            display: block;
+            margin-top: 15px;
+            color: #1877F2;
+            text-decoration: none;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Sign Up</h1>
-        <form action="{{ url_for('signup') }}" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <label for="phone_number">Phone Number (For Call Button):</label>
-            <input type="text" id="phone_number" name="phone_number" placeholder="Optional for parents" pattern="[0-9]*">
-            <label for="role">Are you a parent or a child?</label>
-            <select id="role" name="role">
-                <option value="parent">Parent</option>
-                <option value="child">Child</option>
-            </select>
-            <button type="submit" class="button">Sign Up</button>
+    <div class="signup-card">
+        <div class="card-header">
+            <h2>Sign Up</h2>
+            <p>It's quick and easy.</p>
+        </div>
+        <form action="{{ url_for('signup') }}" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="New password" required>
+            
+            <div class="role-selection">
+                <label>Select Role</label>
+                <div class="radio-group">
+                    <div class="radio-item">
+                        <span>Parent</span>
+                        <input type="radio" name="role" value="parent" checked style="width: auto; margin: 0;">
+                    </div>
+                    <div class="radio-item">
+                        <span>Child</span>
+                        <input type="radio" name="role" value="child" style="width: auto; margin: 0;">
+                    </div>
+                </div>
+            </div>
+
+            <p style="font-size: 0.7rem; color: #777; margin-bottom: 10px;">
+                By clicking Sign Up, you agree to our Terms, Privacy Policy and Cookies Policy.
+            </p>
+            
+            <button type="submit" class="btn-signup">Sign Up</button>
+            <a href="{{ url_for('login') }}" class="footer-link">Already have an account?</a>
         </form>
-        <p>Already have an account? <a href="{{ url_for('login') }}">Log In here</a></p>
     </div>
 </body>
 </html>
