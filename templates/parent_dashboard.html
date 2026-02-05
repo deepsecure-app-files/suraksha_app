@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
+    <link rel="preload" as="image" href="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
@@ -21,15 +23,18 @@
         
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
 
-        body { 
+        /* 🔥 सुधार 2: स्क्रीन को लॉक करना ताकि वह हिले नहीं */
+        html, body { 
             background-color: #f0f2f5; 
-            height: 100vh;
+            height: 100%;
+            width: 100%;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; /* स्क्रॉल बंद */
+            position: fixed;
         }
 
-        /* --- 1. HEADER (Premium Gradient) --- */
+        /* --- 1. HEADER --- */
         .header {
             background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
@@ -50,19 +55,20 @@
             border-radius: 50%;
             border: 2px solid white;
             object-fit: cover;
+            background-color: #e1e8ed; /* फोटो लोड होने तक ग्रे रंग */
         }
         .header h2 { font-size: 1.1rem; margin: 0; font-weight: 500; }
 
-        /* --- 2. TOP SECTION (Compact Child List) --- */
+        /* --- 2. TOP SECTION (Compact) --- */
         .top-section {
             padding: 8px 12px;
             background: white;
             flex-shrink: 0;
-            max-height: 180px !important; /* 🔥 मैप को बड़ा रखने के लिए लिस्ट छोटी की */
+            max-height: 170px !important; 
             overflow-y: auto;
-            border-bottom: 1px solid #ddd;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .add-form { display: flex; gap: 8px; margin-bottom: 8px; }
@@ -73,7 +79,7 @@
             background: #ffffff;
             border-left: 4px solid #1877F2;
             border-radius: 10px;
-            padding: 8px 12px !important; /* 🔥 कार्ड अब पतला और छोटा है */
+            padding: 8px 12px !important;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -81,20 +87,25 @@
         }
         
         .profile-area { display: flex; align-items: center; gap: 10px; flex: 1; }
-        .child-img { width: 40px !important; height: 40px !important; border-radius: 50%; object-fit: cover; border: 1px solid #eee; }
-        .info h4 { font-size: 0.95rem; color: #2c3e50; font-weight: 600; }
+        .child-img { 
+            width: 38px !important; height: 38px !important; 
+            border-radius: 50%; object-fit: cover; 
+            border: 1px solid #eee;
+            background-color: #e1e8ed;
+        }
+        .info h4 { font-size: 0.9rem; color: #2c3e50; font-weight: 600; }
         .info .code { font-size: 0.65rem; color: #7f8c8d; background: #f0f2f5; padding: 1px 5px; border-radius: 4px; }
-        .status-text, .distance-badge { font-size: 0.7rem !important; margin-top: 1px; font-weight: 500; }
+        .status-text, .distance-badge { font-size: 0.65rem !important; margin-top: 1px; }
         .distance-badge { color: #1877F2; font-weight: bold; }
         
         .locate-btn {
             background: #eef2ff; color: #1877F2;
-            width: 35px; height: 35px; border-radius: 50%;
+            width: 32px; height: 32px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            border: none; cursor: pointer; font-size: 0.9rem;
+            border: none; cursor: pointer; font-size: 0.8rem;
         }
 
-        /* --- 3. MAP (Rounded Top) --- */
+        /* --- 3. MAP --- */
         .map-container { 
             flex-grow: 1; 
             position: relative; 
@@ -128,7 +139,7 @@
         #parent_file_input { display: none; }
 
         /* Custom Markers */
-        .child-marker-img { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); object-fit: cover; }
+        .child-marker-img { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); object-fit: cover; background-color: #e1e8ed;}
         .parent-dot-icon { width: 16px; height: 16px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(24, 119, 242, 0.6); }
     </style>
 </head>
@@ -183,7 +194,6 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // --- 1. HIGH ACCURACY MAP SETUP ---
         var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 5);
         L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
@@ -194,7 +204,6 @@
         var parentMarker = null;
         var parentLat = null, parentLng = null;
 
-        // 🔥 सुधार 2: High Accuracy Location
         function updateParentMarker() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
@@ -212,7 +221,7 @@
                         parentMarker = L.marker([parentLat, parentLng], {icon: parentIcon}).addTo(map);
                     }
                 }, error => { console.log(error); }, {
-                    enableHighAccuracy: true, // 🔥 सटीक GPS के लिए
+                    enableHighAccuracy: true,
                     maximumAge: 0,
                     timeout: 5000
                 });
@@ -226,7 +235,6 @@
             return isNaN(date.getTime()) ? "Offline" : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        // --- 3. AUTO UPDATE (Every 5 Sec) ---
         function updateLocations() {
             updateParentMarker();
 
@@ -250,7 +258,6 @@
                                 markers[child.id] = L.marker([lat, lng], {icon: childIcon}).addTo(map);
                             }
 
-                            // 🔥 LIVE DASH LINE & ACCURATE DISTANCE
                             if (parentLat && parentLng) {
                                 if (polylines[child.id]) { map.removeLayer(polylines[child.id]); }
                                 polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], {
