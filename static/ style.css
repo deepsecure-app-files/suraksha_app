@@ -1,32 +1,33 @@
-/* --- SURAKSHA MASTER THEME (Final Merged) --- */
+/* --- SURAKSHA MASTER THEME (Enhanced Version) --- */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-/* --- 1. VARIABLES (Aapke wale colors) --- */
+/* --- 1. VARIABLES --- */
 :root {
-    --primary-blue: #243b55; /* Deep Blue */
-    --accent-blue: #141e30;  /* Darker Shade */
-    --highlight: #E67E22;    /* Orange */
-    --bg-color: #F5F7FA;     /* Grey BG */
+    --primary-blue: #243b55; 
+    --accent-blue: #141e30;  
+    --highlight: #E67E22;    
+    --bg-color: #F5F7FA;     
     --card-bg: #FFFFFF;
     --text-main: #333333;
     --text-light: #7f8c8d;
+    --fb-blue: #1877F2; /* Facebook Blue for specific buttons */
 }
 
-/* --- 2. GLOBAL SETTINGS (Real App Feel) --- */
+/* --- 2. GLOBAL SETTINGS (Professional APK Feel) --- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Roboto', sans-serif;
 
-    /* 🔥 Touch & Select Disable (Magic Code) */
+    /* 🔥 'Copy' और 'Share' मेन्यू रोकने के लिए जादुई कोड */
     -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
+    -webkit-touch-callout: none; /* यह दबाकर रखने पर मेन्यू नहीं खुलने देगा */
+    -webkit-user-select: none;   /* टेक्स्ट सिलेक्ट होना बंद */
     user-select: none;
 }
 
-/* Input boxes me likhne ki permission */
+/* Input boxes और Forms में लिखने की अनुमति रहे */
 input, textarea, select {
     -webkit-user-select: text !important;
     user-select: text !important;
@@ -37,11 +38,10 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Screen Lock */
+    overflow: hidden; 
 }
 
-/* --- 3. LOGIN / SIGNUP CARD (Modern Design) --- */
-/* Login page par body center karne ke liye helper */
+/* --- 3. LOGIN / SIGNUP CARD (Modern Facebook Style) --- */
 body.auth-page {
     align-items: center;
     justify-content: center;
@@ -50,18 +50,18 @@ body.auth-page {
 
 .container {
     background: var(--card-bg);
-    width: 85%;
+    width: 90%;
     max-width: 380px;
     padding: 30px 25px;
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     text-align: center;
-    margin: auto; /* Center alignment */
+    margin: auto;
 }
 
-/* --- 4. HEADER (Aapka Gradient wala Look) --- */
+/* --- 4. HEADER (Gradient & Curved) --- */
 .header {
-    background: linear-gradient(to right, var(--accent-blue), var(--primary-blue)); /* Gradient wapas aa gaya */
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-blue));
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -70,66 +70,65 @@ body.auth-page {
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     flex-shrink: 0;
     z-index: 1001;
-    border-bottom-left-radius: 20px; /* Thoda curve niche */
-    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
 }
 
-.header h2 {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin: 0;
-}
+.header h2 { font-size: 1.2rem; font-weight: 600; margin: 0; }
 
 /* Parent Profile Styling */
 .parent-profile { display: flex; align-items: center; gap: 15px; }
 .parent-img-box { position: relative; cursor: pointer; }
 .parent-img {
-    width: 50px; height: 50px;
+    width: 48px; height: 48px;
     border-radius: 50%;
     border: 2px solid white;
     object-fit: cover;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 .edit-icon {
     position: absolute; bottom: 0; right: -2px;
-    background: #3498db; color: white;
-    border-radius: 50%; width: 20px; height: 20px;
-    font-size: 11px; display: flex;
+    background: var(--fb-blue); color: white;
+    border-radius: 50%; width: 18px; height: 18px;
+    font-size: 10px; display: flex;
     align-items: center; justify-content: center;
     border: 1px solid white;
 }
 
 /* --- 5. TOP SECTION (Child List) --- */
 .top-section {
-    padding: 15px;
+    padding: 12px;
     background: white;
     flex-shrink: 0;
     max-height: 40vh;
     overflow-y: auto;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #eee;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
 }
 
-.add-form { display: flex; gap: 10px; margin-bottom: 15px; }
+.add-form { display: flex; gap: 8px; margin-bottom: 12px; }
 .input-box {
     flex: 1; padding: 12px;
-    border: 1px solid #eee; border-radius: 10px;
-    background: #fdfdfd; outline: none;
+    border: 1px solid #f0f2f5; border-radius: 10px;
+    background: #f8f9fa; outline: none;
 }
 .btn-add {
-    background: var(--primary-blue); color: white;
-    border: none; padding: 0 20px;
+    background: var(--fb-blue); color: white;
+    border: none; padding: 0 18px;
     border-radius: 10px; cursor: pointer; font-size: 1.2rem;
 }
 
 .child-card {
     background: var(--card-bg);
-    border-left: 5px solid var(--primary-blue);
+    border-left: 5px solid var(--fb-blue);
     border-radius: 12px;
     padding: 15px;
     margin-bottom: 12px;
     display: flex; align-items: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: 0.2s;
 }
+.child-card:active { transform: scale(0.98); }
 
 .child-img {
     width: 50px; height: 50px;
@@ -138,16 +137,16 @@ body.auth-page {
 }
 
 .profile-area { flex: 1; display: flex; align-items: center; }
-.info h4 { font-size: 1.1rem; color: var(--text-main); font-weight: 700; margin-bottom: 2px; }
-.info .code { font-size: 0.8rem; color: var(--text-light); background: #f0f2f5; padding: 2px 8px; border-radius: 4px; }
-.distance-badge { font-size: 0.85rem; color: var(--highlight); font-weight: bold; margin-top: 4px; display: block; }
-.status-text { font-size: 0.75rem; color: #555; margin-top: 2px; }
+.info h4 { font-size: 1.05rem; color: var(--text-main); font-weight: 700; }
+.info .code { font-size: 0.75rem; color: var(--text-light); background: #f0f2f5; padding: 2px 8px; border-radius: 4px; }
+.distance-badge { font-size: 0.85rem; color: var(--fb-blue); font-weight: bold; margin-top: 4px; display: block; }
+.status-text { font-size: 0.75rem; color: #606770; margin-top: 2px; }
 
 .locate-btn {
-    background: #f0f2f5; color: var(--primary-blue);
-    width: 45px; height: 45px; border-radius: 50%;
+    background: #eef2ff; color: var(--fb-blue);
+    width: 42px; height: 42px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    border: none; cursor: pointer; font-size: 1.2rem;
+    border: none; cursor: pointer;
 }
 
 /* --- 6. MAP CONTAINER --- */
@@ -155,64 +154,58 @@ body.auth-page {
     flex-grow: 1;
     position: relative;
     background: #e0e0e0;
-    margin-bottom: 70px; /* Space for Bottom Nav */
+    margin-bottom: 70px;
     z-index: 1;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    overflow: hidden;
 }
 #map { height: 100%; width: 100%; }
 
-/* --- 7. BOTTOM NAV (Fixed & Gradient) --- */
+/* --- 7. BOTTOM NAV (Fixed & Curved) --- */
 .bottom-nav {
     background: white;
     height: 70px;
     display: flex; justify-content: space-around; align-items: center;
-    border-top: 1px solid #eee;
-    
-    /* Fixed Position */
     position: fixed; bottom: 0; left: 0; width: 100%;
     z-index: 9999;
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
 }
-.nav-item { text-align: center; color: #bdc3c7; text-decoration: none; font-size: 0.75rem; transition: 0.3s; }
+.nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; transition: 0.3s; }
 .nav-item i { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.nav-item.active { color: var(--fb-blue); }
 
-/* Active State */
-.nav-item.active { color: var(--primary-blue); }
-.nav-item.active i { transform: translateY(-3px); }
-
-/* --- 8. FORMS (Login/Signup Inputs) --- */
-label { display: block; text-align: left; margin-bottom: 8px; margin-top: 15px; color: var(--primary-blue); font-weight: 600; font-size: 0.9rem; }
-
+/* --- 8. FORMS (Modern Look) --- */
 input[type="text"], input[type="password"], input[type="number"], select {
     width: 100%; padding: 14px;
-    border: 2px solid #ecf0f1; border-radius: 12px;
+    border: 1px solid #dddfe2; border-radius: 10px;
     font-size: 1rem; background-color: #f8f9fa;
-    outline: none; transition: 0.3s; color: var(--primary-blue);
+    outline: none; transition: 0.3s;
 }
 
-input:focus, select:focus {
-    border-color: #3498db; background-color: white;
-    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
-}
+input:focus { border-color: var(--fb-blue); background-color: white; box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2); }
 
 button, .button {
     width: 100%;
-    background: linear-gradient(to right, var(--accent-blue), var(--primary-blue)); /* Gradient Button */
-    color: white; padding: 15px; border: none;
-    border-radius: 12px; font-size: 1.1rem;
-    font-weight: bold; cursor: pointer; margin-top: 25px;
-    box-shadow: 0 4px 15px rgba(36, 59, 85, 0.3);
-    transition: transform 0.2s;
+    background-color: var(--fb-blue);
+    color: white; padding: 14px; border: none;
+    border-radius: 10px; font-size: 1.1rem;
+    font-weight: bold; cursor: pointer; margin-top: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: 0.2s;
     text-decoration: none; display: inline-block;
 }
 
 button:active, .button:active { transform: scale(0.96); }
 
-/* Links */
-p { font-size: 0.95rem; color: var(--text-light); margin-top: 15px; }
-a { color: #3498db; text-decoration: none; font-weight: bold; }
+/* Custom Map Marker (Bache ki Photo) */
+.custom-map-marker {
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    object-fit: cover;
+}
 
-/* Welcome Page Specific */
-.welcome-page .button { margin-bottom: 15px; margin-top: 10px; }
-.button-group { display: flex; flex-direction: column; gap: 5px; margin-top: 20px; }
