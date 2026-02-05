@@ -12,13 +12,13 @@ app = Flask(__name__)
 # --- 1. DATABASE CONFIGURATION ---
 database_url = os.environ.get('DATABASE_URL')
 
-# Render fix for PostgreSQL (SQLAlchemy requires postgresql:// instead of postgres://)
+# Render fix for PostgreSQL
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_change_this')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_deepak_darbhanga')
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
@@ -26,17 +26,6 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
-
-# ✅ मास्टर लाइन: यह हिस्सा ऐप स्टार्ट होते ही टेबल्स बना देगा
-with app.app_context():
-    try:
-        db.create_all()
-        print("Database tables initialized successfully!")
-    except Exception as e:
-        print(f"Database error: {e}")
-
-def generate_pairing_code():
-    return secrets.token_hex(3).upper()
 
 # --- 2. DATABASE MODELS ---
 
@@ -92,6 +81,9 @@ def is_parent(f):
         return "Access Denied: Not a parent or not logged in.", 403
     return wrapper
 
+def generate_pairing_code():
+    return secrets.token_hex(3).upper()
+
 # --- 4. ROUTES ---
 
 @app.route('/')
@@ -107,6 +99,8 @@ def home():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    # 🌟 पक्का इलाज: टेबल को रनटाइम पर बनाना
+    db.create_all()
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -126,11 +120,14 @@ def signup():
             db.session.commit()
             return redirect(url_for('login'))
         except Exception as e:
-            return f"Error: {str(e)}"
+            db.session.rollback()
+            return f"Database Error: {str(e)}"
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # लॉगिन पर भी सुरक्षा के लिए टेबल्स चेक करें
+    db.create_all()
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -273,7 +270,7 @@ def geofence_page():
     return render_template('geofence.html', username=user.username)
 
 if __name__ == '__main__':
-    # Local run ke liye bhi tables ensure kar lete hain
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
+
