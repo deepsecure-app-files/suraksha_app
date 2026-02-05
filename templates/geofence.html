@@ -10,23 +10,24 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; 
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
         
+        input, textarea { -webkit-user-select: text !important; user-select: text !important; }
+
         body { 
             background-color: #f0f2f5; 
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            /* दबाकर रखने पर कॉपी मेन्यू रोकने के लिए */
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
+            overflow: hidden; /* 🔥 वेब-ऐप फील के लिए मेन स्क्रीन लॉक */
         }
 
-        input, textarea { -webkit-user-select: text !important; user-select: text !important; }
-
-        /* --- 1. APP HEADER (Premium Gradient) --- */
+        /* --- 1. APP HEADER --- */
         .header {
             background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
@@ -44,16 +45,17 @@
         .header h2 { font-size: 1.2rem; font-weight: 500; }
         .back-btn { color: white; font-size: 1.2rem; cursor: pointer; }
 
-        /* --- 2. MAIN CONTENT --- */
+        /* --- 2. MAIN CONTENT (Scrollable) --- */
         .content-area {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
             padding-bottom: 80px;
+            -webkit-overflow-scrolling: touch;
         }
 
         #mapid {
-            height: 320px;
+            height: 300px;
             width: 100%;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -74,32 +76,31 @@
         
         input[type="text"], input[type="number"] {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             margin-bottom: 15px;
             border: 1px solid #eee;
             border-radius: 10px;
             background: #f8f9fa;
             outline: none;
-            transition: 0.3s;
         }
-        input:focus { border-color: #1877F2; background: white; }
 
         .btn-save {
             background: #1877F2;
             color: white;
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             border: none;
             border-radius: 10px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(24, 119, 242, 0.3);
         }
 
+        ul { list-style: none; padding: 0; }
         li {
             background: white;
-            padding: 15px;
+            padding: 12px 15px;
             border-bottom: 1px solid #f0f2f5;
             display: flex;
             justify-content: space-between;
@@ -124,11 +125,11 @@
         }
         
         .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; }
-        .nav-item i { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
         .nav-item.active { color: #1877F2; }
 
-        /* Child Marker in Zone Page */
-        .child-marker-img {
+        /* Child Marker */
+        .child-zone-marker {
             width: 40px; height: 40px;
             border-radius: 50%;
             border: 3px solid #1877F2;
@@ -145,9 +146,7 @@
     </div>
 
     <div class="content-area">
-        <p style="color:#7f8c8d; font-size:0.85rem; margin-bottom:12px; font-weight: 500;">
-            <i class="fa-solid fa-hand-pointer"></i> Tap on map to select safe location
-        </p>
+        <p style="color:#7f8c8d; font-size:0.85rem; margin-bottom:10px;">Tap on map to select safe location</p>
         
         <div id="mapid"></div>
 
@@ -156,10 +155,10 @@
                 <input type="hidden" id="lat" name="lat">
                 <input type="hidden" id="lng" name="lng">
                 
-                <label><i class="fa-solid fa-map-pin"></i> Location Name</label>
+                <label><i class="fa-solid fa-tag"></i> Location Name</label>
                 <input type="text" id="location_name" placeholder="e.g. Home, School" required>
                 
-                <label><i class="fa-solid fa-expand"></i> Radius (Meters)</label>
+                <label><i class="fa-solid fa-circle-notch"></i> Radius (Meters)</label>
                 <input type="number" id="radius" value="500" required>
                 
                 <button type="submit" class="btn-save">Save Safe Zone</button>
@@ -171,9 +170,14 @@
     </div>
 
     <div class="bottom-nav">
-        <a href="{{ url_for('parent_dashboard') }}" class="nav-item"><i class="fa-solid fa-house"></i> Home</a>
-        <a href="#" class="nav-item active"><i class="fa-solid fa-shield-halved"></i> Zone</a>
-        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-rotate"></i> Refresh</a>
+        <a href="{{ url_for('parent_dashboard') }}" class="nav-item">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+        <a href="#" class="nav-item active"> <i class="fa-solid fa-shield-halved"></i> Zone
+        </a>
+        <a href="#" onclick="location.reload()" class="nav-item">
+            <i class="fa-solid fa-rotate"></i> Refresh
+        </a>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -187,20 +191,25 @@
         $(document).ready(function() {
             initializeMap();
             loadGeofences();
-            setInterval(updateChildOnZone, 5000); // 5 सेकंड में लोकेशन अपडेट
+            setInterval(updateChildOnZone, 5000); // लाइव अपडेट
         });
 
         function initializeMap() {
-            // Google Maps Look (attributionControl: false से लोगो हट गया)
+            // 🔥 सुधार 1: Google Maps Look & No Leaflet Logo
             mymap = L.map('mapid', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 5);
             
             L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
                 maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
             }).addTo(mymap);
 
+            // 🔥 सुधार 2: High Accuracy Location
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
                     mymap.setView([position.coords.latitude, position.coords.longitude], 14);
+                }, error => { console.log(error); }, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 5000
                 });
             }
 
@@ -214,12 +223,11 @@
 
             $('#geofence-form').on('submit', function(e) {
                 e.preventDefault();
-                const form = $(this);
                 const lat = $('#lat').val();
                 const lng = $('#lng').val();
 
                 if (!lat || !lng) {
-                    alert('Please tap on the map to select a point.');
+                    alert('Please tap on the map.');
                     return;
                 }
                 
@@ -235,21 +243,21 @@
                     success: function() {
                         alert('Zone Saved!');
                         loadGeofences();
-                        form[0].reset();
+                        $('#geofence-form')[0].reset();
                         if (markers.length > 0) { mymap.removeLayer(markers.pop()); }
                     }
                 });
             });
         }
 
-        // 🔥 बच्चे की लाइव लोकेशन जोन मैप पर दिखाना
+        // 🔥 सुधार 3: बच्चे की लाइव लोकेशन मैप पर दिखाना
         function updateChildOnZone() {
             $.getJSON('/api/get_children_data', function(data) {
                 data.children.forEach(child => {
                     if (child.last_latitude) {
                         var childIcon = L.divIcon({
-                            className: 'child-zone-div',
-                            html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-img">`,
+                            className: 'c-zone-div',
+                            html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-zone-marker">`,
                             iconSize: [40, 40], iconAnchor: [20, 20]
                         });
 
@@ -285,4 +293,3 @@
     </script>
 </body>
 </html>
-
