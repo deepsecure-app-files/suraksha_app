@@ -21,17 +21,19 @@
             overflow: hidden;
         }
 
-        /* --- 1. HEADER --- */
+        /* --- 1. HEADER (Modern Gradient) --- */
         .header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             flex-shrink: 0;
             z-index: 1001;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
         }
         
         .parent-profile { display: flex; align-items: center; gap: 15px; } 
@@ -47,7 +49,7 @@
         
         .edit-icon {
             position: absolute; bottom: 0; right: -2px;
-            background: #3498db; color: white; border-radius: 50%;
+            background: #1877F2; color: white; border-radius: 50%;
             width: 20px; height: 20px; font-size: 11px;
             display: flex; align-items: center; justify-content: center;
             border: 1px solid white;
@@ -55,72 +57,80 @@
 
         .header h2 { font-size: 1.3rem; margin: 0; font-weight: 500; }
 
-        /* --- 2. TOP SECTION (Child List) --- */
+        /* --- 2. TOP SECTION --- */
         .top-section {
-            padding: 10px;
+            padding: 12px;
             background: white;
             flex-shrink: 0;
             max-height: 40vh;
             overflow-y: auto;
             border-bottom: 1px solid #ddd;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .add-form { display: flex; gap: 10px; margin-bottom: 10px; }
-        .input-box { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; background: #f8f9fa; }
-        .btn-add { background: #2c3e50; color: white; border: none; padding: 0 18px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
+        .input-box { flex: 1; padding: 12px; border: 1px solid #eee; border-radius: 10px; outline: none; background: #f8f9fa; }
+        .btn-add { background: #1877F2; color: white; border: none; padding: 0 18px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
 
         .child-card {
             background: #ffffff;
-            border-left: 5px solid #2c3e50;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
+            border-left: 5px solid #1877F2;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            position: relative; /* Distance badge ke liye */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            position: relative;
+            transition: 0.2s;
         }
+        .child-card:active { transform: scale(0.97); }
         
         .profile-area { display: flex; align-items: center; gap: 12px; flex: 1; }
         
         .child-img {
-            width: 50px; height: 50px;
+            width: 52px; height: 52px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid #eee;
+            border: 2px solid #f0f2f5;
         }
         
-        .info h4 { font-size: 1.05rem; color: #2c3e50; margin-bottom: 2px; font-weight: 600; }
-        .info .code { font-size: 0.75rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
+        .info h4 { font-size: 1.1rem; color: #243b55; margin-bottom: 2px; font-weight: 600; }
+        .info .code { font-size: 0.75rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 8px; border-radius: 4px; }
         
-        .status-text { font-size: 0.75rem; margin-top: 3px; font-weight: 500; color: #555; }
+        .status-text { font-size: 0.78rem; margin-top: 4px; font-weight: 500; color: #606770; }
 
-        /* 🔥 Distance Badge Style */
         .distance-badge {
-            font-size: 0.8rem;
-            color: #e67e22; /* Orange color */
+            font-size: 0.82rem;
+            color: #1877F2;
             font-weight: bold;
-            margin-top: 2px;
+            margin-top: 3px;
             display: block;
         }
         
         .locate-btn {
-            background: #e1f5fe; color: #0288d1;
-            width: 40px; height: 40px; border-radius: 50%;
+            background: #eef2ff; color: #1877F2;
+            width: 42px; height: 42px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             border: none; cursor: pointer;
         }
 
-        /* --- 3. MAP --- */
+        /* --- 3. MAP (Rounded Top) --- */
         .map-container { 
             flex-grow: 1; 
             position: relative; 
             background: #e0e0e0;
             margin-bottom: 70px; 
+            border-top-left-radius: 25px;
+            border-top-right-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
         }
         #map { height: 100%; width: 100%; }
 
-        /* --- 4. NAV (FIXED) --- */
+        /* --- 4. NAV (Modern) --- */
         .bottom-nav {
             background: white;
             height: 70px;
@@ -131,14 +141,25 @@
             position: fixed;
             bottom: 0; left: 0; width: 100%;
             z-index: 9999;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
         }
         
-        .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; }
-        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
-        .nav-item.active { color: #2c3e50; }
+        .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; font-weight: 500; }
+        .nav-item i { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+        .nav-item.active { color: #1877F2; }
 
         #parent_file_input { display: none; }
+
+        /* Custom Marker Style */
+        .custom-map-marker {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -155,14 +176,14 @@
                 {% else %}
                     <img src="{{ url_for('static', filename='default-profile.png') }}" class="parent-img">
                 {% endif %}
-                <div class="edit-icon"><i class="fa-solid fa-pen"></i></div>
+                <div class="edit-icon"><i class="fa-solid fa-camera"></i></div>
             </div>
             
             <div>
                 <h2>{{ username }}</h2>
             </div>
         </div>
-        <a href="{{ url_for('logout') }}" style="color:white; font-size:1.2rem;"><i class="fa-solid fa-right-from-bracket"></i></a>
+        <a href="{{ url_for('logout') }}" style="color:white; font-size:1.3rem;"><i class="fa-solid fa-power-off"></i></a>
     </div>
 
     <div class="top-section">
@@ -206,36 +227,36 @@
     </div>
 
     <div class="bottom-nav">
-        <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i>Home</a>
+        <a href="#" class="nav-item active"><i class="fa-solid fa-house-user"></i>Home</a>
         <a href="{{ url_for('geofence_page') }}" class="nav-item"><i class="fa-solid fa-shield-halved"></i>Zone</a>
-        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-rotate"></i>Refresh</a>
+        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-arrows-rotate"></i>Refresh</a>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // Map Setup
-        var map = L.map('map').setView([20.5937, 78.9629], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        // --- 1. GOOGLE MAPS LOOK (Standard Roadmap) ---
+        var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
+        
+        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3'],
+            attribution: '© Google Maps'
+        }).addTo(map);
 
         var markers = {};
         var parentLat = null;
         var parentLng = null;
 
-        // 1. Parent ki Location lena
         function getParentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
                     parentLat = position.coords.latitude;
                     parentLng = position.coords.longitude;
-                    // Agar aap chahein to Parent ka marker bhi dikha sakte hain (Optional)
-                    // L.marker([parentLat, parentLng]).addTo(map).bindPopup("You are here");
                 });
             }
         }
-        // Page load hote hi parent location lo
         getParentLocation();
 
-        // 2. Format Time
         function formatLocalTime(utcDateString) {
             if (!utcDateString) return "Offline";
             if (!utcDateString.endsWith('Z')) utcDateString += 'Z';
@@ -244,9 +265,7 @@
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        // 3. Distance Calculate Logic (Hawa Mahal)
         function updateLocations() {
-            // Har baar parent location update karo taki accurate rahe
             getParentLocation();
 
             fetch('/api/get_children_data')
@@ -257,18 +276,22 @@
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
                             
-                            // Map update
+                            // प्रोफाइल फोटो वाला मार्कर
+                            var childIcon = L.divIcon({
+                                className: 'custom-div-icon',
+                                html: `<img src="${child.profile_pic}" class="custom-map-marker">`,
+                                iconSize: [45, 45],
+                                iconAnchor: [22, 22]
+                            });
+
                             if (markers[child.id]) {
                                 markers[child.id].setLatLng([lat, lng]);
                             } else {
-                                var marker = L.marker([lat, lng]).addTo(map).bindPopup(child.name);
-                                markers[child.id] = marker;
+                                markers[child.id] = L.marker([lat, lng], {icon: childIcon}).addTo(map).bindPopup(child.name);
                             }
 
-                            // 🔥 Distance Calculation Magic
                             var distElem = document.getElementById(`dist-${child.id}`);
                             if (parentLat && parentLng && distElem) {
-                                // Leaflet ka magic tool use kar rahe hain
                                 var from = L.latLng(parentLat, parentLng);
                                 var to = L.latLng(lat, lng);
                                 var distMeters = from.distanceTo(to);
@@ -283,13 +306,11 @@
                             }
                         }
 
-                        // Last Seen Update
                         var statusElem = document.getElementById(`status-${child.id}`);
                         if (statusElem) {
                             if (child.last_seen) {
                                 var localTime = formatLocalTime(child.last_seen);
                                 statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Last seen: ${localTime}`;
-                                statusElem.style.color = "#555"; 
                             } else {
                                 statusElem.innerHTML = "Offline";
                             }
@@ -300,7 +321,7 @@
 
         function focusMap(lat, lng) {
             if(lat && lng && lat != 'None') {
-                map.setView([lat, lng], 16);
+                map.setView([lat, lng], 17);
             }
         }
         
@@ -309,4 +330,3 @@
     </script>
 </body>
 </html>
-
