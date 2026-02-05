@@ -17,110 +17,124 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Screen lock rakhne ke liye */
+            overflow: hidden;
+            /* दबाकर रखने पर कॉपी मेन्यू रोकने के लिए */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        /* --- 1. APP HEADER --- */
+        input, textarea { -webkit-user-select: text !important; user-select: text !important; }
+
+        /* --- 1. APP HEADER (Premium Gradient) --- */
         .header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
             padding: 15px 20px;
             display: flex;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             flex-shrink: 0;
             z-index: 1001;
             gap: 15px;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
         }
         
         .header h2 { font-size: 1.2rem; font-weight: 500; }
         .back-btn { color: white; font-size: 1.2rem; cursor: pointer; }
 
-        /* --- 2. MAIN CONTENT (Scrollable) --- */
+        /* --- 2. MAIN CONTENT --- */
         .content-area {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
-            padding-bottom: 80px; /* Bottom Nav ke liye jagah */
+            padding-bottom: 80px;
         }
 
-        /* Map Styling */
         #mapid {
-            height: 300px;
+            height: 320px;
             width: 100%;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            border: 2px solid white;
+            border: 3px solid white;
+            overflow: hidden;
         }
 
-        /* Form Styling */
         .zone-card {
             background: white;
             padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
         
-        label { display: block; margin-bottom: 5px; color: #2c3e50; font-weight: bold; font-size: 0.9rem; }
+        label { display: block; margin-bottom: 8px; color: #243b55; font-weight: bold; font-size: 0.9rem; }
         
         input[type="text"], input[type="number"] {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            background: #f8f9fa;
             outline: none;
+            transition: 0.3s;
         }
+        input:focus { border-color: #1877F2; background: white; }
 
         .btn-save {
-            background: #2c3e50;
+            background: #1877F2;
             color: white;
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(24, 119, 242, 0.3);
         }
 
-        /* List Styling */
-        ul { list-style: none; padding: 0; }
         li {
             background: white;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+            padding: 15px;
+            border-bottom: 1px solid #f0f2f5;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        li:first-child { border-top-left-radius: 10px; border-top-right-radius: 10px; }
-        li:last-child { border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-bottom: none; }
+        li:first-child { border-top-left-radius: 15px; border-top-right-radius: 15px; }
+        li:last-child { border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; border-bottom: none; }
 
-        /* --- 3. BOTTOM NAV (FIXED) --- */
+        /* --- 3. BOTTOM NAV --- */
         .bottom-nav {
             background: white;
             height: 70px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top: 1px solid #eee;
-            
-            /* 🔥 Fixed Position Magic */
             position: fixed;
             bottom: 0; left: 0; width: 100%;
             z-index: 9999;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
         }
         
         .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; }
-        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
-        
-        /* Zone page par Zone icon active dikhega */
-        .nav-item.active { color: #2c3e50; }
+        .nav-item i { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+        .nav-item.active { color: #1877F2; }
+
+        /* Child Marker in Zone Page */
+        .child-marker-img {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 3px solid #1877F2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -131,7 +145,9 @@
     </div>
 
     <div class="content-area">
-        <p style="color:#7f8c8d; font-size:0.9rem; margin-bottom:10px;">Tap on map to select location</p>
+        <p style="color:#7f8c8d; font-size:0.85rem; margin-bottom:12px; font-weight: 500;">
+            <i class="fa-solid fa-hand-pointer"></i> Tap on map to select safe location
+        </p>
         
         <div id="mapid"></div>
 
@@ -140,30 +156,24 @@
                 <input type="hidden" id="lat" name="lat">
                 <input type="hidden" id="lng" name="lng">
                 
-                <label><i class="fa-solid fa-tag"></i> Location Name</label>
+                <label><i class="fa-solid fa-map-pin"></i> Location Name</label>
                 <input type="text" id="location_name" placeholder="e.g. Home, School" required>
                 
-                <label><i class="fa-solid fa-circle-notch"></i> Radius (Meters)</label>
+                <label><i class="fa-solid fa-expand"></i> Radius (Meters)</label>
                 <input type="number" id="radius" value="500" required>
                 
                 <button type="submit" class="btn-save">Save Safe Zone</button>
             </form>
         </div>
         
-        <h3 style="color:#2c3e50; margin-bottom:10px;">Active Zones</h3>
-        <ul id="geofence-list">
-            </ul>
+        <h3 style="color:#243b55; margin-bottom:12px; font-size: 1.1rem;">Active Zones</h3>
+        <ul id="geofence-list"></ul>
     </div>
 
     <div class="bottom-nav">
-        <a href="{{ url_for('parent_dashboard') }}" class="nav-item">
-            <i class="fa-solid fa-house"></i> Home
-        </a>
-        <a href="#" class="nav-item active"> <i class="fa-solid fa-shield-halved"></i> Zone
-        </a>
-        <a href="#" onclick="location.reload()" class="nav-item">
-            <i class="fa-solid fa-rotate"></i> Refresh
-        </a>
+        <a href="{{ url_for('parent_dashboard') }}" class="nav-item"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="#" class="nav-item active"><i class="fa-solid fa-shield-halved"></i> Zone</a>
+        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-rotate"></i> Refresh</a>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -172,35 +182,32 @@
         var mymap;
         var markers = [];
         var circles = [];
+        var childMarkers = {}; // बच्चे की लाइव लोकेशन के लिए
 
         $(document).ready(function() {
             initializeMap();
             loadGeofences();
+            setInterval(updateChildOnZone, 5000); // 5 सेकंड में लोकेशन अपडेट
         });
 
         function initializeMap() {
-            // Default view (India center approx) or try to get user location
-            mymap = L.map('mapid').setView([20.5937, 78.9629], 5);
+            // Google Maps Look (attributionControl: false से लोगो हट गया)
+            mymap = L.map('mapid', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 5);
             
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
+            L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
             }).addTo(mymap);
 
-            // Try to locate parent to center map
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
-                    mymap.setView([position.coords.latitude, position.coords.longitude], 13);
+                    mymap.setView([position.coords.latitude, position.coords.longitude], 14);
                 });
             }
 
             mymap.on('click', function(e) {
-                if (markers.length > 0) {
-                    mymap.removeLayer(markers.pop());
-                }
+                if (markers.length > 0) { mymap.removeLayer(markers.pop()); }
                 var marker = L.marker(e.latlng).addTo(mymap);
                 markers.push(marker);
-
                 document.getElementById('lat').value = e.latlng.lat;
                 document.getElementById('lng').value = e.latlng.lng;
             });
@@ -212,58 +219,63 @@
                 const lng = $('#lng').val();
 
                 if (!lat || !lng) {
-                    alert('Please tap on the map to select a center point.');
+                    alert('Please tap on the map to select a point.');
                     return;
                 }
                 
-                // AJAX call logic wahi purana wala
                 $.ajax({
-                    url: '/save_geofence', // Ensure ye route app.py me ho (ya ise bana lena agar nahi hai)
-                    // Note: Aapke pichle code me shayad ye route nahi tha, 
-                    // agar nahi chale to batana, hum app.py me route add karenge.
+                    url: '/save_geofence',
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        lat: lat,
-                        lng: lng,
-                        location_name: form.find('#location_name').val(),
-                        radius: form.find('#radius').val()
+                        lat: lat, lng: lng,
+                        location_name: $('#location_name').val(),
+                        radius: $('#radius').val()
                     }),
-                    success: function(data) {
+                    success: function() {
                         alert('Zone Saved!');
                         loadGeofences();
                         form[0].reset();
                         if (markers.length > 0) { mymap.removeLayer(markers.pop()); }
-                    },
-                    error: function(err) {
-                        alert('Save failed. Check console.');
-                        console.log(err);
+                    }
+                });
+            });
+        }
+
+        // 🔥 बच्चे की लाइव लोकेशन जोन मैप पर दिखाना
+        function updateChildOnZone() {
+            $.getJSON('/api/get_children_data', function(data) {
+                data.children.forEach(child => {
+                    if (child.last_latitude) {
+                        var childIcon = L.divIcon({
+                            className: 'child-zone-div',
+                            html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-img">`,
+                            iconSize: [40, 40], iconAnchor: [20, 20]
+                        });
+
+                        if (childMarkers[child.id]) {
+                            childMarkers[child.id].setLatLng([child.last_latitude, child.last_longitude]);
+                        } else {
+                            childMarkers[child.id] = L.marker([child.last_latitude, child.last_longitude], {icon: childIcon}).addTo(mymap);
+                        }
                     }
                 });
             });
         }
 
         function loadGeofences() {
-            // Ensure /api/get_geofences route exists
             $.getJSON("/api/get_geofences", function(data) {
                 $('#geofence-list').empty();
-                if (circles.length > 0) {
-                    circles.forEach(circle => mymap.removeLayer(circle));
-                    circles = [];
-                }
+                circles.forEach(c => mymap.removeLayer(c));
+                circles = [];
+                
                 if(data.geofences) {
-                    data.geofences.forEach(function(geofence) {
+                    data.geofences.forEach(function(g) {
                         $('#geofence-list').append(
-                            `<li>
-                                <span><b>${geofence.location_name}</b> (${geofence.radius}m)</span>
-                                <i class="fa-solid fa-check-circle" style="color:#27ae60"></i>
-                            </li>`
+                            `<li><span><b>${g.location_name}</b> (${g.radius}m)</span><i class="fa-solid fa-circle-check" style="color:#2ecc71"></i></li>`
                         );
-                        var circle = L.circle([geofence.lat, geofence.lng], {
-                            color: 'red',
-                            fillColor: '#f03',
-                            fillOpacity: 0.2,
-                            radius: geofence.radius
+                        var circle = L.circle([g.lat, g.lng], {
+                            color: '#e74c3c', fillColor: '#ff7675', fillOpacity: 0.25, radius: g.radius
                         }).addTo(mymap);
                         circles.push(circle);
                     });
@@ -273,3 +285,4 @@
     </script>
 </body>
 </html>
+
