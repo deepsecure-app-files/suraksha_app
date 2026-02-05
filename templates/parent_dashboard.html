@@ -19,9 +19,14 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        /* --- 1. HEADER --- */
+        input, textarea { -webkit-user-select: text !important; user-select: text !important; }
+
+        /* --- 1. HEADER (Premium Look) --- */
         .header {
             background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
@@ -53,23 +58,23 @@
             border: 1px solid white;
         }
 
-        .header h2 { font-size: 1.3rem; margin: 0; font-weight: 500; }
+        .header h2 { font-size: 1.2rem; margin: 0; font-weight: 500; }
 
         /* --- 2. TOP SECTION --- */
         .top-section {
             padding: 10px;
             background: white;
             flex-shrink: 0;
-            max-height: 40vh;
+            max-height: 35vh;
             overflow-y: auto;
-            border-bottom: 1px solid #ddd;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .add-form { display: flex; gap: 10px; margin-bottom: 10px; }
         .input-box { flex: 1; padding: 12px; border: 1px solid #eee; border-radius: 10px; outline: none; background: #f8f9fa; }
-        .btn-add { background: #1877F2; color: white; border: none; padding: 0 18px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .btn-add { background: #1877F2; color: white; border: none; padding: 0 18px; border-radius: 10px; cursor: pointer; }
 
         .child-card {
             background: #ffffff;
@@ -85,10 +90,10 @@
         
         .profile-area { display: flex; align-items: center; gap: 12px; flex: 1; }
         .child-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #eee; }
-        .info h4 { font-size: 1.05rem; color: #2c3e50; margin-bottom: 2px; font-weight: 600; }
-        .info .code { font-size: 0.75rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
-        .status-text { font-size: 0.75rem; margin-top: 3px; font-weight: 500; color: #555; }
-        .distance-badge { font-size: 0.8rem; color: #1877F2; font-weight: bold; margin-top: 2px; display: block; }
+        .info h4 { font-size: 1rem; color: #2c3e50; font-weight: 600; }
+        .info .code { font-size: 0.7rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
+        .status-text { font-size: 0.75rem; color: #555; margin-top: 3px; }
+        .distance-badge { font-size: 0.8rem; color: #1877F2; font-weight: bold; display: block; margin-top: 2px; }
         
         .locate-btn {
             background: #eef2ff; color: #1877F2;
@@ -101,11 +106,11 @@
         .map-container { 
             flex-grow: 1; 
             position: relative; 
-            background: #e0e0e0;
             margin-bottom: 70px; 
             border-top-left-radius: 25px;
             border-top-right-radius: 25px;
             overflow: hidden;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
         }
         #map { height: 100%; width: 100%; }
 
@@ -116,7 +121,6 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top: 1px solid #eee;
             position: fixed;
             bottom: 0; left: 0; width: 100%;
             z-index: 9999;
@@ -131,13 +135,20 @@
 
         #parent_file_input { display: none; }
 
-        /* Custom Marker Photo */
-        .custom-map-marker {
+        /* Custom Markers */
+        .child-marker-img {
             width: 45px; height: 45px;
             border-radius: 50%;
             border: 3px solid white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
             object-fit: cover;
+        }
+        .parent-dot-icon {
+            width: 16px; height: 16px;
+            background: #1877F2;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(24, 119, 242, 0.6);
         }
     </style>
 </head>
@@ -171,17 +182,17 @@
             {% for child in children %}
             <div class="child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
                 <div class="profile-area">
-                    <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="child-img">
+                    <img src="{{ child.child_user.profile_pic_url if child.child_user and child.child_user.profile_pic_url else url_for('static', filename='default-profile.png') }}" class="child-img">
                     <div class="info">
                         <h4>{{ child.name }}</h4>
-                        <span class="code">Code: {{ child.pairing_code }}</span>
+                        <span class="code">ID: {{ child.pairing_code }}</span>
                         <div id="status-{{ child.id }}" class="status-text">Waiting...</div>
                         <span id="dist-{{ child.id }}" class="distance-badge">
-                            <i class="fa-solid fa-location-crosshairs"></i> Calculating...
+                            <i class="fa-solid fa-location-arrow"></i> Tracking...
                         </span>
                     </div>
                 </div>
-                <button class="locate-btn"><i class="fa-solid fa-location-arrow"></i></button>
+                <button class="locate-btn"><i class="fa-solid fa-crosshairs"></i></button>
             </div>
             {% endfor %}
         {% endif %}
@@ -199,37 +210,50 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // --- 1. GOOGLE LOOK MAPS ---
-        var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
+        // --- 1. MAP INITIALIZATION (Google Style) ---
+        var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 5);
+        
         L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-            maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'], attribution: '© Google Maps'
+            maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
         }).addTo(map);
 
         var markers = {};
-        var polylines = {}; // लाइन के लिए
-        var parentLat = null;
-        var parentLng = null;
+        var polylines = {}; 
+        var parentMarker = null;
+        var parentLat = null, parentLng = null;
 
-        function getParentLocation() {
+        // --- 2. PARENT LOCATION (Blue Dot) ---
+        function updateParentMarker() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
                     parentLat = position.coords.latitude;
                     parentLng = position.coords.longitude;
+                    
+                    if (parentMarker) {
+                        parentMarker.setLatLng([parentLat, parentLng]);
+                    } else {
+                        var parentIcon = L.divIcon({
+                            className: 'parent-div',
+                            html: '<div class="parent-dot-icon"></div>',
+                            iconSize: [16, 16], iconAnchor: [8, 8]
+                        });
+                        parentMarker = L.marker([parentLat, parentLng], {icon: parentIcon}).addTo(map);
+                    }
                 });
             }
         }
-        getParentLocation();
 
         function formatLocalTime(utcDateString) {
             if (!utcDateString) return "Offline";
             if (!utcDateString.endsWith('Z')) utcDateString += 'Z';
             var date = new Date(utcDateString);
-            if (isNaN(date.getTime())) return "Offline";
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return isNaN(date.getTime()) ? "Offline" : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
+        // --- 3. AUTO UPDATE LOGIC (Every 5 Sec) ---
         function updateLocations() {
-            getParentLocation();
+            updateParentMarker();
+
             fetch('/api/get_children_data')
                 .then(res => res.json())
                 .then(data => {
@@ -238,10 +262,10 @@
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
                             
-                            // प्रोफाइल मार्कर
+                            // Child Marker with Photo
                             var childIcon = L.divIcon({
-                                className: 'custom-div-icon',
-                                html: `<img src="${child.profile_pic}" class="custom-map-marker">`,
+                                className: 'child-div',
+                                html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-img">`,
                                 iconSize: [45, 45], iconAnchor: [22, 22]
                             });
 
@@ -251,14 +275,13 @@
                                 markers[child.id] = L.marker([lat, lng], {icon: childIcon}).addTo(map);
                             }
 
-                            // 🔥 LIVE LINE: पेरेंट से बच्चे तक रेखा
+                            // 🔥 LIVE LINE & DISTANCE
                             if (parentLat && parentLng) {
                                 if (polylines[child.id]) { map.removeLayer(polylines[child.id]); }
                                 polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], {
-                                    color: '#1877F2', weight: 3, opacity: 0.5, dashArray: '10, 10'
+                                    color: '#1877F2', weight: 3, opacity: 0.5, dashArray: '8, 8'
                                 }).addTo(map);
 
-                                // Distance Text Update
                                 var distElem = document.getElementById(`dist-${child.id}`);
                                 if (distElem) {
                                     var d = L.latLng(parentLat, parentLng).distanceTo(L.latLng(lat, lng));
@@ -269,14 +292,14 @@
 
                         var statusElem = document.getElementById(`status-${child.id}`);
                         if (statusElem && child.last_seen) {
-                            statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Last seen: ${formatLocalTime(child.last_seen)}`;
+                            statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Active: ${formatLocalTime(child.last_seen)}`;
                         }
                     });
                 });
         }
 
         function focusMap(lat, lng) {
-            if(lat && lng && lat != 'None') map.setView([lat, lng], 17);
+            if(lat && lat !== 'None') map.setView([lat, lng], 17);
         }
         
         setInterval(updateLocations, 5000);
@@ -284,3 +307,4 @@
     </script>
 </body>
 </html>
+
