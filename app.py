@@ -18,8 +18,6 @@ if database_url and database_url.startswith("postgres://"):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# SSL और कनेक्शन स्टेबिलिटी के लिए ये ऑप्शंस जोड़े गए हैं
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"pool_pre_ping": True}
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_change_this')
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -28,10 +26,6 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
-
-# ✅ ऑटो-टेबल्स सेटअप (इसे बाहर रखा है ताकि Render इसे हर हाल में चलाए)
-with app.app_context():
-    db.create_all()
 
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
@@ -112,14 +106,14 @@ def signup():
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
-        is_parent_flag = (role == 'parent')
+        is_parent = (role == 'parent')
         phone_number = request.form.get('phone_number')
         
         try:
             if User.query.filter_by(username=username).first():
                 return "Username already exists!"
                 
-            new_user = User(username=username, is_parent=is_parent_flag, phone_number=phone_number)
+            new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
             new_user.set_password(password)
             # Default pic set karte hain
             new_user.profile_pic_url = url_for('static', filename='default-profile.png')
@@ -289,5 +283,6 @@ def geofence_page():
     return render_template('geofence.html', username=user.username)
 
 if __name__ == '__main__':
-    # Render par host 0.0.0.0 par hi chalta hai
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
