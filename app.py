@@ -9,10 +9,10 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# --- 1. DATABASE CONFIGURATION (SUDHAAR KE SAATH) ---
+# --- 1. DATABASE CONFIGURATION (Universal Setup) ---
 database_url = os.environ.get('DATABASE_URL')
 
-# Render fix: postgres:// को postgresql:// में ऑटोमैटिक बदलना
+# Render fix: postgres:// को postgresql:// में खुद बदलना
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -22,20 +22,22 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_change
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# Folders create karna
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
 
-# --- AUTO-TABLE CREATION (Naya DB connect hote hi tables banane ke liye) ---
-# Isse naya database hamesha turant kaam karega
+# ✅ यह हिस्सा जादुई है: ऐप स्टार्ट होते ही टेबल्स बना देगा (बिना किसी शेल के)
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        print("✅ Database connection successful and tables checked/created!")
+    except Exception as e:
+        print(f"❌ Database setup error: {e}")
 
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
 
-# --- 2. DATABASE MODELS (APKA ORIGINAL CODE) ---
+# --- 2. DATABASE MODELS ---
 
 class User(db.Model):
     __tablename__ = 'app_users'
@@ -86,7 +88,7 @@ def is_parent(f):
         return "Access Denied: Not a parent or not logged in.", 403
     return wrapper
 
-# --- 4. ROUTES (BAKI SAB SAME HAI) ---
+# --- 4. ROUTES ---
 
 @app.route('/')
 def home():
@@ -102,13 +104,12 @@ def signup():
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
-        is_parent_role = (role == 'parent')
-        phone_number = request.form.get('phone_number')
-        
+        is_p = (role == 'parent')
+        phone = request.form.get('phone_number')
         try:
             if User.query.filter_by(username=username).first():
                 return "Username already exists!"
-            new_user = User(username=username, is_parent=is_parent_role, phone_number=phone_number)
+            new_user = User(username=username, is_parent=is_p, phone_number=phone)
             new_user.set_password(password)
             new_user.profile_pic_url = url_for('static', filename='default-profile.png')
             db.session.add(new_user)
