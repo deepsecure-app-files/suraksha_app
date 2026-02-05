@@ -6,77 +6,46 @@
     <title>Sign Up for Suraksha</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         
-        body {
+        /* 🔥 स्क्रीन लॉक */
+        html, body { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden !important; 
+            position: fixed; 
             background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+            display: flex; justify-content: center; align-items: center;
         }
+
+        * { box-sizing: border-box; font-family: 'Roboto', sans-serif; }
 
         .signup-card {
-            background: white;
-            width: 100%;
-            max-width: 432px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
-            padding: 16px;
+            background: white; width: 100%; max-width: 432px; border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1); padding: 16px; text-align: center;
         }
 
-        .card-header { border-bottom: 1px solid #dadde1; padding-bottom: 10px; margin-bottom: 15px; }
-        .card-header h2 { font-size: 2rem; color: #1c1e21; }
+        .card-header { border-bottom: 1px solid #dadde1; padding-bottom: 10px; margin-bottom: 15px; text-align: left; }
+        .card-header h2 { font-size: 2rem; color: #1c1e21; margin: 0; }
         .card-header p { color: #606770; font-size: 0.95rem; }
 
-        input {
-            width: 100%;
-            padding: 11px;
-            margin-bottom: 10px;
-            border: 1px solid #dddfe2;
-            border-radius: 5px;
-            background-color: #f5f6f7;
-            font-size: 0.95rem;
+        input[type="text"], input[type="password"] {
+            width: 100%; padding: 11px; margin-bottom: 10px;
+            border: 1px solid #dddfe2; border-radius: 5px; background-color: #f5f6f7; font-size: 0.95rem; outline: none;
         }
 
-        .role-selection {
-            margin: 10px 0;
-            text-align: left;
-        }
+        .role-selection { margin: 10px 0; text-align: left; }
         .role-selection label { color: #606770; font-size: 0.9rem; display: block; margin-bottom: 5px; }
         .radio-group { display: flex; gap: 10px; margin-bottom: 15px; }
         .radio-item {
-            flex: 1;
-            border: 1px solid #dddfe2;
-            padding: 8px;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex: 1; border: 1px solid #dddfe2; padding: 8px; border-radius: 5px;
+            display: flex; justify-content: space-between; align-items: center; background: #fff;
         }
 
         .btn-signup {
-            width: 100%;
-            padding: 10px;
-            background-color: #00a400;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 10px;
+            width: 100%; padding: 10px; background-color: #00a400; color: white;
+            border: none; border-radius: 6px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px;
         }
 
-        .footer-link {
-            display: block;
-            margin-top: 15px;
-            color: #1877F2;
-            text-decoration: none;
-            font-size: 0.95rem;
-            text-align: center;
-        }
+        .footer-link { display: block; margin-top: 15px; color: #1877F2; text-decoration: none; font-size: 0.95rem; }
     </style>
 </head>
 <body>
@@ -94,18 +63,14 @@
                 <div class="radio-group">
                     <div class="radio-item">
                         <span>Parent</span>
-                        <input type="radio" name="role" value="parent" checked style="width: auto; margin: 0;">
+                        <input type="radio" name="role" value="parent" checked style="width:auto;">
                     </div>
                     <div class="radio-item">
                         <span>Child</span>
-                        <input type="radio" name="role" value="child" style="width: auto; margin: 0;">
+                        <input type="radio" name="role" value="child" style="width:auto;">
                     </div>
                 </div>
             </div>
-
-            <p style="font-size: 0.7rem; color: #777; margin-bottom: 10px;">
-                By clicking Sign Up, you agree to our Terms, Privacy Policy and Cookies Policy.
-            </p>
             
             <button type="submit" class="btn-signup">Sign Up</button>
             <a href="{{ url_for('login') }}" class="footer-link">Already have an account?</a>
