@@ -12,7 +12,7 @@ app = Flask(__name__)
 # --- 1. DATABASE CONFIGURATION ---
 database_url = os.environ.get('DATABASE_URL')
 
-# Render fix for PostgreSQL
+# Render fix for PostgreSQL (SQLAlchemy requires postgresql:// instead of postgres://)
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -26,6 +26,14 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
+
+# ✅ मास्टर लाइन: यह हिस्सा ऐप स्टार्ट होते ही टेबल्स बना देगा
+with app.app_context():
+    try:
+        db.create_all()
+        print("Database tables initialized successfully!")
+    except Exception as e:
+        print(f"Database error: {e}")
 
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
@@ -41,7 +49,6 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), nullable=True)
     profile_pic_url = db.Column(db.String(200), nullable=True)
     
-    # Relationships
     children = db.relationship('Child', foreign_keys='Child.parent_id', backref='parent', lazy=True)
     geofences = db.relationship('Geofence', backref='parent', lazy=True)
 
@@ -79,7 +86,6 @@ def is_parent(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if 'username' in session:
-            # Har request par user load karte hain
             g.user = User.query.filter_by(username=session['username']).first()
             if g.user and g.user.is_parent:
                 return f(*args, **kwargs)
@@ -90,7 +96,6 @@ def is_parent(f):
 
 @app.route('/')
 def home():
-    # Login check
     if 'username' in session:
         user = User.query.filter_by(username=session['username']).first()
         if user:
@@ -115,7 +120,6 @@ def signup():
                 
             new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
             new_user.set_password(password)
-            # Default pic set karte hain
             new_user.profile_pic_url = url_for('static', filename='default-profile.png')
             
             db.session.add(new_user)
@@ -147,7 +151,6 @@ def login():
 @is_parent
 def parent_dashboard():
     user = g.user
-    # Ensure children list load ho
     children = user.children
     return render_template('parent_dashboard.html', 
                            username=user.username, 
@@ -170,8 +173,6 @@ def child_dashboard():
         return redirect(url_for('login'))
     
     user = User.query.filter_by(username=session['username']).first_or_404()
-    
-    # Check pairing
     child_entry = Child.query.filter_by(child_user_id=user.id).first()
     
     parent_data = None
@@ -190,7 +191,6 @@ def pair_device():
     
     pairing_code = request.form['pairing_code']
     child_user = User.query.filter_by(username=session['username']).first()
-    
     child_to_pair = Child.query.filter_by(pairing_code=pairing_code).first()
     
     if child_to_pair:
@@ -205,15 +205,12 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
-# --- API FOR TRACKING ---
 @app.route('/api/update_location', methods=['POST'])
 def update_location():
     if 'username' not in session:
         return jsonify(status='error', message="Not logged in")
     
     user = User.query.filter_by(username=session['username']).first()
-    
-    # Agar user child hai, to location update karo
     if user and not user.is_parent:
         child_entry = Child.query.filter_by(child_user_id=user.id).first()
         if child_entry:
@@ -223,7 +220,6 @@ def update_location():
             child_entry.last_seen = datetime.datetime.utcnow()
             db.session.commit()
             return jsonify(status='success')
-
     return jsonify(status='error')
 
 @app.route('/api/get_children_data')
@@ -236,7 +232,6 @@ def get_children_data():
     children_list = []
     for child in parent_user.children:
         child_user = User.query.get(child.child_user_id)
-        # Profile pic logic
         pic = url_for('static', filename='default-profile.png')
         if child_user and child_user.profile_pic_url:
             pic = child_user.profile_pic_url
@@ -261,28 +256,24 @@ def upload_profile_pic():
     
     if file and file.filename != '':
         filename = secure_filename(file.filename)
-        # Unique name
         new_filename = f"u{user.id}_{int(datetime.datetime.now().timestamp())}_{filename}"
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
-        
         user.profile_pic_url = url_for('static', filename='uploads/' + new_filename)
         db.session.commit()
         
-    # Redirect back to correct dashboard
     if user.is_parent:
         return redirect(url_for('parent_dashboard'))
     else:
         return redirect(url_for('child_dashboard'))
 
-# ✅ UPDATED Geofence Route
 @app.route('/geofence')
 @is_parent
 def geofence_page():
     user = g.user
-    # Sahi HTML page render kar rahe hain
     return render_template('geofence.html', username=user.username)
 
 if __name__ == '__main__':
+    # Local run ke liye bhi tables ensure kar lete hain
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
