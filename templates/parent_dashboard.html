@@ -21,7 +21,7 @@
             overflow: hidden;
         }
 
-        /* --- 1. HEADER (Modern Gradient) --- */
+        /* --- 1. HEADER --- */
         .header {
             background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
@@ -37,9 +37,7 @@
         }
         
         .parent-profile { display: flex; align-items: center; gap: 15px; } 
-        
         .parent-img-box { position: relative; cursor: pointer; }
-        
         .parent-img {
             width: 50px; height: 50px; 
             border-radius: 50%;
@@ -59,7 +57,7 @@
 
         /* --- 2. TOP SECTION --- */
         .top-section {
-            padding: 12px;
+            padding: 10px;
             background: white;
             flex-shrink: 0;
             max-height: 40vh;
@@ -67,7 +65,6 @@
             border-bottom: 1px solid #ddd;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .add-form { display: flex; gap: 10px; margin-bottom: 10px; }
@@ -84,40 +81,23 @@
             align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.06);
             position: relative;
-            transition: 0.2s;
         }
-        .child-card:active { transform: scale(0.97); }
         
         .profile-area { display: flex; align-items: center; gap: 12px; flex: 1; }
-        
-        .child-img {
-            width: 52px; height: 52px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #f0f2f5;
-        }
-        
-        .info h4 { font-size: 1.1rem; color: #243b55; margin-bottom: 2px; font-weight: 600; }
-        .info .code { font-size: 0.75rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 8px; border-radius: 4px; }
-        
-        .status-text { font-size: 0.78rem; margin-top: 4px; font-weight: 500; color: #606770; }
-
-        .distance-badge {
-            font-size: 0.82rem;
-            color: #1877F2;
-            font-weight: bold;
-            margin-top: 3px;
-            display: block;
-        }
+        .child-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #eee; }
+        .info h4 { font-size: 1.05rem; color: #2c3e50; margin-bottom: 2px; font-weight: 600; }
+        .info .code { font-size: 0.75rem; color: #7f8c8d; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
+        .status-text { font-size: 0.75rem; margin-top: 3px; font-weight: 500; color: #555; }
+        .distance-badge { font-size: 0.8rem; color: #1877F2; font-weight: bold; margin-top: 2px; display: block; }
         
         .locate-btn {
             background: #eef2ff; color: #1877F2;
-            width: 42px; height: 42px; border-radius: 50%;
+            width: 40px; height: 40px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             border: none; cursor: pointer;
         }
 
-        /* --- 3. MAP (Rounded Top) --- */
+        /* --- 3. MAP --- */
         .map-container { 
             flex-grow: 1; 
             position: relative; 
@@ -126,11 +106,10 @@
             border-top-left-radius: 25px;
             border-top-right-radius: 25px;
             overflow: hidden;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
         }
         #map { height: 100%; width: 100%; }
 
-        /* --- 4. NAV (Modern) --- */
+        /* --- 4. NAV --- */
         .bottom-nav {
             background: white;
             height: 70px;
@@ -141,18 +120,18 @@
             position: fixed;
             bottom: 0; left: 0; width: 100%;
             z-index: 9999;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
             border-top-left-radius: 20px;
             border-top-right-radius: 20px;
         }
         
-        .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; font-weight: 500; }
-        .nav-item i { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+        .nav-item { text-align: center; color: #95a5a6; text-decoration: none; font-size: 0.75rem; }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
         .nav-item.active { color: #1877F2; }
 
         #parent_file_input { display: none; }
 
-        /* Custom Marker Style */
+        /* Custom Marker Photo */
         .custom-map-marker {
             width: 45px; height: 45px;
             border-radius: 50%;
@@ -171,11 +150,7 @@
             </form>
             
             <div class="parent-img-box" onclick="document.getElementById('parent_file_input').click()">
-                {% if profile_pic_url %}
-                    <img src="{{ profile_pic_url }}" class="parent-img">
-                {% else %}
-                    <img src="{{ url_for('static', filename='default-profile.png') }}" class="parent-img">
-                {% endif %}
+                <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="parent-img">
                 <div class="edit-icon"><i class="fa-solid fa-camera"></i></div>
             </div>
             
@@ -183,7 +158,7 @@
                 <h2>{{ username }}</h2>
             </div>
         </div>
-        <a href="{{ url_for('logout') }}" style="color:white; font-size:1.3rem;"><i class="fa-solid fa-power-off"></i></a>
+        <a href="{{ url_for('logout') }}" style="color:white; font-size:1.2rem;"><i class="fa-solid fa-power-off"></i></a>
     </div>
 
     <div class="top-section">
@@ -196,19 +171,11 @@
             {% for child in children %}
             <div class="child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
                 <div class="profile-area">
-                    {% if child.child_user and child.child_user.profile_pic_url %}
-                        <img src="{{ child.child_user.profile_pic_url }}" class="child-img">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='default-profile.png') }}" class="child-img">
-                    {% endif %}
-                    
+                    <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="child-img">
                     <div class="info">
                         <h4>{{ child.name }}</h4>
                         <span class="code">Code: {{ child.pairing_code }}</span>
-                        
-                        <div id="status-{{ child.id }}" class="status-text">
-                            Waiting...
-                        </div>
+                        <div id="status-{{ child.id }}" class="status-text">Waiting...</div>
                         <span id="dist-{{ child.id }}" class="distance-badge">
                             <i class="fa-solid fa-location-crosshairs"></i> Calculating...
                         </span>
@@ -217,8 +184,6 @@
                 <button class="locate-btn"><i class="fa-solid fa-location-arrow"></i></button>
             </div>
             {% endfor %}
-        {% else %}
-            <p style="text-align:center; color:#aaa; margin-top:20px;">No children added yet.</p>
         {% endif %}
     </div>
 
@@ -227,23 +192,21 @@
     </div>
 
     <div class="bottom-nav">
-        <a href="#" class="nav-item active"><i class="fa-solid fa-house-user"></i>Home</a>
+        <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i>Home</a>
         <a href="{{ url_for('geofence_page') }}" class="nav-item"><i class="fa-solid fa-shield-halved"></i>Zone</a>
-        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-arrows-rotate"></i>Refresh</a>
+        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-rotate"></i>Refresh</a>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // --- 1. GOOGLE MAPS LOOK (Standard Roadmap) ---
+        // --- 1. GOOGLE LOOK MAPS ---
         var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
-        
         L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-            maxZoom: 20,
-            subdomains:['mt0','mt1','mt2','mt3'],
-            attribution: '© Google Maps'
+            maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'], attribution: '© Google Maps'
         }).addTo(map);
 
         var markers = {};
+        var polylines = {}; // लाइन के लिए
         var parentLat = null;
         var parentLng = null;
 
@@ -267,7 +230,6 @@
 
         function updateLocations() {
             getParentLocation();
-
             fetch('/api/get_children_data')
                 .then(res => res.json())
                 .then(data => {
@@ -276,53 +238,45 @@
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
                             
-                            // प्रोफाइल फोटो वाला मार्कर
+                            // प्रोफाइल मार्कर
                             var childIcon = L.divIcon({
                                 className: 'custom-div-icon',
                                 html: `<img src="${child.profile_pic}" class="custom-map-marker">`,
-                                iconSize: [45, 45],
-                                iconAnchor: [22, 22]
+                                iconSize: [45, 45], iconAnchor: [22, 22]
                             });
 
                             if (markers[child.id]) {
                                 markers[child.id].setLatLng([lat, lng]);
                             } else {
-                                markers[child.id] = L.marker([lat, lng], {icon: childIcon}).addTo(map).bindPopup(child.name);
+                                markers[child.id] = L.marker([lat, lng], {icon: childIcon}).addTo(map);
                             }
 
-                            var distElem = document.getElementById(`dist-${child.id}`);
-                            if (parentLat && parentLng && distElem) {
-                                var from = L.latLng(parentLat, parentLng);
-                                var to = L.latLng(lat, lng);
-                                var distMeters = from.distanceTo(to);
-                                
-                                var distText = "";
-                                if (distMeters < 1000) {
-                                    distText = Math.round(distMeters) + " m away";
-                                } else {
-                                    distText = (distMeters / 1000).toFixed(1) + " km away";
+                            // 🔥 LIVE LINE: पेरेंट से बच्चे तक रेखा
+                            if (parentLat && parentLng) {
+                                if (polylines[child.id]) { map.removeLayer(polylines[child.id]); }
+                                polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], {
+                                    color: '#1877F2', weight: 3, opacity: 0.5, dashArray: '10, 10'
+                                }).addTo(map);
+
+                                // Distance Text Update
+                                var distElem = document.getElementById(`dist-${child.id}`);
+                                if (distElem) {
+                                    var d = L.latLng(parentLat, parentLng).distanceTo(L.latLng(lat, lng));
+                                    distElem.innerHTML = `<i class="fa-solid fa-route"></i> ${d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km"} away`;
                                 }
-                                distElem.innerHTML = `<i class="fa-solid fa-route"></i> ${distText}`;
                             }
                         }
 
                         var statusElem = document.getElementById(`status-${child.id}`);
-                        if (statusElem) {
-                            if (child.last_seen) {
-                                var localTime = formatLocalTime(child.last_seen);
-                                statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Last seen: ${localTime}`;
-                            } else {
-                                statusElem.innerHTML = "Offline";
-                            }
+                        if (statusElem && child.last_seen) {
+                            statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> Last seen: ${formatLocalTime(child.last_seen)}`;
                         }
                     });
                 });
         }
 
         function focusMap(lat, lng) {
-            if(lat && lng && lat != 'None') {
-                map.setView([lat, lng], 17);
-            }
+            if(lat && lng && lat != 'None') map.setView([lat, lng], 17);
         }
         
         setInterval(updateLocations, 5000);
