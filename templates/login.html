@@ -7,78 +7,78 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         
-        body {
+        /* 🔥 Screen ko puri tarah jam karne ke liye */
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            overflow: hidden !important; /* Scroll band */
+            position: fixed; /* Screen lock */
             background-color: #f0f2f5;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
             justify-content: center;
-            padding: 20px;
+            touch-action: none; /* Touch scroll bhi band */
         }
 
-        .login-container {
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
+        * { box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-        .logo-area { margin-bottom: 20px; }
-        .logo-area h1 { color: #1877F2; font-size: 2.5rem; font-weight: 700; letter-spacing: -1px; }
-        .logo-area p { color: #1c1e21; font-size: 1.1rem; line-height: 1.2; margin-top: 5px; }
+        .login-container { width: 100%; max-width: 400px; text-align: center; padding: 20px; }
+        
+        .logo-area h1 { color: #1877F2; font-size: 2.5rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 5px; }
+        .logo-area p { color: #1c1e21; font-size: 1.1rem; margin-bottom: 25px; line-height: 1.2; }
 
         .card {
-            background: white;
-            padding: 20px;
+            background: white; 
+            padding: 20px; 
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 100%;
         }
 
         input {
-            width: 100%;
-            padding: 14px;
+            width: 100%; 
+            padding: 14px; 
             margin-bottom: 12px;
-            border: 1px solid #dddfe2;
-            border-radius: 6px;
-            font-size: 1rem;
+            border: 1px solid #dddfe2; 
+            border-radius: 6px; 
+            font-size: 1rem; 
             outline: none;
+            background-color: #f5f6f7;
         }
-        input:focus { border-color: #1877F2; box-shadow: 0 0 0 2px #e7f3ff; }
+        
+        input:focus { border-color: #1877F2; background-color: #fff; }
 
         .btn-login {
-            width: 100%;
-            padding: 12px;
-            background-color: #1877F2;
+            width: 100%; 
+            padding: 12px; 
+            background-color: #1877F2; 
             color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1.2rem;
-            font-weight: 700;
+            border: none; 
+            border-radius: 6px; 
+            font-size: 1.2rem; 
+            font-weight: 700; 
             cursor: pointer;
-            margin-top: 5px;
+            margin-bottom: 5px;
         }
 
-        .forgot-pass {
-            display: block;
-            margin: 15px 0;
-            color: #1877F2;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
+        /* 🔥 Forget Password hide kar diya gaya hai */
+        .forgot-pass { display: none; } 
 
         hr { border: none; border-top: 1px solid #dadde1; margin: 20px 0; }
 
         .btn-new-acc {
-            background-color: #42b72a;
-            color: white;
+            background-color: #42b72a; 
+            color: white; 
             padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 700;
-            text-decoration: none;
+            border: none; 
+            border-radius: 6px; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            text-decoration: none; 
             display: inline-block;
         }
     </style>
@@ -94,7 +94,9 @@
                 <input type="text" name="username" placeholder="Username" required>
                 <input type="password" name="password" placeholder="Password" required>
                 <button type="submit" class="btn-login">Log In</button>
+                
                 <a href="#" class="forgot-pass">Forgotten password?</a>
+                
                 <hr>
                 <a href="{{ url_for('signup') }}" class="btn-new-acc">Create New Account</a>
             </form>
