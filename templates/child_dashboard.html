@@ -6,168 +6,170 @@
     <title>Suraksha Child Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="preload" as="image" href="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}">
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
         
-        /* 🔥 सुधार 1: स्क्रीन को पूरी तरह जाम (Lock) करना */
+        /* 🔥 सुधार 1: स्क्रीन पूरी तरह जाम (Lock) */
         html, body { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden !important; 
-            position: fixed; 
-            background-color: #f0f2f5; 
+            overflow: hidden !important; position: fixed; 
+            background: #141e30; /* डार्क थीम बैकग्राउंड */
             display: flex; flex-direction: column; align-items: center; 
         }
         
         * { box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-        /* --- Facebook Style Header --- */
-        .header { 
-            background: linear-gradient(135deg, #141e30, #243b55); 
-            width: 100%; height: 180px; 
-            border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; 
-            display: flex; flex-direction: column; align-items: center; 
-            padding-top: 30px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            z-index: 1;
+        /* --- Premium Header with 3-Dot Menu --- */
+        .top-bar {
+            width: 100%; padding: 20px; display: flex; 
+            justify-content: space-between; align-items: center; color: white;
+            z-index: 100;
         }
-        .header h2 { font-size: 1.4rem; font-weight: 500; margin-bottom: 5px; }
-        .header p { font-size: 0.8rem; opacity: 0.8; letter-spacing: 1px; }
+        .top-bar i { font-size: 1.5rem; cursor: pointer; }
 
-        /* --- Profile Section --- */
-        .profile-container { margin-top: -60px; position: relative; width: 120px; height: 120px; z-index: 2; }
+        /* --- Dropdown Menu Settings --- */
+        .menu-dropdown {
+            position: absolute; top: 60px; right: 20px; background: white;
+            border-radius: 12px; width: 180px; display: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .menu-dropdown a {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 15px; text-decoration: none; color: #333;
+            font-size: 0.9rem; border-bottom: 1px solid #eee;
+        }
+        .menu-dropdown a:last-child { border: none; }
+
+        /* --- Profile Area (Look from Photo) --- */
+        .header-content { text-align: center; color: white; margin-top: 10px; }
+        .header-content h2 { font-size: 1.6rem; margin-bottom: 5px; }
+        .header-content p { font-size: 0.85rem; opacity: 0.7; }
+
+        .profile-section { position: relative; margin-top: 30px; }
         .profile-img { 
-            width: 100%; height: 100%; border-radius: 50%; border: 5px solid white; 
-            object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            background: #e1e8ed; 
+            width: 130px; height: 130px; border-radius: 50%; 
+            border: 4px solid white; object-fit: cover;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
-        .camera-icon { 
-            position: absolute; bottom: 5px; right: 5px; background: #1877F2; 
-            color: white; width: 35px; height: 35px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            border: 3px solid white; cursor: pointer; 
-        }
-
-        /* --- Active Protection Card --- */
-        .card { 
-            background: white; width: 92%; margin-top: 25px; padding: 20px; 
-            border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
-            text-align: center; z-index: 2;
-        }
-        .status-badge { 
-            display: inline-flex; align-items: center; gap: 8px; 
-            padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; 
-        }
-        .connected { background: #e7f3ff; color: #1877F2; border: 1px solid #1877F2; }
-        .pulse-dot { width: 10px; height: 10px; background: #1877F2; border-radius: 50%; animation: pulse 2s infinite; }
-        
-        @keyframes pulse { 
-            0% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0.4); } 
-            70% { box-shadow: 0 0 0 12px rgba(24, 119, 242, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0); } 
+        .cam-badge {
+            position: absolute; bottom: 5px; right: 5px; 
+            background: white; color: #141e30; width: 35px; height: 35px;
+            border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        /* 🔥 सुधार 2: SOS बटन */
-        .btn-sos {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            color: white; border: none; width: 100%; padding: 18px;
-            border-radius: 15px; font-size: 1.3rem; font-weight: 800;
-            margin-top: 15px; cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
+        /* --- Main Protection Card --- */
+        .active-card {
+            background: white; width: 90%; margin-top: 40px;
+            border-radius: 30px; padding: 30px 20px;
+            text-align: center; position: relative;
         }
-        .btn-sos:active { transform: scale(0.98); }
+        .active-card h3 { font-size: 1.4rem; color: #1c1e21; margin-bottom: 20px; }
 
-        .input-code { 
-            width: 100%; padding: 15px; text-align: center; font-size: 1.2rem; 
-            letter-spacing: 3px; border: 2px dashed #ddd; border-radius: 12px; 
-            margin: 15px 0; outline: none; background: #f9f9f9; 
+        .status-box {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; color: #2ecc71; font-weight: bold; margin-bottom: 30px;
         }
-        
-        .btn-main { 
-            background: #1877F2; color: white; border: none; width: 100%; 
-            padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; 
+        .dot { width: 12px; height: 12px; background: #2ecc71; border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+
+        /* --- SOS Button --- */
+        .sos-btn {
+            background: #ff4b2b; color: white; border: none;
+            width: 100%; padding: 20px; border-radius: 20px;
+            font-size: 1.2rem; font-weight: 800; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 75, 43, 0.3);
+            text-transform: uppercase;
         }
-        .btn-logout { margin-top: auto; margin-bottom: 20px; background: transparent; color: #606770; border: none; font-size: 0.9rem; }
-        
+
         #child_file_input { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <p>SURAKSHA ONEVIEW</p>
-        <h2>Hi, {{ username }}!</h2>
+    <div class="top-bar">
+        <i class="fa-solid fa-bars"></i>
+        <i class="fa-solid fa-ellipsis-vertical" onclick="toggleMenu()"></i>
     </div>
 
-    <div class="profile-container">
+    <div class="menu-dropdown" id="myMenu">
+        <a href="#"><i class="fa-solid fa-gear"></i> App Settings</a>
+        <a href="#"><i class="fa-solid fa-bell"></i> Notifications</a>
+        <a href="{{ url_for('logout') }}" style="color: #ff4b2b;"><i class="fa-solid fa-power-off"></i> Logout</a>
+    </div>
+
+    <div class="header-content">
+        <h2>Child Dashboard</h2>
+        <p>{{ username }}</p>
+    </div>
+
+    <div class="profile-section">
         <form id="childProfileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
             <input type="file" name="profile_pic" id="child_file_input" accept="image/*" onchange="document.getElementById('childProfileForm').submit()">
         </form>
         <div onclick="document.getElementById('child_file_input').click()">
             <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="profile-img">
-            <div class="camera-icon"><i class="fa-solid fa-camera"></i></div>
+            <div class="cam-badge"><i class="fa-solid fa-camera"></i></div>
         </div>
     </div>
 
-    <div class="card">
-        {% if child_info %}
-            <div class="status-badge connected">
-                <div class="pulse-dot"></div> ACTIVE PROTECTION
-            </div>
-            <p style="color: #606770; margin-top: 15px; font-size: 0.9rem;">
-                Parent: <b>{{ parent.username if parent else 'Deepak' }}</b>
-            </p>
+    <div class="active-card">
+        <h3>Active Protection</h3>
+        
+        <div class="status-box">
+            <div class="dot"></div> Connected / Tracking
+        </div>
 
-            <button class="btn-sos" onclick="sendSOS()">
-                <i class="fa-solid fa-bell"></i> SOS EMERGENCY
-            </button>
+        <div style="margin-bottom: 30px; color: #7f8c8d; font-size: 0.9rem;">
+            <i class="fa-solid fa-shield-check"></i> Parent is monitoring live
+        </div>
 
-            <script>
-                // 🔥 सुधार 3: Hybrid Tracking (GPS + Network Fallback)
-                function sendLocation(isSOS = false) {
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(position => {
-                            fetch('/api/update_location', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    latitude: position.coords.latitude,
-                                    longitude: position.coords.longitude,
-                                    accuracy: position.coords.accuracy, // पैरेंट को सटीकता बताने के लिए
-                                    is_sos: isSOS
-                                })
-                            });
-                        }, 
-                        error => { console.log("Network Tracking Mode"); }, 
-                        {
-                            enableHighAccuracy: true, // पहले GPS की कोशिश
-                            timeout: 10000,
-                            maximumAge: 0
-                        });
-                    }
-                }
-
-                function sendSOS() {
-                    alert("SOS Alert Sent to Parent!");
-                    sendLocation(true);
-                }
-
-                // हर 5 सेकंड में लोकेशन अपडेट
-                setInterval(() => sendLocation(false), 5000);
-                sendLocation(false);
-            </script>
-        {% else %}
-            <h3 style="color: #1c1e21;">Device Not Paired</h3>
-            <p style="color: #606770; margin-top: 5px; font-size: 0.9rem;">Enter code from Parent's phone.</p>
-            <form action="{{ url_for('pair_device') }}" method="POST">
-                <input type="text" name="pairing_code" class="input-code" placeholder="000000" required>
-                <button type="submit" class="btn-main">PAIR DEVICE</button>
-            </form>
-        {% endif %}
+        <button class="sos-btn" onclick="triggerSOS()">
+            SOS / Emergency
+        </button>
     </div>
 
-    <a href="{{ url_for('logout') }}" class="btn-logout">Logout from Suraksha</a>
+    <script>
+        function toggleMenu() {
+            var menu = document.getElementById("myMenu");
+            menu.style.display = (menu.style.display === "block") ? "none" : "block";
+        }
 
+        // स्क्रीन पर कहीं भी क्लिक करने पर मेनू बंद हो जाए
+        window.onclick = function(event) {
+            if (!event.target.matches('.fa-ellipsis-vertical')) {
+                document.getElementById("myMenu").style.display = "none";
+            }
+        }
+
+        function triggerSOS() {
+            alert("🚨 EMERGENCY ALERT SENT TO PARENT!");
+            sendLocation(true);
+        }
+
+        function sendLocation(isSOS = false) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    fetch('/api/update_location', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            is_sos: isSOS
+                        })
+                    });
+                }, error => {
+                    // GPS बंद होने पर Network Fallback (Low Accuracy)
+                    console.log("Using Network Location");
+                }, { enableHighAccuracy: true, timeout: 10000 });
+            }
+        }
+
+        setInterval(() => sendLocation(false), 5000);
+        sendLocation(false);
+    </script>
 </body>
 </html>
+
