@@ -12,11 +12,19 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
+        /* 🔥 सुधार 1: Long Press और Copy पूरी तरह बंद */
         * { 
             margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; 
-            -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+            -webkit-tap-highlight-color: transparent; 
+            -webkit-touch-callout: none !important; /* iOS के लिए */
+            -webkit-user-select: none !important;   /* Chrome/Safari के लिए */
+            user-select: none !important;           /* Standard */
         }
         
+        /* इमेज को ड्रैग होने से रोकना */
+        img { pointer-events: none; } 
+
+        /* इनपुट बॉक्स में लिखने की छूट */
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
 
         html, body { 
@@ -24,7 +32,7 @@
             display: flex; flex-direction: column; overflow: hidden; position: fixed;
         }
 
-        /* --- 1. HEADER (Corrected: Pic Left, Brand Center) --- */
+        /* --- HEADER --- */
         .header {
             background: #141e30; padding: 10px 15px;
             display: flex; justify-content: space-between; align-items: center;
@@ -33,10 +41,13 @@
         }
 
         .header-left { flex: 1; display: flex; align-items: center; }
+        
+        /* 🔥 सुधार 2: पैरेंट इमेज फिक्स */
         .parent-img-large {
             width: 50px; height: 50px; border-radius: 50%;
-            border: 3px solid #1877F2; /* Facebook Blue Border */
-            object-fit: cover; background-color: #fff; cursor: pointer;
+            border: 3px solid #1877F2; 
+            object-fit: cover; background-color: white; 
+            cursor: pointer; pointer-events: auto; /* फोटो बदलने के लिए क्लिक हो सके */
         }
 
         .app-brand {
@@ -49,7 +60,7 @@
         .header-right { flex: 1; display: flex; justify-content: flex-end; }
         .menu-btn { color: white; font-size: 1.5rem; cursor: pointer; padding: 5px; }
 
-        /* --- 2. SIDE MENU (With DETAILED Child Cards) --- */
+        /* --- SIDE MENU --- */
         .side-menu {
             position: absolute; top: 0; left: -320px; width: 300px; height: 100%;
             background: white; transition: 0.3s ease-in-out; 
@@ -62,9 +73,7 @@
         .menu-user-name { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
 
         .children-section { flex: 1; overflow-y: auto; padding: 10px; background: #f0f2f5; }
-        .section-label { padding: 5px 10px; font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
-
-        /* 🔥 सुधार: बच्चे का कार्ड जिसमें ID और Distance दोनों हैं */
+        
         .menu-child-card {
             background: white; border-radius: 10px; padding: 12px;
             margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
@@ -78,17 +87,13 @@
         .menu-child-info { flex: 1; }
         .menu-child-info h4 { font-size: 1rem; color: #0f172a; margin: 0; font-weight: 700; }
         
-        /* Pairing Code Style */
         .child-id-badge { 
             font-size: 0.75rem; background: #f0f2f5; color: #64748b; 
             padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; border: 1px solid #ddd;
         }
 
-        /* Status & Distance */
         .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
         .menu-child-status { font-size: 0.75rem; color: #64748b; }
-        
-        /* 🔥 Distance Badge Visible */
         .dist-badge { 
             font-size: 0.8rem; color: #1877F2; font-weight: bold; 
             background: #e7f3ff; padding: 2px 8px; border-radius: 10px;
@@ -101,11 +106,14 @@
         }
         .logout-btn { padding: 15px; color: #dc2626; text-align: center; font-weight: bold; text-decoration: none; border-top: 1px solid #eee; display: block; background: white;}
 
-        /* --- 3. MAP WRAPPER --- */
+        /* --- MAP WRAPPER --- */
         .map-wrapper { flex: 1; position: relative; width: 100%; margin-bottom: 60px; background: #e5e7eb; }
         #map { width: 100%; height: 100%; }
 
-        /* --- 4. BOTTOM NAV (Fixed) --- */
+        /* 🔥 सुधार 3: मैप लोगो छिपाना */
+        .leaflet-control-attribution { display: none !important; }
+
+        /* --- BOTTOM NAV --- */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
             background: white; display: flex; justify-content: space-around; align-items: center;
@@ -118,7 +126,6 @@
             width: 40px; height: 3px; background: #1877F2; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;
         }
 
-        /* SOS Alert Overlay */
         #sos-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(220, 38, 38, 0.95); z-index: 9999;
@@ -132,7 +139,7 @@
         .parent-dot { width: 16px; height: 16px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(24, 119, 242, 0.5); }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
     <div id="sos-overlay">
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 5rem; animation: pulse 0.5s infinite;"></i>
@@ -143,7 +150,7 @@
 
     <div class="header">
         <div class="header-left" onclick="document.getElementById('parent_file_input').click()">
-            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="parent-img-large">
+            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="parent-img-large" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
         </div>
         <div class="app-brand">suraksha</div>
         <div class="header-right">
@@ -158,8 +165,6 @@
         </div>
 
         <div class="children-section">
-            <div class="section-label">My Family</div>
-            
             {% if children %}
                 {% for child in children %}
                 <div class="menu-child-card" onclick="locateChild('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
@@ -167,7 +172,6 @@
                     <div class="menu-child-info">
                         <h4>{{ child.name }}</h4>
                         <span class="child-id-badge">ID: {{ child.pairing_code }}</span>
-                        
                         <div class="status-row">
                             <div class="menu-child-status" id="status-{{ child.id }}">Connecting...</div>
                             <div class="dist-badge" id="dist-{{ child.id }}">-- m</div>
@@ -240,7 +244,6 @@
         }
 
         function updateData() {
-            // 1. Parent GPS
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
                     parentLat = position.coords.latitude;
@@ -253,7 +256,6 @@
                 }, err => {}, {enableHighAccuracy:true});
             }
 
-            // 2. Child Data
             fetch('/api/get_children_data')
                 .then(res => res.json())
                 .then(data => {
@@ -262,7 +264,6 @@
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
 
-                            // Map Marker
                             var icon = L.divIcon({
                                 className: 'custom-div',
                                 html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-icon">`,
@@ -272,26 +273,21 @@
                             if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
                             else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
 
-                            // Distance Calculation (For Side Menu)
                             if (parentLat && parentLng) {
                                 if (polylines[child.id]) map.removeLayer(polylines[child.id]);
                                 polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 2, opacity: 0.5, dashArray: '5, 10' }).addTo(map);
 
                                 var d = L.latLng(parentLat, parentLng).distanceTo(L.latLng(lat, lng));
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
-                                
-                                // 🔥 Update Side Menu Distance Badge
                                 var distElem = document.getElementById('dist-' + child.id);
                                 if(distElem) distElem.innerText = distText;
                             }
 
-                            // Update Time/Status
                             var statusElem = document.getElementById('status-' + child.id);
                             if(statusElem && child.last_seen) {
                                 statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> ${formatLocalTime(child.last_seen)}`;
                             }
 
-                            // SOS Check
                             if (child.is_sos) {
                                 var overlay = document.getElementById('sos-overlay');
                                 if (overlay.style.display !== 'flex') {
