@@ -14,122 +14,104 @@
 
         * { 
             margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; 
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
+            -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
         }
         
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
 
         html, body { 
-            background-color: #f0f2f5; 
-            height: 100%; width: 100%;
-            display: flex; flex-direction: column;
-            overflow: hidden; position: fixed;
+            background-color: #f0f2f5; height: 100%; width: 100%;
+            display: flex; flex-direction: column; overflow: hidden; position: fixed;
         }
 
-        /* --- 1. HEADER (Facebook Style - Clean & Solid) --- */
+        /* --- 1. HEADER (Corrected: Pic Left, Brand Center) --- */
         .header {
-            background: #141e30; /* Child Dashboard जैसा डार्क थीम */
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between; /* Left: Pic, Center: Brand, Right: Menu */
-            align-items: center;
-            height: 70px;
-            z-index: 2001;
-            flex-shrink: 0;
+            background: #141e30; padding: 10px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            height: 70px; z-index: 2001; flex-shrink: 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* 🔥 सुधार 1: प्रोफाइल पिक बाईं तरफ (Left), बड़ी और नीली बॉर्डर */
-        .header-left {
-            display: flex; align-items: center;
-            flex: 1; /* जगह लेगा */
-        }
+        .header-left { flex: 1; display: flex; align-items: center; }
         .parent-img-large {
-            width: 50px; height: 50px; /* फोटो बड़ी की */
-            border-radius: 50%;
-            border: 3px solid #1877F2; /* 🔥 नीला बॉर्डर (Facebook Blue) */
-            object-fit: cover;
-            background-color: #fff;
-            cursor: pointer;
+            width: 50px; height: 50px; border-radius: 50%;
+            border: 3px solid #1877F2; /* Facebook Blue Border */
+            object-fit: cover; background-color: #fff; cursor: pointer;
         }
 
-        /* 🔥 सुधार 2: ब्रांड नाम बीच में और सुनहरा */
         .app-brand {
-            font-size: 1.6rem;
-            font-weight: 800;
+            font-size: 1.6rem; font-weight: 800;
             background: linear-gradient(to right, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
-            flex: 1; /* सेंटर में रखने के लिए */
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-align: center; flex: 1;
         }
 
-        /* मेनू बटन दाईं तरफ */
-        .header-right {
-            flex: 1; display: flex; justify-content: flex-end;
-        }
+        .header-right { flex: 1; display: flex; justify-content: flex-end; }
         .menu-btn { color: white; font-size: 1.5rem; cursor: pointer; padding: 5px; }
 
-        /* --- 2. SIDE MENU --- */
+        /* --- 2. SIDE MENU (With DETAILED Child Cards) --- */
         .side-menu {
-            position: absolute; top: 0; left: -300px; width: 280px; height: 100%;
+            position: absolute; top: 0; left: -320px; width: 300px; height: 100%;
             background: white; transition: 0.3s ease-in-out; 
             z-index: 3000; display: flex; flex-direction: column;
             box-shadow: 10px 0 20px rgba(0,0,0,0.3);
         }
         .side-menu.open { left: 0; }
         
-        .menu-header { 
-            background: #141e30; padding: 30px 20px; color: white; 
-        }
+        .menu-header { background: #141e30; padding: 30px 20px; color: white; }
         .menu-user-name { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
 
-        .children-section { flex: 1; overflow-y: auto; padding: 0; background: #fff; }
-        .section-label { padding: 15px 20px 5px; font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .children-section { flex: 1; overflow-y: auto; padding: 10px; background: #f0f2f5; }
+        .section-label { padding: 5px 10px; font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
 
+        /* 🔥 सुधार: बच्चे का कार्ड जिसमें ID और Distance दोनों हैं */
         .menu-child-card {
-            padding: 15px 20px; border-bottom: 1px solid #f1f5f9;
-            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            background: white; border-radius: 10px; padding: 12px;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
+            border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            cursor: pointer; position: relative;
         }
-        .menu-child-card:active { background: #f8fafc; }
-        .menu-child-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; }
-        .menu-child-info h4 { font-size: 0.95rem; color: #0f172a; margin: 0; }
+        .menu-child-card:active { background: #eef2ff; border-color: #1877F2; }
+        
+        .menu-child-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #1877F2; }
+        
+        .menu-child-info { flex: 1; }
+        .menu-child-info h4 { font-size: 1rem; color: #0f172a; margin: 0; font-weight: 700; }
+        
+        /* Pairing Code Style */
+        .child-id-badge { 
+            font-size: 0.75rem; background: #f0f2f5; color: #64748b; 
+            padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; border: 1px solid #ddd;
+        }
+
+        /* Status & Distance */
+        .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
         .menu-child-status { font-size: 0.75rem; color: #64748b; }
         
-        .add-child-box { padding: 15px; border-top: 1px solid #eee; background: #f8f9fa; }
+        /* 🔥 Distance Badge Visible */
+        .dist-badge { 
+            font-size: 0.8rem; color: #1877F2; font-weight: bold; 
+            background: #e7f3ff; padding: 2px 8px; border-radius: 10px;
+        }
+
+        .add-child-box { padding: 15px; border-top: 1px solid #eee; background: white; }
         .add-child-btn {
             width: 100%; padding: 12px; background: #1877F2; color: white; border: none;
             border-radius: 8px; font-weight: 600; cursor: pointer;
         }
-        .logout-btn { padding: 15px; color: #dc2626; text-align: center; font-weight: bold; text-decoration: none; border-top: 1px solid #eee; display: block;}
+        .logout-btn { padding: 15px; color: #dc2626; text-align: center; font-weight: bold; text-decoration: none; border-top: 1px solid #eee; display: block; background: white;}
 
-        /* --- 3. MAP WRAPPER (No Shadow, Full Space) --- */
-        .map-wrapper {
-            flex: 1; 
-            position: relative; 
-            width: 100%;
-            margin-bottom: 60px; /* नीचे बटन के लिए जगह */
-            background: #e5e7eb;
-            /* 🔥 सुधार 3: छाया हटाई */
-        }
+        /* --- 3. MAP WRAPPER --- */
+        .map-wrapper { flex: 1; position: relative; width: 100%; margin-bottom: 60px; background: #e5e7eb; }
         #map { width: 100%; height: 100%; }
 
-        /* --- 4. BOTTOM NAV (Fixed - Not Floating) --- */
+        /* --- 4. BOTTOM NAV (Fixed) --- */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: white; 
-            display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid #ddd; /* साफ लाइन */
-            z-index: 2000;
-            /* हवा में नहीं, नीचे चिपका हुआ */
+            background: white; display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #ddd; z-index: 2000;
         }
-        .nav-item { 
-            color: #94a3b8; font-size: 1.4rem; position: relative; 
-            height: 100%; width: 100%; display: flex; align-items: center; justify-content: center;
-        }
+        .nav-item { color: #94a3b8; font-size: 1.4rem; position: relative; height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; }
         .nav-item.active { color: #1877F2; }
         .nav-item.active::after {
             content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
@@ -145,10 +127,7 @@
         }
         .sos-btn-stop { background: white; color: #dc2626; padding: 15px 40px; border-radius: 50px; border: none; font-weight: bold; font-size: 1.2rem; margin-top: 30px; }
 
-        /* Hidden Input */
         #parent_file_input { display: none; }
-        
-        /* Map Markers */
         .child-marker-icon { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.4); object-fit: cover; background: #fff;}
         .parent-dot { width: 16px; height: 16px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(24, 119, 242, 0.5); }
     </style>
@@ -166,9 +145,7 @@
         <div class="header-left" onclick="document.getElementById('parent_file_input').click()">
             <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="parent-img-large">
         </div>
-        
         <div class="app-brand">suraksha</div>
-
         <div class="header-right">
             <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
         </div>
@@ -181,7 +158,7 @@
         </div>
 
         <div class="children-section">
-            <div class="section-label">Track Children</div>
+            <div class="section-label">My Family</div>
             
             {% if children %}
                 {% for child in children %}
@@ -189,7 +166,12 @@
                     <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="menu-child-img">
                     <div class="menu-child-info">
                         <h4>{{ child.name }}</h4>
-                        <div class="menu-child-status" id="status-{{ child.id }}">Offline</div>
+                        <span class="child-id-badge">ID: {{ child.pairing_code }}</span>
+                        
+                        <div class="status-row">
+                            <div class="menu-child-status" id="status-{{ child.id }}">Connecting...</div>
+                            <div class="dist-badge" id="dist-{{ child.id }}">-- m</div>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -224,55 +206,54 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // --- Full Functionality (No Cuts) ---
         var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
         L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
         }).addTo(map);
 
         var markers = {};
+        var polylines = {};
         var parentMarker = null;
+        var parentLat = null, parentLng = null;
         var siren = new Audio('https://www.soundjay.com/buttons/sounds/alarm-siren-01.mp3');
 
-        function toggleMenu() {
-            document.getElementById('sideMenu').classList.toggle('open');
-        }
-
-        document.getElementById('map').onclick = function() {
-            document.getElementById('sideMenu').classList.remove('open');
-        }
+        function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
+        document.getElementById('map').onclick = function() { document.getElementById('sideMenu').classList.remove('open'); }
 
         function locateChild(lat, lng) {
             if (lat && lat !== 'None') {
                 map.setView([lat, lng], 18);
                 toggleMenu(); 
-            } else {
-                alert("Location not available yet.");
-            }
+            } else { alert("Location not available yet."); }
         }
 
         function dismissSOS() {
             document.getElementById('sos-overlay').style.display = 'none';
-            siren.pause();
-            siren.currentTime = 0;
+            siren.pause(); siren.currentTime = 0;
         }
 
-        // Update Logic
+        function formatLocalTime(utcDateString) {
+            if (!utcDateString) return "Offline";
+            if (!utcDateString.endsWith('Z')) utcDateString += 'Z';
+            var date = new Date(utcDateString);
+            return isNaN(date.getTime()) ? "Offline" : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
         function updateData() {
-            // 1. Parent Location
+            // 1. Parent GPS
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
-                    var lat = position.coords.latitude;
-                    var lng = position.coords.longitude;
-                    if (parentMarker) parentMarker.setLatLng([lat, lng]);
+                    parentLat = position.coords.latitude;
+                    parentLng = position.coords.longitude;
+                    if (parentMarker) parentMarker.setLatLng([parentLat, parentLng]);
                     else {
                         var icon = L.divIcon({ className: 'p-div', html: '<div class="parent-dot"></div>', iconSize: [16, 16] });
-                        parentMarker = L.marker([lat, lng], {icon: icon}).addTo(map);
+                        parentMarker = L.marker([parentLat, parentLng], {icon: icon}).addTo(map);
                     }
                 }, err => {}, {enableHighAccuracy:true});
             }
 
-            // 2. Children Data
+            // 2. Child Data
             fetch('/api/get_children_data')
                 .then(res => res.json())
                 .then(data => {
@@ -281,19 +262,36 @@
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
 
+                            // Map Marker
                             var icon = L.divIcon({
                                 className: 'custom-div',
                                 html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-icon">`,
                                 iconSize: [45, 45], iconAnchor: [22, 22]
                             });
 
-                            if (markers[child.id]) {
-                                markers[child.id].setLatLng([lat, lng]);
-                            } else {
-                                markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
+                            if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
+                            else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
+
+                            // Distance Calculation (For Side Menu)
+                            if (parentLat && parentLng) {
+                                if (polylines[child.id]) map.removeLayer(polylines[child.id]);
+                                polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 2, opacity: 0.5, dashArray: '5, 10' }).addTo(map);
+
+                                var d = L.latLng(parentLat, parentLng).distanceTo(L.latLng(lat, lng));
+                                var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
+                                
+                                // 🔥 Update Side Menu Distance Badge
+                                var distElem = document.getElementById('dist-' + child.id);
+                                if(distElem) distElem.innerText = distText;
                             }
 
-                            // Check SOS
+                            // Update Time/Status
+                            var statusElem = document.getElementById('status-' + child.id);
+                            if(statusElem && child.last_seen) {
+                                statusElem.innerHTML = `<i class="fa-solid fa-clock"></i> ${formatLocalTime(child.last_seen)}`;
+                            }
+
+                            // SOS Check
                             if (child.is_sos) {
                                 var overlay = document.getElementById('sos-overlay');
                                 if (overlay.style.display !== 'flex') {
@@ -302,9 +300,6 @@
                                     siren.play().catch(e => console.log(e));
                                 }
                             }
-                            
-                            var st = document.getElementById('status-' + child.id);
-                            if(st) st.innerText = "Active";
                         }
                     });
                 });
