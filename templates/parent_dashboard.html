@@ -33,7 +33,7 @@
             position: fixed;
         }
 
-        /* --- 1. PREMIUM HEADER WITH GOLDEN BRANDING --- */
+        /* --- 1. PREMIUM HEADER --- */
         .header {
             background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
@@ -44,13 +44,10 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             flex-shrink: 0;
             z-index: 2001;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
         }
 
-        /* 🔥 सुधार: सुनहरा और प्रीमियम नाम */
         .app-brand {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 800;
             background: linear-gradient(to right, #FFD700, #FFA500);
             -webkit-background-clip: text;
@@ -58,30 +55,70 @@
             letter-spacing: -1px;
         }
         
-        .parent-profile { display: flex; align-items: center; gap: 10px; } 
-        .parent-img {
-            width: 40px; height: 40px; 
+        /* 🔥 सुधार 1: पैरेंट का नाम और फोटो वापस लाया */
+        .parent-profile-box { display: flex; align-items: center; gap: 10px; } 
+        .parent-img-small {
+            width: 35px; height: 35px; 
             border-radius: 50%;
             border: 2px solid #FFD700;
             object-fit: cover;
             background-color: #e1e8ed;
         }
+        .parent-name { font-weight: 600; font-size: 1rem; }
 
-        /* --- 🔥 सुधार: Side Menu (3-Lines) --- */
+        /* --- 🔥 सुधार 3: Side Menu (अब बच्चों की लिस्ट के साथ) --- */
         .side-menu {
-            position: absolute; top: 0; left: -280px; width: 280px; height: 100%;
+            position: absolute; top: 0; left: -300px; width: 300px; height: 100%;
             background: white; transition: 0.4s; z-index: 3000;
             box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
         }
         .side-menu.open { left: 0; }
-        .menu-header { background: #141e30; padding: 30px 20px; color: white; }
+        .menu-header { background: #141e30; padding: 25px 20px; color: white; }
+        
+        /* मेनू लिंक्स */
+        .menu-links { flex-shrink: 0; }
         .menu-item { 
-            display: flex; align-items: center; gap: 15px; padding: 18px 20px;
-            color: #333; text-decoration: none; border-bottom: 1px solid #eee;
-            font-size: 1rem;
+            display: flex; align-items: center; gap: 15px; padding: 15px 20px;
+            color: #333; text-decoration: none; border-bottom: 1px solid #f0f2f5;
+            font-size: 0.95rem; font-weight: 500;
         }
+        .menu-item i { color: #1877F2; width: 20px; text-align: center; }
+        
+        /* साइड मेनू में बच्चों की लिस्ट */
+        .children-list-section {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 15px;
+            background: #f8f9fa;
+        }
+        .section-title {
+            font-size: 0.9rem; color: #666; font-weight: 700;
+            margin: 10px 0 5px 5px; text-transform: uppercase;
+        }
+        .side-child-card {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+        .side-child-img {
+            width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+            border: 2px solid #1877F2; background-color: #e1e8ed;
+        }
+        .side-child-info h4 { font-size: 0.95rem; margin: 0; color: #1c1e21; }
+        .side-child-status { font-size: 0.75rem; color: #65676b; }
+        .side-locate-icon { margin-left: auto; color: #1877F2; background: #e7f3ff; padding: 8px; border-radius: 50%; font-size: 0.9rem; }
 
-        /* --- 🔥 सुधार: Top Menu (3-Dots) --- */
+        /* Logout Button at Bottom */
+        .logout-item { margin-top: auto; border-top: 1px solid #eee; color: #d32f2f !important; }
+        .logout-item i { color: #d32f2f !important; }
+
+        /* --- Top Menu (3-Dots) --- */
         .dot-menu {
             position: absolute; top: 60px; right: 15px; background: white;
             border-radius: 12px; width: 180px; display: none;
@@ -92,58 +129,21 @@
             text-decoration: none; color: #333; font-size: 0.9rem; border-bottom: 1px solid #eee;
         }
 
-        /* --- 2. TOP SECTION (Compact Child Cards) --- */
-        .top-section {
-            padding: 8px 12px;
-            background: #f0f2f5;
-            flex-shrink: 0;
-            max-height: 180px !important; 
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .child-card {
-            background: #ffffff;
-            border-radius: 15px;
-            padding: 10px !important;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            border: 1px solid #e1e8ed;
-        }
-        
-        .profile-area { display: flex; align-items: center; gap: 12px; flex: 1; }
-        .child-img { 
-            width: 45px !important; height: 45px !important; 
-            border-radius: 50%; object-fit: cover; 
-            border: 2px solid #1877F2;
-            background-color: #e1e8ed;
-        }
-        .info h4 { font-size: 1rem; color: #1c1e21; font-weight: 700; }
-        .status-text { font-size: 0.75rem; color: #65676b; margin-top: 2px; }
-        .distance-badge { color: #1877F2; font-weight: bold; font-size: 0.75rem; }
-
-        /* --- 🔥 सुधार: SOS ALERT POPUP --- */
+        /* --- SOS ALERT POPUP --- */
         #sos-alert {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.9); z-index: 99999;
+            background: rgba(220, 53, 69, 0.95); z-index: 99999;
             flex-direction: column; align-items: center; justify-content: center;
-            color: white; text-align: center; padding: 20px;
+            color: white; text-align: center; padding: 30px;
         }
-        .sos-icon { font-size: 5rem; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        .btn-dismiss { background: white; color: red; padding: 15px 40px; border-radius: 30px; border: none; font-weight: bold; margin-top: 30px; font-size: 1.2rem; }
+        .sos-icon { font-size: 5rem; animation: blink 0.5s infinite alternate; }
+        @keyframes blink { from { opacity: 1; transform: scale(1); } to { opacity: 0.7; transform: scale(1.1); } }
+        .btn-dismiss { background: white; color: #dc3545; padding: 15px 40px; border-radius: 30px; border: none; font-weight: bold; margin-top: 30px; font-size: 1.2rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-        /* --- 3. MAP --- */
-        .map-container { 
-            flex-grow: 1; position: relative; margin-bottom: 70px; 
-            border-top-left-radius: 30px; border-top-right-radius: 30px;
-            overflow: hidden; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-        }
+        /* --- MAP & NAV --- */
+        .map-container { flex-grow: 1; position: relative; margin-bottom: 70px; overflow: hidden; }
         #map { height: 100%; width: 100%; }
 
-        /* --- 4. NAV --- */
         .bottom-nav {
             background: white; height: 70px; display: flex; justify-content: space-around; align-items: center;
             position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000;
@@ -156,60 +156,78 @@
         #parent_file_input { display: none; }
         .child-marker-img { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); object-fit: cover; background-color: #e1e8ed;}
         .parent-dot-icon { width: 16px; height: 16px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(24, 119, 242, 0.6); }
+        
+        /* Add Child Form in Menu */
+        .menu-add-child { padding: 15px; border-bottom: 1px solid #eee; }
+        .menu-add-form { display: flex; gap: 10px; }
+        .menu-input-box { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 0.9rem; }
+        .menu-btn-add { background: #1877F2; color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="sos-alert">
-        <i class="fa-solid fa-circle-exclamation sos-icon"></i>
-        <h1 style="font-size: 2.5rem; margin-top: 20px;">EMERGENCY SOS!</h1>
-        <p id="sos-msg" style="font-size: 1.2rem; margin-top: 10px;">Your child needs help!</p>
-        <button class="btn-dismiss" onclick="stopSiren()">I AM SAFE / DISMISS</button>
+        <i class="fa-solid fa-triangle-exclamation sos-icon"></i>
+        <h1 style="font-size: 2.2rem; margin-top: 20px; font-weight: 800;">SOS EMERGENCY!</h1>
+        <p id="sos-msg" style="font-size: 1.1rem; margin-top: 10px; font-weight: 500;">Child needs help immediately!</p>
+        <button class="btn-dismiss" onclick="stopSiren()">I'M SAFE / DISMISS</button>
     </div>
 
     <div class="header">
         <i class="fa-solid fa-bars-staggered" style="font-size:1.4rem; cursor:pointer;" onclick="toggleSideMenu()"></i>
-        <div class="app-brand">suraksha</div>
+        
+        <div class="parent-profile-box">
+            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="parent-img-small">
+            <span class="parent-name">{{ username }}</span>
+        </div>
+
         <i class="fa-solid fa-ellipsis-vertical" style="font-size:1.4rem; cursor:pointer;" onclick="toggleDotMenu()"></i>
     </div>
 
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
-            <h2 class="app-brand">suraksha</h2>
-            <p>Premium Family Protection</p>
+            <h2 class="app-brand" style="font-size: 1.8rem;">suraksha</h2>
+            <p style="opacity: 0.8; font-size: 0.9rem;">Premium Family Protection</p>
         </div>
-        <a href="#" class="menu-item"><i class="fa-solid fa-users-viewfinder"></i> Family Map</a>
-        <a href="#" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Privacy & Safety</a>
-        <a href="#" class="menu-item" onclick="document.getElementById('parent_file_input').click()"><i class="fa-solid fa-camera"></i> Change Profile Pic</a>
-        <a href="{{ url_for('logout') }}" style="color: red;" class="menu-item"><i class="fa-solid fa-power-off"></i> Logout</a>
+        
+        <div class="menu-links">
+            <a href="#" class="menu-item" onclick="toggleSideMenu()"><i class="fa-solid fa-map-location-dot"></i> Family Map View</a>
+            <a href="#" class="menu-item" onclick="alert('Privacy & Safety features coming soon!')"><i class="fa-solid fa-user-shield"></i> Privacy & Safety</a>
+            <a href="#" class="menu-item" onclick="document.getElementById('parent_file_input').click()"><i class="fa-solid fa-camera-rotate"></i> Change Profile Pic</a>
+        </div>
+
+        <div class="menu-add-child">
+            <form action="{{ url_for('add_child') }}" method="POST" class="menu-add-form">
+                <input type="text" name="child_name" placeholder="Add new child..." class="menu-input-box" required>
+                <button type="submit" class="menu-btn-add"><i class="fa-solid fa-plus"></i></button>
+            </form>
+        </div>
+
+        <div class="children-list-section">
+            <div class="section-title">My Children</div>
+            {% if children %}
+                {% for child in children %}
+                <div class="side-child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}'); toggleSideMenu();">
+                    <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="side-child-img">
+                    <div class="side-child-info">
+                        <h4>{{ child.name }}</h4>
+                        <div id="status-{{ child.id }}" class="side-child-status">Updating...</div>
+                    </div>
+                    <i class="fa-solid fa-location-crosshairs side-locate-icon"></i>
+                    <span id="dist-{{ child.id }}" style="display:none;"></span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="padding: 20px; text-align: center; color: #999;">No children added yet.</p>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="menu-item logout-item"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
     </div>
 
     <div class="dot-menu" id="dotMenu">
         <a href="#"><i class="fa-solid fa-gear"></i> App Settings</a>
         <a href="#"><i class="fa-solid fa-bell"></i> Notification Settings</a>
-    </div>
-
-    <div class="top-section">
-        <form action="{{ url_for('add_child') }}" method="POST" class="add-form">
-            <input type="text" name="child_name" placeholder="Add child..." class="input-box" required>
-            <button type="submit" class="btn-add"><i class="fa-solid fa-plus"></i></button>
-        </form>
-
-        {% if children %}
-            {% for child in children %}
-            <div class="child-card" onclick="focusMap('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
-                <div class="profile-area">
-                    <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="child-img">
-                    <div class="info">
-                        <h4>{{ child.name }}</h4>
-                        <div id="status-{{ child.id }}" class="status-text">...</div>
-                        <span id="dist-{{ child.id }}" class="distance-badge">Tracking...</span>
-                    </div>
-                </div>
-                <button class="locate-btn"><i class="fa-solid fa-crosshairs"></i></button>
-            </div>
-            {% endfor %}
-        {% endif %}
     </div>
 
     <div class="map-container">
@@ -218,8 +236,8 @@
 
     <div class="bottom-nav">
         <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i>Home</a>
-        <a href="{{ url_for('geofence_page') }}" class="nav-item"><i class="fa-solid fa-shield-halved"></i>Zone</a>
-        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-rotate"></i>Refresh</a>
+        <a href="{{ url_for('geofence_page') }}" class="nav-item"><i class="fa-solid fa-circle-nodes"></i>Zone</a>
+        <a href="#" onclick="location.reload()" class="nav-item"><i class="fa-solid fa-rotate-right"></i>Refresh</a>
     </div>
 
     <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
@@ -237,7 +255,7 @@
         var polylines = {}; 
         var parentMarker = null;
         var parentLat = null, parentLng = null;
-        var sirenAudio = new Audio('https://www.soundjay.com/buttons/sounds/beep-01a.mp3'); // सायरन के लिए
+        var sirenAudio = new Audio('https://www.soundjay.com/buttons/sounds/alarm-siren-01.mp3'); // बेहतर सायरन साउंड
 
         function toggleSideMenu() { document.getElementById("sideMenu").classList.toggle("open"); }
         function toggleDotMenu() {
@@ -253,6 +271,7 @@
         function stopSiren() {
             document.getElementById("sos-alert").style.display = "none";
             sirenAudio.pause();
+            sirenAudio.currentTime = 0;
         }
 
         function updateParentMarker() {
@@ -269,6 +288,13 @@
             }
         }
 
+        function formatLocalTime(utcDateString) {
+            if (!utcDateString) return "Offline";
+            if (!utcDateString.endsWith('Z')) utcDateString += 'Z';
+            var date = new Date(utcDateString);
+            return isNaN(date.getTime()) ? "Offline" : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
         function updateLocations() {
             updateParentMarker();
             fetch('/api/get_children_data')
@@ -279,11 +305,14 @@
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
                             
-                            // 🔥 सुधार: SOS अलर्ट चेक करना
+                            // SOS Alert Check
                             if (child.is_sos) {
-                                document.getElementById("sos-alert").style.display = "flex";
-                                document.getElementById("sos-msg").innerText = child.name + " is in DANGER!";
-                                sirenAudio.play();
+                                var sosAlert = document.getElementById("sos-alert");
+                                if (sosAlert.style.display !== "flex") {
+                                    sosAlert.style.display = "flex";
+                                    document.getElementById("sos-msg").innerText = child.name + " has triggered SOS!";
+                                    sirenAudio.play().catch(e => console.log("Audio play failed:", e));
+                                }
                             }
 
                             var childIcon = L.divIcon({
@@ -297,13 +326,20 @@
 
                             if (parentLat && parentLng) {
                                 if (polylines[child.id]) { map.removeLayer(polylines[child.id]); }
-                                polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 2, opacity: 0.5, dashArray: '5, 10' }).addTo(map);
+                                polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 3, opacity: 0.6, dashArray: '1, 0' }).addTo(map);
+                                // डिस्टेंस अपडेट (Hidden है पर अपडेट होता रहेगा)
                                 var distElem = document.getElementById(`dist-${child.id}`);
                                 if (distElem) {
                                     var d = L.latLng(parentLat, parentLng).distanceTo(L.latLng(lat, lng));
-                                    distElem.innerHTML = `<i class="fa-solid fa-route"></i> ${d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km"}`;
+                                    distElem.innerHTML = d < 1000 ? Math.round(d) + " m away" : (d/1000).toFixed(1) + " km away";
                                 }
                             }
+                        }
+                        
+                        // साइड मेनू में स्टेटस और टाइम अपडेट
+                        var statusElem = document.getElementById(`status-${child.id}`);
+                        if (statusElem && child.last_seen) {
+                            statusElem.innerHTML = `<i class="fa-solid fa-clock" style="font-size:0.7rem; margin-right:3px;"></i> ${formatLocalTime(child.last_seen)}`;
                         }
                     });
                 });
