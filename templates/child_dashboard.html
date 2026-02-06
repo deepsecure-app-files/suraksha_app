@@ -9,7 +9,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
         
-        /* 🔥 सुधार 1: स्क्रीन JAM और COPY पूरी तरह बंद */
+        /* 🔥 सुधार 1: स्क्रीन को पूरी तरह JAM (Lock) करना और COPY रोकना */
         html, body { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
             overflow: hidden !important; position: fixed; 
@@ -31,16 +31,28 @@
         }
         .top-bar i { color: white; font-size: 1.4rem; cursor: pointer; padding: 5px; }
 
-        /* --- Side Menus --- */
+        /* --- 🔥 सुधार 2: Side Panel (Side Menu) को अलग-अलग लाइन में करना --- */
         .side-panel {
             position: absolute; top: 0; left: -280px; width: 280px; height: 100%;
             background: white; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000;
             box-shadow: 10px 0 30px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; /* ऑप्शंस को ऊपर-नीचे करने के लिए */
         }
         .side-panel.open { left: 0; }
         .panel-header { background: #1877F2; padding: 40px 20px; color: white; }
-        .panel-header h3 { font-size: 1.5rem; }
+        .panel-header h3 { font-size: 1.5rem; margin-bottom: 5px; font-weight: 800; }
+        .panel-header p { font-size: 0.85rem; opacity: 0.9; }
         
+        /* मेनू के हर ऑप्शन को अलग लाइन में और गैप के साथ सेट करना */
+        .menu-list { flex: 1; overflow-y: auto; padding-top: 10px; }
+        .menu-item { 
+            display: flex; align-items: center; gap: 15px; padding: 18px 25px;
+            color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;
+            font-size: 1rem; font-weight: 500; transition: 0.2s;
+        }
+        .menu-item:active { background: #f8fafc; }
+        .menu-item i { font-size: 1.2rem; width: 25px; color: #1877F2; }
+
         .dot-menu {
             position: absolute; top: 65px; right: 20px; background: white;
             border-radius: 12px; width: 190px; display: none;
@@ -51,10 +63,8 @@
             text-decoration: none; color: #333; font-size: 0.95rem; border-bottom: 1px solid #f0f2f5;
         }
 
-        /* --- प्रोफाइल और नाम (बड़ा और Facebook जैसा) --- */
+        /* --- प्रोफाइल और नाम --- */
         .profile-container { text-align: center; margin-top: 5px; width: 100%; }
-        
-        /* 🔥 सुधार 2: बच्चे का नाम बड़ा और बोल्ड */
         .child-display-name { 
             color: white; font-size: 2.2rem; font-weight: 700; 
             margin-bottom: 5px; text-transform: capitalize;
@@ -112,9 +122,12 @@
             <h3>suraksha</h3>
             <p>Premium Protection</p>
         </div>
-        <a href="#" class="menu-item"><i class="fa-solid fa-circle-user"></i> My Profile</a>
-        <a href="#" class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Location History</a>
-        <a href="#" class="menu-item"><i class="fa-solid fa-handshake-angle"></i> Support</a>
+        <div class="menu-list">
+            <a href="#" class="menu-item"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Location History</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Privacy Policy</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-handshake-angle"></i> Support</a>
+        </div>
     </div>
 
     <div class="dot-menu" id="dotNav">
@@ -146,7 +159,7 @@
             Security shield is active for your safety.
         </p>
         <button class="sos-action-btn" onclick="triggerSOSAlert()">
-            <i class="fa-solid fa-land-mine-on"></i> SOS EMERGENCY
+            <i class="fa-solid fa-bell"></i> SOS EMERGENCY
         </button>
     </div>
 
@@ -157,6 +170,7 @@
             d.style.display = (d.style.display === "block") ? "none" : "block";
         }
         
+        // स्क्रीन पर कहीं भी क्लिक करने पर मेनू बंद करें
         window.onclick = function(e) {
             if (!e.target.matches('.fa-bars-staggered') && !e.target.closest('.side-panel')) {
                 document.getElementById("sideNav").classList.remove("open");
@@ -195,3 +209,4 @@
     </script>
 </body>
 </html>
+
