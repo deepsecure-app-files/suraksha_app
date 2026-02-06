@@ -61,7 +61,7 @@ class Child(db.Model):
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
     
-    # 🔥 NEW: SOS Feature ke liye column jora gya hai
+    # 🔥 सिर्फ यह लाइन जोड़ी है SOS के लिए
     is_sos = db.Column(db.Boolean, default=False)
 
 class Geofence(db.Model):
@@ -102,7 +102,6 @@ def home():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    # 🌟 Pukka ilaj: Table ko runtime par banana
     db.create_all()
     if request.method == 'POST':
         username = request.form['username']
@@ -129,7 +128,6 @@ def signup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Login par bhi suraksha ke liye tables check karein
     db.create_all()
     if request.method == 'POST':
         username = request.form['username']
@@ -217,7 +215,7 @@ def update_location():
             data = request.get_json()
             child_entry.last_latitude = data.get('latitude')
             child_entry.last_longitude = data.get('longitude')
-            # 🔥 NEW: SOS status ko save karna
+            # 🔥 यहाँ SOS स्टेटस सेव कर रहे हैं
             child_entry.is_sos = data.get('is_sos', False)
             child_entry.last_seen = datetime.datetime.utcnow()
             db.session.commit()
@@ -246,7 +244,7 @@ def get_children_data():
             'last_longitude': child.last_longitude,
             'last_seen': child.last_seen.isoformat() if child.last_seen else None,
             'profile_pic': pic,
-            # 🔥 NEW: SOS status bhejna taki Parent Dashboard par Siren baje
+            # 🔥 यहाँ SOS स्टेटस भेज रहे हैं ताकि सायरन बजे
             'is_sos': child.is_sos
         })
     return jsonify(children=children_list)
@@ -278,6 +276,6 @@ def geofence_page():
 
 if __name__ == '__main__':
     with app.app_context():
-        # Database tables create karna agar nahi hain
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
+
