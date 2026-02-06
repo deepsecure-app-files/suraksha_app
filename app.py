@@ -60,9 +60,6 @@ class Child(db.Model):
     last_seen = db.Column(db.DateTime, nullable=True)
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
-    
-    # 🔥 सिर्फ यह लाइन जोड़ी है SOS के लिए
-    is_sos = db.Column(db.Boolean, default=False)
 
 class Geofence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -102,6 +99,7 @@ def home():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    # 🌟 पक्का इलाज: टेबल को रनटाइम पर बनाना
     db.create_all()
     if request.method == 'POST':
         username = request.form['username']
@@ -128,6 +126,7 @@ def signup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # लॉगिन पर भी सुरक्षा के लिए टेबल्स चेक करें
     db.create_all()
     if request.method == 'POST':
         username = request.form['username']
@@ -215,8 +214,6 @@ def update_location():
             data = request.get_json()
             child_entry.last_latitude = data.get('latitude')
             child_entry.last_longitude = data.get('longitude')
-            # 🔥 यहाँ SOS स्टेटस सेव कर रहे हैं
-            child_entry.is_sos = data.get('is_sos', False)
             child_entry.last_seen = datetime.datetime.utcnow()
             db.session.commit()
             return jsonify(status='success')
@@ -243,9 +240,7 @@ def get_children_data():
             'last_latitude': child.last_latitude,
             'last_longitude': child.last_longitude,
             'last_seen': child.last_seen.isoformat() if child.last_seen else None,
-            'profile_pic': pic,
-            # 🔥 यहाँ SOS स्टेटस भेज रहे हैं ताकि सायरन बजे
-            'is_sos': child.is_sos
+            'profile_pic': pic
         })
     return jsonify(children=children_list)
 
@@ -278,4 +273,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
-
