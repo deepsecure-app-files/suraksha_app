@@ -12,6 +12,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
+        /* Anti-Select & Pro Feel */
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
         img { pointer-events: none; -webkit-user-drag: none; }
@@ -34,7 +35,7 @@
         .header-right { flex: 1; display: flex; justify-content: flex-end; }
         .menu-btn { color: white; font-size: 1.5rem; cursor: pointer; padding: 5px; }
 
-        /* SIDE MENU (CLEANED) */
+        /* SIDE MENU */
         .side-menu {
             position: absolute; top: 0; left: -320px; width: 300px; height: 100%;
             background: white; transition: 0.3s ease-in-out; z-index: 3000; 
@@ -42,9 +43,8 @@
         }
         .side-menu.open { left: 0; }
         
-        /* 🔥 FIX: Clean Header (No Hello text) */
         .menu-header { 
-            background: #1877F2; padding: 20px; color: white; 
+            background: #1877F2; padding: 25px; color: white; 
             display: flex; align-items: center; justify-content: center;
         }
         .menu-brand { font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; }
@@ -52,19 +52,33 @@
         .children-section { flex: 1; overflow-y: auto; padding: 10px; background: #f0f2f5; }
 
         .menu-child-card {
-            background: white; border-radius: 10px; padding: 12px; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 12px; border: 1px solid #ddd;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; position: relative;
+            background: white; border-radius: 12px; padding: 12px; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 12px; border: 1px solid #e1e4e8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; position: relative;
         }
-        .menu-child-card:active { background: #eef2ff; }
-        .menu-child-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #1877F2; }
+        .menu-child-card:active { background: #f8fafc; }
+        .menu-child-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; } /* Gold Border */
         .menu-child-info { flex: 1; }
         
-        .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
-        .dist-badge { font-size: 0.75rem; color: #1877F2; font-weight: bold; background: #e7f3ff; padding: 2px 8px; border-radius: 10px; }
+        /* 🔥 GOLDEN NAME STYLE */
+        .child-name-gold {
+            color: #b45309; /* Deep Gold/Amber */
+            font-weight: 900;
+            font-size: 1.1rem;
+            text-transform: capitalize;
+            margin-bottom: 2px;
+        }
+
+        .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+        
+        .dist-badge { 
+            font-size: 0.8rem; color: #1877F2; font-weight: bold; 
+            background: #e7f3ff; padding: 4px 10px; border-radius: 15px; 
+            display: flex; align-items: center; gap: 5px;
+        }
         
         /* Battery Colors */
-        .bat-badge { font-size: 0.75rem; font-weight: bold; padding: 2px 8px; border-radius: 10px; }
+        .bat-badge { font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 15px; display: flex; align-items: center; gap: 5px; }
         .bat-high { color: #16a34a; background: #dcfce7; }
         .bat-low { color: #dc2626; background: #fee2e2; }
 
@@ -89,23 +103,23 @@
         }
         .sos-btn-stop { background: white; color: #dc2626; padding: 15px 40px; border-radius: 50px; border: none; font-weight: bold; font-size: 1.2rem; margin-top: 30px; }
 
-        /* 🔥 NEW: Custom Toast (No URL Alert) */
+        /* Custom Toast */
         #toast {
-            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
-            text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 5000;
-            left: 50%; bottom: 80px; transform: translateX(-50%); font-size: 0.9rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+            visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
+            text-align: center; border-radius: 50px; padding: 14px; position: fixed; z-index: 5000;
+            left: 50%; bottom: 80px; transform: translateX(-50%); font-size: 0.95rem; font-weight: 500;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 100px; }
         
         #parent_file_input { display: none; }
         .child-marker-icon { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.4); object-fit: cover; background: #fff; }
-        .parent-dot { width: 16px; height: 16px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(24, 119, 242, 0.5); }
+        .parent-dot { width: 18px; height: 18px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 15px rgba(24, 119, 242, 0.6); }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="toast">Default Message</div>
+    <div id="toast">Message</div>
 
     <div id="sos-overlay">
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 5rem; animation: pulse 0.5s infinite;"></i>
@@ -126,7 +140,7 @@
 
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
-            <div class="menu-brand">Suraksha</div>
+            <div class="menu-brand">Suraksha Family</div>
         </div>
 
         <div class="children-section">
@@ -135,14 +149,14 @@
                 <div class="menu-child-card" onclick="locateChild('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
                     <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="menu-child-img">
                     <div class="menu-child-info">
-                        <h4>{{ child.name }}</h4>
+                        <div class="child-name-gold">{{ child.name }}</div>
                         <span style="font-size:0.75rem; color:#64748b;">ID: {{ child.pairing_code }}</span>
                         
                         <div class="status-row">
                             <div class="dist-badge" id="dist-{{ child.id }}">
                                 <i class="fa-solid fa-location-arrow"></i> --
                             </div>
-                            <div class="bat-badge {{ 'bat-low' if (child.battery and child.battery < 20) else 'bat-high' }}" id="bat-{{ child.id }}">
+                            <div class="bat-badge {{ 'bat-low' if (child.battery is none or child.battery < 20) else 'bat-high' }}" id="bat-{{ child.id }}">
                                 <i class="fa-solid fa-battery-full"></i> {{ child.battery or 0 }}%
                             </div>
                         </div>
@@ -181,14 +195,14 @@
         var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
         L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
 
-        var markers = {}; var polylines = {}; var parentMarker = null; var parentLat = null, parentLng = null;
+        var markers = {}; var polylines = {}; var parentMarker = null; 
+        var parentLat = null, parentLng = null;
         var siren = new Audio('https://www.soundjay.com/buttons/sounds/alarm-siren-01.mp3');
 
         function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
         document.getElementById('map').onclick = function() { document.getElementById('sideMenu').classList.remove('open'); }
         function dismissSOS() { document.getElementById('sos-overlay').style.display = 'none'; siren.pause(); siren.currentTime = 0; }
 
-        // 🔥 FIX: Show Custom Toast instead of Alert
         function showToast(msg) {
             var x = document.getElementById("toast");
             x.innerText = msg;
@@ -197,27 +211,34 @@
         }
 
         function locateChild(lat, lng) {
-            if (lat && lat !== 'None') { 
+            // Check if lat/lng are valid numbers
+            if (lat && lat !== 'None' && lat !== 'null') { 
                 map.setView([lat, lng], 18); 
                 toggleMenu(); 
-            }
-            else { 
-                // 🔥 Replaced Alert with Toast
-                showToast("⚠️ Waiting for location update..."); 
+            } else { 
+                showToast("⚠️ Location not updated yet."); 
             }
         }
 
+        // 🔥 FIX: Improved GPS Logic for Parent
         function updateParentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(position => {
                     parentLat = position.coords.latitude;
                     parentLng = position.coords.longitude;
-                    if (parentMarker) parentMarker.setLatLng([parentLat, parentLng]);
-                    else {
-                        var icon = L.divIcon({ className: 'p-div', html: '<div class="parent-dot"></div>', iconSize: [16, 16] });
+                    
+                    if (parentMarker) {
+                        parentMarker.setLatLng([parentLat, parentLng]);
+                    } else {
+                        var icon = L.divIcon({ className: 'p-div', html: '<div class="parent-dot"></div>', iconSize: [18, 18] });
                         parentMarker = L.marker([parentLat, parentLng], {icon: icon}).addTo(map);
+                        // Center map on parent initially
+                        map.setView([parentLat, parentLng], 15);
                     }
-                }, err => console.log("Parent GPS Error"), { enableHighAccuracy: true });
+                }, err => {
+                    console.log("GPS Permission Error");
+                    showToast("⚠️ Turn on GPS for Distance");
+                }, { enableHighAccuracy: true, maximumAge: 10000 });
             }
         }
         updateParentLocation();
@@ -227,12 +248,14 @@
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
+                        // 1. Update Battery
                         var batElem = document.getElementById('bat-' + child.id);
                         if(batElem) {
                             batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${child.battery}%`;
-                            batElem.className = child.battery < 20 ? "bat-badge bat-low" : "bat-badge bat-high";
+                            batElem.className = (child.battery < 20) ? "bat-badge bat-low" : "bat-badge bat-high";
                         }
 
+                        // 2. SOS Logic
                         if (child.is_sos) {
                             var overlay = document.getElementById('sos-overlay');
                             if (overlay.style.display !== 'flex') {
@@ -242,9 +265,12 @@
                             }
                         }
 
+                        // 3. Map & Distance Logic
                         if (child.last_latitude) {
-                            var lat = child.last_latitude;
-                            var lng = child.last_longitude;
+                            var lat = parseFloat(child.last_latitude);
+                            var lng = parseFloat(child.last_longitude);
+                            
+                            // Marker update
                             var icon = L.divIcon({
                                 className: 'custom-div',
                                 html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-icon">`,
@@ -254,12 +280,20 @@
                             if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
                             else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
 
+                            // 🔥 FIX: Robust Distance Calculation
                             if (parentLat && parentLng) {
+                                // Draw Line
                                 if (polylines[child.id]) map.removeLayer(polylines[child.id]);
-                                polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 2, opacity: 0.5, dashArray: '5, 10' }).addTo(map);
+                                polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 3, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
                                 
-                                var d = L.latLng(parentLat, parentLng).distanceTo(L.latLng(lat, lng));
+                                // Calculate Distance
+                                var p1 = L.latLng(parentLat, parentLng);
+                                var p2 = L.latLng(lat, lng);
+                                var d = p1.distanceTo(p2); // Metres
+                                
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
+                                
+                                // Update text in menu
                                 var distElem = document.getElementById('dist-' + child.id);
                                 if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-arrow"></i> ${distText}`;
                             }
@@ -267,8 +301,9 @@
                     });
                 });
         }
-        setInterval(updateData, 5000);
+        setInterval(updateData, 4000); // Check every 4 seconds
         updateData();
     </script>
 </body>
 </html>
+
