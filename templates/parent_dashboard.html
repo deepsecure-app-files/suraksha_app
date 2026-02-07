@@ -42,10 +42,12 @@
         .side-menu.open { left: 0; }
         
         .menu-header { 
-            background: #1877F2; padding: 25px; color: white; 
-            display: flex; align-items: center; justify-content: center;
+            background: #1877F2; padding: 30px 20px; color: white; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
         }
-        .menu-brand { font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; }
+        .menu-brand { font-size: 2rem; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
+        .menu-user { font-size: 1.1rem; font-weight: 500; opacity: 0.9; }
 
         .children-section { flex: 1; overflow-y: auto; padding: 10px; background: #f0f2f5; }
 
@@ -58,7 +60,7 @@
         .menu-child-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; }
         .menu-child-info { flex: 1; }
         
-        /* 🔥 GOLDEN NAME */
+        /* GOLDEN NAME */
         .child-name-gold {
             color: #b45309; font-weight: 900; font-size: 1.1rem; text-transform: capitalize; margin-bottom: 2px;
         }
@@ -131,7 +133,8 @@
 
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
-            <div class="menu-brand">Suraksha Family</div>
+            <div class="menu-brand">Suraksha</div>
+            <div class="menu-user">Hello, {{ username }}</div>
         </div>
 
         <div class="children-section">
@@ -145,7 +148,7 @@
                         
                         <div class="status-row">
                             <div class="dist-badge" id="dist-{{ child.id }}">
-                                <i class="fa-solid fa-location-arrow"></i> --
+                                <i class="fa-solid fa-location-arrow"></i> Finding...
                             </div>
                             <div class="bat-badge {{ 'bat-low' if (child.last_battery is none or child.last_battery < 20) else 'bat-high' }}" id="bat-{{ child.id }}">
                                 <i class="fa-solid fa-battery-full"></i> {{ child.last_battery or 0 }}%
@@ -210,8 +213,12 @@
             }
         }
 
+        // 🔥 FIX 2: Stronger GPS Logic for Blue Line
         function updateParentLocation() {
             if (navigator.geolocation) {
+                // Show toast to confirm GPS is trying
+                console.log("Requesting GPS...");
+                
                 navigator.geolocation.watchPosition(position => {
                     parentLat = position.coords.latitude;
                     parentLng = position.coords.longitude;
@@ -222,10 +229,14 @@
                         var icon = L.divIcon({ className: 'p-div', html: '<div class="parent-dot"></div>', iconSize: [18, 18] });
                         parentMarker = L.marker([parentLat, parentLng], {icon: icon}).addTo(map);
                         map.setView([parentLat, parentLng], 15);
+                        showToast("✅ Parent GPS Locked");
                     }
                 }, err => {
-                    console.log("GPS Error");
-                }, { enableHighAccuracy: true, maximumAge: 10000 });
+                    console.log("GPS Error", err);
+                    showToast("⚠️ Turn on GPS/Location for Line");
+                }, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+            } else {
+                showToast("GPS not supported");
             }
         }
         updateParentLocation();
@@ -235,14 +246,14 @@
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
-                        // 1. Update Battery
+                        // Battery Update
                         var batElem = document.getElementById('bat-' + child.id);
                         if(batElem) {
-                            batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${child.battery}%`;
-                            batElem.className = (child.battery < 20) ? "bat-badge bat-low" : "bat-badge bat-high";
+                            batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${child.last_battery or 0}%`;
+                            batElem.className = (child.last_battery < 20) ? "bat-badge bat-low" : "bat-badge bat-high";
                         }
 
-                        // 2. SOS Logic
+                        // SOS Logic
                         if (child.is_sos) {
                             var overlay = document.getElementById('sos-overlay');
                             if (overlay.style.display !== 'flex') {
@@ -252,8 +263,8 @@
                             }
                         }
 
-                        // 3. Map & Distance Logic
-                        if (child.last_latitude) {
+                        // Map & Distance Logic
+                        if (child.last_latitude && child.last_latitude !== 'None') {
                             var lat = parseFloat(child.last_latitude);
                             var lng = parseFloat(child.last_longitude);
                             
@@ -266,15 +277,24 @@
                             if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
                             else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
 
+                            // 🔥 DRAW BLUE LINE
                             if (parentLat && parentLng) {
+                                // Remove old line
                                 if (polylines[child.id]) map.removeLayer(polylines[child.id]);
-                                polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 3, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
                                 
+                                // Create new Blue Dashed Line
+                                polylines[child.id] = L.polyline(
+                                    [[parentLat, parentLng], [lat, lng]], 
+                                    { color: '#1877F2', weight: 3, opacity: 0.8, dashArray: '10, 10' }
+                                ).addTo(map);
+                                
+                                // Calculate Distance
                                 var p1 = L.latLng(parentLat, parentLng);
                                 var p2 = L.latLng(lat, lng);
-                                var d = p1.distanceTo(p2);
+                                var d = p1.distanceTo(p2); // Meters
                                 
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
+                                
                                 var distElem = document.getElementById('dist-' + child.id);
                                 if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-arrow"></i> ${distText}`;
                             }
