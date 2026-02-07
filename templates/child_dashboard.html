@@ -13,92 +13,94 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         
         body { 
-            background-color: #0f172a; /* वो डार्क नेवी ब्लू बैकग्राउंड */
-            height: 100vh; 
-            display: flex; flex-direction: column; align-items: center; 
-            color: white; overflow: hidden;
+            background-color: #f0f2f5; 
+            height: 100vh; display: flex; flex-direction: column; 
+            overflow: hidden; position: fixed; width: 100%;
         }
 
-        /* --- HEADER & MENU --- */
+        /* --- 1. HEADER (Parent Style) --- */
         .header {
-            width: 100%; padding: 20px;
+            background: #141e30; /* Dark Theme like Parent */
+            padding: 10px 15px;
             display: flex; justify-content: space-between; align-items: center;
-            z-index: 100;
+            height: 70px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 1000;
         }
-        .menu-btn { font-size: 1.5rem; cursor: pointer; }
-        .app-logo { font-size: 1.2rem; font-weight: 700; color: #3b82f6; } /* suraksha blue text */
-        
-        /* --- SIDE MENU (Overlay) --- */
+
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .child-img-small {
+            width: 45px; height: 45px; border-radius: 50%;
+            border: 2px solid #1877F2; object-fit: cover;
+            background: white;
+        }
+
+        /* Golden Branding */
+        .app-brand {
+            font-size: 1.6rem; font-weight: 800;
+            background: linear-gradient(to right, #FFD700, #FFA500);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .menu-btn { color: white; font-size: 1.5rem; cursor: pointer; }
+
+        /* --- 2. SIDE MENU (Working Links) --- */
         .side-menu {
-            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-            background: white; z-index: 5000; transition: 0.3s ease;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            position: absolute; top: 0; left: -300px; width: 280px; height: 100%;
+            background: white; transition: 0.3s ease-in-out; 
+            z-index: 3000; display: flex; flex-direction: column;
+            box-shadow: 10px 0 20px rgba(0,0,0,0.3);
         }
         .side-menu.open { left: 0; }
         
-        .menu-header-blue {
-            background: #1877F2; height: 160px; padding: 20px;
-            display: flex; flex-direction: column; justify-content: flex-end; color: white;
+        .menu-header { 
+            background: #141e30; padding: 30px 20px; color: white; 
+            border-bottom: 4px solid #FFD700;
         }
+        .menu-user-name { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; }
+
         .menu-list { padding: 10px 0; }
         .menu-item {
             padding: 15px 20px; display: flex; align-items: center; gap: 15px;
             color: #333; text-decoration: none; font-size: 1rem; font-weight: 500;
+            border-bottom: 1px solid #f0f2f5;
         }
-        .menu-item i { color: #1877F2; width: 20px; text-align: center; }
+        .menu-item:active { background: #f0f2f5; }
+        .menu-item i { color: #1877F2; width: 25px; text-align: center; font-size: 1.2rem; }
 
-        /* --- MAIN PROFILE SECTION (Photo 3198.jpg Style) --- */
-        .main-content {
-            flex: 1; display: flex; flex-direction: column; align-items: center; width: 100%; padding-top: 20px;
-        }
-
-        .child-name { font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
-        .status-text { color: #94a3b8; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 30px; text-transform: uppercase; }
-
-        .profile-container { position: relative; margin-bottom: 40px; }
-        .profile-img {
-            width: 140px; height: 140px; border-radius: 50%;
-            border: 4px solid #3b82f6; object-fit: cover;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-        }
-        .camera-icon {
-            position: absolute; bottom: 5px; right: 5px;
-            background: #f0f2f5; color: #333; width: 35px; height: 35px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; border: 2px solid white;
+        /* --- 3. MAIN CONTENT (No Map, Just Protection Status) --- */
+        .main-container {
+            flex: 1; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center;
+            background: white; margin: 15px; border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center; position: relative;
         }
 
-        /* --- BOTTOM CARD (Safety Shield & SOS) --- */
-        .bottom-card {
-            background: white; width: 100%; flex: 1;
-            border-top-left-radius: 30px; border-top-right-radius: 30px;
-            padding: 30px 20px; text-align: center;
-            display: flex; flex-direction: column; align-items: center;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+        /* Shield Animation */
+        .shield-icon {
+            font-size: 5rem; color: #1877F2; margin-bottom: 20px;
+            animation: pulse-shield 2s infinite;
         }
+        @keyframes pulse-shield { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
 
-        .connected-badge {
-            background: #e0f2fe; color: #0284c7; padding: 8px 20px;
-            border-radius: 20px; font-weight: 700; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 8px; margin-bottom: 15px;
+        .status-title { font-size: 1.5rem; font-weight: 800; color: #141e30; margin-bottom: 10px; }
+        .status-desc { color: #64748b; font-size: 0.9rem; max-width: 80%; margin: 0 auto 40px; }
+
+        /* --- 4. SOS BUTTON (Big & Prominent) --- */
+        .sos-btn-big {
+            width: 180px; height: 180px;
+            background: linear-gradient(145deg, #dc2626, #ef4444);
+            color: white; border-radius: 50%; border: 8px solid rgba(239, 68, 68, 0.2);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+            cursor: pointer; transition: 0.2s;
+            margin-bottom: 40px;
         }
-        .dot { width: 8px; height: 8px; background: #0284c7; border-radius: 50%; }
+        .sos-btn-big:active { transform: scale(0.95); }
+        .sos-icon-inner { font-size: 3rem; margin-bottom: 5px; }
+        .sos-text { font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; }
 
-        .info-txt { color: #64748b; font-size: 0.9rem; margin-bottom: 30px; }
-
-        /* 🔥 RED WIDE SOS BUTTON (Photo 3198.jpg) */
-        .sos-btn-wide {
-            width: 100%; max-width: 300px;
-            background: linear-gradient(to right, #ff416c, #ff4b2b);
-            color: white; padding: 18px; border-radius: 15px;
-            font-size: 1.2rem; font-weight: 700; border: none;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            box-shadow: 0 10px 20px rgba(255, 75, 43, 0.3);
-            cursor: pointer; animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-
-        /* --- 🔥 PAIRING OVERLAY (Photo 3205.jpg Style) --- */
+        /* --- PAIRING SCREEN (Original Logic) --- */
         .pairing-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #f0f2f5; z-index: 9999;
@@ -108,20 +110,17 @@
         .pair-card {
             background: white; padding: 30px; border-radius: 20px;
             width: 100%; max-width: 340px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        .link-icon { font-size: 3rem; color: #1877F2; margin-bottom: 15px; }
         .pair-input {
-            width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e1e8ed;
-            border-radius: 10px; font-size: 1.2rem; text-align: center; font-weight: bold; letter-spacing: 2px;
-            outline: none; transition: 0.3s;
+            width: 100%; padding: 14px; margin: 20px 0; border: 2px solid #e1e8ed;
+            border-radius: 10px; font-size: 1.4rem; text-align: center; font-weight: bold; letter-spacing: 2px;
+            outline: none; text-transform: uppercase;
         }
-        .pair-input:focus { border-color: #1877F2; }
-        .pair-btn-blue {
+        .pair-btn {
             background: #1877F2; color: white; border: none; padding: 14px;
-            width: 100%; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer;
+            width: 100%; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer;
         }
-        .logout-link { display: block; margin-top: 20px; color: #dc2626; text-decoration: none; font-size: 0.9rem; }
 
         #child_file_input { display: none; }
     </style>
@@ -131,60 +130,67 @@
     {% if not parent %}
     <div class="pairing-overlay">
         <div class="pair-card">
-            <div class="link-icon"><i class="fa-solid fa-link"></i></div>
-            <h2 style="color:#1c1e21; margin-bottom:10px;">Connect Parent</h2>
-            <p style="color:#65676b; font-size:0.9rem; line-height:1.4;">Enter the pairing code from parent's app to link this device.</p>
-            
+            <i class="fa-solid fa-link" style="font-size:3rem; color:#1877F2; margin-bottom:15px;"></i>
+            <h2 style="color:#141e30;">Connect Parent</h2>
+            <p style="color:#64748b; margin-top:5px;">Enter the code from parent's app</p>
             <form action="{{ url_for('pair_device') }}" method="POST">
-                <input type="text" name="pairing_code" class="pair-input" placeholder="C82461" required autocomplete="off">
-                <button type="submit" class="pair-btn-blue">Connect Now</button>
+                <input type="text" name="pairing_code" class="pair-input" placeholder="CODE" required>
+                <button type="submit" class="pair-btn">Connect Now</button>
             </form>
-            
-            <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+            <a href="{{ url_for('logout') }}" style="display:block; margin-top:20px; color:#dc2626; text-decoration:none; font-weight:bold;">Logout</a>
         </div>
     </div>
     {% endif %}
 
+    <div class="header">
+        <div class="header-left">
+            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="child-img-small" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
+        </div>
+        <div class="app-brand">suraksha</div>
+        <i class="fa-solid fa-bars menu-btn" onclick="document.getElementById('sideMenu').classList.add('open')"></i>
+    </div>
+
     <div class="side-menu" id="sideMenu">
-        <div class="menu-header-blue">
-            <h2 style="font-size: 1.5rem;">suraksha</h2>
-            <p style="opacity: 0.9; font-size: 0.9rem;">Premium Protection</p>
+        <div class="menu-header">
+            <div class="menu-user-name">{{ child_info.name if child_info else username }}</div>
+            <p style="color:#cbd5e1; font-size:0.9rem;">Protected Device</p>
         </div>
         <div class="menu-list">
-            <a href="#" class="menu-item"><i class="fa-solid fa-user-circle"></i> My Profile</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Location History</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Privacy Policy</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-handshake-angle"></i> Support</a>
-            <a href="{{ url_for('logout') }}" class="menu-item" style="color:red;"><i class="fa-solid fa-power-off" style="color:red;"></i> Logout</a>
+            <a href="#" class="menu-item" onclick="document.getElementById('child_file_input').click()">
+                <i class="fa-solid fa-camera"></i> Change Profile Picture
+            </a>
+            
+            <a href="#" class="menu-item" onclick="alert('Location History is managed by Parent.')">
+                <i class="fa-solid fa-clock-rotate-left"></i> Location History
+            </a>
+            <a href="#" class="menu-item" onclick="alert('Your device is secure.')">
+                <i class="fa-solid fa-shield-halved"></i> Security Status
+            </a>
+            <a href="#" class="menu-item" onclick="alert('Contacting Support...')">
+                <i class="fa-solid fa-headset"></i> Help & Support
+            </a>
+            
+            <a href="{{ url_for('logout') }}" class="menu-item" style="color:#dc2626; border-top:1px solid #eee; margin-top:20px;">
+                <i class="fa-solid fa-power-off" style="color:#dc2626;"></i> Logout
+            </a>
         </div>
+        <div style="flex:1;" onclick="document.getElementById('sideMenu').classList.remove('open')"></div>
     </div>
 
-    <div class="header">
-        <i class="fa-solid fa-bars menu-btn" onclick="document.getElementById('sideMenu').classList.toggle('open')"></i>
-        <div class="app-logo">suraksha</div>
-        <i class="fa-solid fa-ellipsis-vertical menu-btn"></i>
-    </div>
-
-    <div class="main-content" onclick="document.getElementById('sideMenu').classList.remove('open')">
+    <div class="main-container" onclick="document.getElementById('sideMenu').classList.remove('open')">
         
-        <div class="child-name">{{ child_info.name if child_info else username }}</div>
-        <div class="status-text">LIVE PROTECTION ACTIVE</div>
-
-        <div class="profile-container" onclick="document.getElementById('child_file_input').click()">
-            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="profile-img" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
-            <div class="camera-icon"><i class="fa-solid fa-camera"></i></div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <i class="fa-solid fa-shield-halved shield-icon"></i>
+            <div class="status-title">You are Protected</div>
+            <p class="status-desc">Location tracking is active. Your parent can see your location to keep you safe.</p>
         </div>
 
-        <div class="bottom-card">
-            <div class="connected-badge">
-                <div class="dot"></div> CONNECTED
-            </div>
-            <p class="info-txt">Security shield is active for your safety.</p>
-
-            <button class="sos-btn-wide" id="sosBtn" onclick="triggerSOS()">
-                <i class="fa-solid fa-bell"></i> SOS EMERGENCY
-            </button>
+        <div class="sos-btn-big" id="sosBtn" onclick="triggerSOS()">
+            <i class="fa-solid fa-bell sos-icon-inner"></i>
+            <span class="sos-text">SOS</span>
         </div>
+        <p style="color:#94a3b8; font-size:0.8rem; margin-bottom:20px;">Press for Emergency Alert</p>
+
     </div>
 
     <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
@@ -197,20 +203,28 @@
         function triggerSOS() {
             isSOS = !isSOS;
             var btn = document.getElementById('sosBtn');
+            var icon = document.querySelector('.sos-icon-inner');
             
             if (isSOS) {
-                btn.style.background = "#dc2626"; // Dark Red
-                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> SENDING ALERT...';
-                alert("SOS ALERT SENT TO PARENT!");
+                // Active State (Blinking)
+                btn.style.background = "#fff";
+                btn.style.color = "#dc2626";
+                btn.style.border = "8px solid #dc2626";
+                icon.classList.remove('fa-bell');
+                icon.classList.add('fa-triangle-exclamation');
+                alert("SOS ALERT SENT!");
             } else {
-                btn.style.background = "linear-gradient(to right, #ff416c, #ff4b2b)";
-                btn.innerHTML = '<i class="fa-solid fa-bell"></i> SOS EMERGENCY';
+                // Normal State
+                btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)";
+                btn.style.color = "white";
+                btn.style.border = "8px solid rgba(239, 68, 68, 0.2)";
+                icon.classList.add('fa-bell');
+                icon.classList.remove('fa-triangle-exclamation');
             }
-            
-            // Location bhejho SOS flag ke sath
             sendLocation(true);
         }
 
+        // --- LOCATION SENDER (Background Logic) ---
         function sendLocation(immediate=false) {
             if (!navigator.geolocation) return;
             navigator.geolocation.getCurrentPosition(position => {
@@ -226,8 +240,8 @@
             }, err => console.log(err), { enableHighAccuracy: true });
         }
 
-        setInterval(sendLocation, 5000);
-        sendLocation(); // Start immediately
+        setInterval(sendLocation, 5000); // Har 5 second me location bheje
+        sendLocation(); 
     </script>
 </body>
 </html>
