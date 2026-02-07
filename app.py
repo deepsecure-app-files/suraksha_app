@@ -22,7 +22,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_deepak
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# Folders create karna jaruri hai
+# Create upload folder if not exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
@@ -61,6 +61,9 @@ class Child(db.Model):
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
 
+    # 🔥 SOS Feature (Isse error aa raha tha kyunki DB purana tha)
+    is_sos = db.Column(db.Boolean, default=False)
+
 class Geofence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=False)
@@ -78,7 +81,7 @@ def is_parent(f):
             g.user = User.query.filter_by(username=session['username']).first()
             if g.user and g.user.is_parent:
                 return f(*args, **kwargs)
-        return "Access Denied: Not a parent or not logged in.", 403
+        return "Access Denied", 403
     return wrapper
 
 def generate_pairing_code():
@@ -86,20 +89,27 @@ def generate_pairing_code():
 
 # --- 4. ROUTES ---
 
+# 🔥 EMERGENCY DATABASE FIX ROUTE (ISE CLICK KARNA HAI DEPLOY KE BAD)
+@app.route('/reset_db_fix')
+def reset_db_fix():
+    try:
+        db.drop_all()   # Purana kharab database hatayega
+        db.create_all() # Naya database (SOS ke sath) banayega
+        return "DATABASE FIXED SUCCESSFUL! Now SOS will work. Please Sign Up again."
+    except Exception as e:
+        return f"Error fixing DB: {str(e)}"
+
 @app.route('/')
 def home():
     if 'username' in session:
         user = User.query.filter_by(username=session['username']).first()
         if user:
-            if user.is_parent:
-                return redirect(url_for('parent_dashboard'))
-            else:
-                return redirect(url_for('child_dashboard'))
+            return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
     return render_template('home.html') 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    # 🌟 पक्का इलाज: टेबल को रनटाइम पर बनाना
+    # Auto-create tables if missing
     db.create_all()
     if request.method == 'POST':
         username = request.form['username']
@@ -108,25 +118,20 @@ def signup():
         is_parent = (role == 'parent')
         phone_number = request.form.get('phone_number')
         
-        try:
-            if User.query.filter_by(username=username).first():
-                return "Username already exists!"
-                
-            new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
-            new_user.set_password(password)
-            new_user.profile_pic_url = url_for('static', filename='default-profile.png')
+        if User.query.filter_by(username=username).first():
+            return "Username already exists!"
             
-            db.session.add(new_user)
-            db.session.commit()
-            return redirect(url_for('login'))
-        except Exception as e:
-            db.session.rollback()
-            return f"Database Error: {str(e)}"
+        new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
+        new_user.set_password(password)
+        new_user.profile_pic_url = url_for('static', filename='default-profile.png')
+        
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # लॉगिन पर भी सुरक्षा के लिए टेबल्स चेक करें
     db.create_all()
     if request.method == 'POST':
         username = request.form['username']
@@ -136,22 +141,18 @@ def login():
         if user and user.check_password(password):
             session['username'] = user.username
             session.permanent = True
-            if user.is_parent:
-                return redirect(url_for('parent_dashboard'))
-            else:
-                return redirect(url_for('child_dashboard'))
+            return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
         else:
-            return "Invalid username or password."
+            return "Invalid credentials."
     return render_template('login.html')
 
 @app.route('/parent')
 @is_parent
 def parent_dashboard():
     user = g.user
-    children = user.children
     return render_template('parent_dashboard.html', 
                            username=user.username, 
-                           children=children, 
+                           children=user.children, 
                            profile_pic_url=user.profile_pic_url)
 
 @app.route('/add_child', methods=['POST'])
@@ -166,15 +167,12 @@ def add_child():
 
 @app.route('/child')
 def child_dashboard():
-    if 'username' not in session:
-        return redirect(url_for('login'))
+    if 'username' not in session: return redirect(url_for('login'))
+    user = User.query.filter_by(username=session['username']).first()
+    if not user: return redirect(url_for('logout'))
     
-    user = User.query.filter_by(username=session['username']).first_or_404()
     child_entry = Child.query.filter_by(child_user_id=user.id).first()
-    
-    parent_data = None
-    if child_entry:
-        parent_data = User.query.get(child_entry.parent_id)
+    parent_data = User.query.get(child_entry.parent_id) if child_entry else None
         
     return render_template('child_dashboard.html', 
                            username=user.username, 
@@ -185,17 +183,15 @@ def child_dashboard():
 @app.route('/pair_device', methods=['POST'])
 def pair_device():
     if 'username' not in session: return redirect(url_for('login'))
-    
-    pairing_code = request.form['pairing_code']
+    code = request.form['pairing_code']
     child_user = User.query.filter_by(username=session['username']).first()
-    child_to_pair = Child.query.filter_by(pairing_code=pairing_code).first()
+    child_obj = Child.query.filter_by(pairing_code=code).first()
     
-    if child_to_pair:
-        child_to_pair.child_user_id = child_user.id
+    if child_obj:
+        child_obj.child_user_id = child_user.id
         db.session.commit()
         return redirect(url_for('child_dashboard'))
-    else:
-        return "Invalid Code"
+    return "Invalid Pairing Code"
 
 @app.route('/logout')
 def logout():
@@ -204,16 +200,17 @@ def logout():
 
 @app.route('/api/update_location', methods=['POST'])
 def update_location():
-    if 'username' not in session:
-        return jsonify(status='error', message="Not logged in")
-    
+    if 'username' not in session: return jsonify(status='error')
     user = User.query.filter_by(username=session['username']).first()
+    
     if user and not user.is_parent:
         child_entry = Child.query.filter_by(child_user_id=user.id).first()
         if child_entry:
             data = request.get_json()
             child_entry.last_latitude = data.get('latitude')
             child_entry.last_longitude = data.get('longitude')
+            # SOS Save Logic
+            child_entry.is_sos = data.get('is_sos', False)
             child_entry.last_seen = datetime.datetime.utcnow()
             db.session.commit()
             return jsonify(status='success')
@@ -222,54 +219,49 @@ def update_location():
 @app.route('/api/get_children_data')
 def get_children_data():
     if 'username' not in session: return jsonify(children=[])
+    user = User.query.filter_by(username=session['username']).first()
     
-    parent_user = User.query.filter_by(username=session['username']).first()
-    if not parent_user or not parent_user.is_parent: return jsonify(children=[])
-
-    children_list = []
-    for child in parent_user.children:
-        child_user = User.query.get(child.child_user_id)
-        pic = url_for('static', filename='default-profile.png')
-        if child_user and child_user.profile_pic_url:
-            pic = child_user.profile_pic_url
-
-        children_list.append({
-            'id': child.id,
-            'name': child.name,
-            'pairing_code': child.pairing_code,
-            'last_latitude': child.last_latitude,
-            'last_longitude': child.last_longitude,
-            'last_seen': child.last_seen.isoformat() if child.last_seen else None,
-            'profile_pic': pic
+    if not user or not user.is_parent: return jsonify(children=[])
+    
+    data = []
+    for c in user.children:
+        c_user = User.query.get(c.child_user_id)
+        pic = c_user.profile_pic_url if (c_user and c_user.profile_pic_url) else url_for('static', filename='default-profile.png')
+        
+        data.append({
+            'id': c.id,
+            'name': c.name,
+            'pairing_code': c.pairing_code,
+            'last_latitude': c.last_latitude,
+            'last_longitude': c.last_longitude,
+            'last_seen': c.last_seen.isoformat() if c.last_seen else None,
+            'profile_pic': pic,
+            'is_sos': c.is_sos # SOS status bhej raha hai
         })
-    return jsonify(children=children_list)
+    return jsonify(children=data)
 
 @app.route('/upload_profile_pic', methods=['POST'])
 def upload_profile_pic():
     if 'username' not in session: return redirect(url_for('home'))
-    
     user = User.query.filter_by(username=session['username']).first()
     file = request.files.get('profile_pic')
     
     if file and file.filename != '':
-        filename = secure_filename(file.filename)
-        new_filename = f"u{user.id}_{int(datetime.datetime.now().timestamp())}_{filename}"
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
-        user.profile_pic_url = url_for('static', filename='uploads/' + new_filename)
+        fname = secure_filename(file.filename)
+        new_name = f"u{user.id}_{int(datetime.datetime.now().timestamp())}_{fname}"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_name))
+        user.profile_pic_url = url_for('static', filename='uploads/' + new_name)
         db.session.commit()
         
-    if user.is_parent:
-        return redirect(url_for('parent_dashboard'))
-    else:
-        return redirect(url_for('child_dashboard'))
+    return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
 
 @app.route('/geofence')
 @is_parent
 def geofence_page():
-    user = g.user
-    return render_template('geofence.html', username=user.username)
+    return render_template('geofence.html', username=g.user.username)
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
+
