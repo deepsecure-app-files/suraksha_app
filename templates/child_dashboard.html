@@ -10,7 +10,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
-        /* 🔥 PRO FEEL */
+        /* 🔥 PRO FEEL: Anti-Select to look like native App */
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         input { -webkit-user-select: text !important; user-select: text !important; }
 
@@ -144,6 +144,7 @@
         var isSOS = false;
         var currentBattery = 100;
 
+        // 🔥 Get Battery Level Logic
         if(navigator.getBattery) {
             navigator.getBattery().then(function(battery) {
                 currentBattery = Math.round(battery.level * 100);
@@ -158,28 +159,51 @@
             x.className = "show"; setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
         
+        // 🔥 NEW: 3 Second Timer Logic for SOS
         function triggerSOS() {
             if (isSOS) return;
-            isSOS = true;
+            
             var btn = document.getElementById('sosBtn');
             var icon = document.querySelector('.sos-icon');
-            
-            btn.style.background = "white"; btn.style.border = "5px solid #dc2626";
-            icon.style.color = "#dc2626"; icon.classList.remove('fa-bell'); icon.classList.add('fa-triangle-exclamation');
+            var timeLeft = 3;
 
-            showToast();
-            sendLocation();
+            // Visual Change immediately
+            btn.style.background = "white"; 
+            btn.style.border = "5px solid #dc2626";
+            icon.style.color = "#dc2626";
 
+            // Countdown Timer
+            var timer = setInterval(function() {
+                if(timeLeft <= 0) {
+                    clearInterval(timer);
+                    isSOS = true;
+                    icon.innerHTML = ""; // Clear number
+                    icon.classList.remove('fa-bell');
+                    icon.classList.add('fa-triangle-exclamation');
+                    showToast();
+                    sendLocation(); // Immediate SOS send after 3 sec
+                } else {
+                    icon.classList.remove('fa-bell');
+                    // Show Number inside icon
+                    icon.innerHTML = `<span style="font-size:1.8rem; font-weight:bold;">${timeLeft}</span>`;
+                    timeLeft--;
+                }
+            }, 1000);
+
+            // Auto Reset after 15 seconds of SOS
             setTimeout(function() {
                 isSOS = false;
-                btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)"; btn.style.border = "4px solid white";
-                icon.style.color = "white"; icon.classList.add('fa-bell'); icon.classList.remove('fa-triangle-exclamation');
-                sendLocation();
-            }, 5000);
+                icon.innerHTML = "";
+                icon.className = "fa-solid fa-bell sos-icon";
+                btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)";
+                btn.style.border = "4px solid white";
+                icon.style.color = "white";
+                sendLocation(); // Turn off SOS in DB
+            }, 15000);
         }
 
         function sendLocation() {
-            var dataPayload = { is_sos: isSOS, battery: currentBattery };
+            var dataPayload = { is_sos: isSOS, battery: currentBattery }; // Sending Battery
             if (!navigator.geolocation) return;
 
             navigator.geolocation.getCurrentPosition(
@@ -201,7 +225,8 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     latitude: lat, longitude: lng,
-                    is_sos: extraData.is_sos, battery: extraData.battery
+                    is_sos: extraData.is_sos, 
+                    battery: extraData.battery // Battery included
                 })
             });
         }
@@ -210,4 +235,3 @@
     </script>
 </body>
 </html>
-
