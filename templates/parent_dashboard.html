@@ -15,20 +15,21 @@
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
 
+        /* 🔥 FIX: Ensure Body takes full height */
         html, body { background-color: #f0f2f5; height: 100%; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
 
         /* HEADER */
         .header {
             background: #1877F2; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
-            height: 65px; z-index: 2001; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            height: 60px; z-index: 2001; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .header-left { flex: 1; display: flex; align-items: center; }
         .parent-img-large {
-            width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; 
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; 
             object-fit: cover; background-color: white; cursor: pointer; pointer-events: auto;
         }
         .app-brand {
-            font-size: 1.5rem; font-weight: 800; color: white; text-align: center; flex: 1; letter-spacing: 0.5px;
+            font-size: 1.4rem; font-weight: 800; color: white; text-align: center; flex: 1; letter-spacing: 0.5px;
         }
         .header-right { flex: 1; display: flex; justify-content: flex-end; }
         .menu-btn { color: white; font-size: 1.5rem; cursor: pointer; padding: 5px; }
@@ -76,9 +77,17 @@
         .bat-high { color: #16a34a; background: #dcfce7; }
         .bat-low { color: #dc2626; background: #fee2e2; }
 
-        /* MAP */
-        .map-wrapper { flex: 1; position: relative; width: 100%; margin-bottom: 60px; background: #e5e7eb; }
+        /* 🔥 MAP FIX: Ensure Map takes remaining height properly */
+        .map-wrapper { 
+            flex-grow: 1; 
+            width: 100%; 
+            position: relative; 
+            z-index: 1; 
+            /* Fix for overlapping bottom nav */
+            padding-bottom: 60px; 
+        }
         #map { width: 100%; height: 100%; }
+        
         .leaflet-control-attribution { display: none !important; }
 
         /* NAV */
@@ -213,12 +222,10 @@
             }
         }
 
-        // 🔥 FIX 2: Stronger GPS Logic for Blue Line
+        // Parent GPS Logic
         function updateParentLocation() {
             if (navigator.geolocation) {
-                // Show toast to confirm GPS is trying
                 console.log("Requesting GPS...");
-                
                 navigator.geolocation.watchPosition(position => {
                     parentLat = position.coords.latitude;
                     parentLng = position.coords.longitude;
@@ -277,24 +284,19 @@
                             if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
                             else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
 
-                            // 🔥 DRAW BLUE LINE
+                            // BLUE LINE
                             if (parentLat && parentLng) {
-                                // Remove old line
                                 if (polylines[child.id]) map.removeLayer(polylines[child.id]);
-                                
-                                // Create new Blue Dashed Line
                                 polylines[child.id] = L.polyline(
                                     [[parentLat, parentLng], [lat, lng]], 
                                     { color: '#1877F2', weight: 3, opacity: 0.8, dashArray: '10, 10' }
                                 ).addTo(map);
                                 
-                                // Calculate Distance
                                 var p1 = L.latLng(parentLat, parentLng);
                                 var p2 = L.latLng(lat, lng);
-                                var d = p1.distanceTo(p2); // Meters
+                                var d = p1.distanceTo(p2); 
                                 
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
-                                
                                 var distElem = document.getElementById('dist-' + child.id);
                                 if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-arrow"></i> ${distText}`;
                             }
@@ -307,3 +309,4 @@
     </script>
 </body>
 </html>
+
