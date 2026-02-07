@@ -6,56 +6,99 @@
     <title>Suraksha Child</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="preload" as="image" href="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}">
-
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         
         body { 
-            background-color: #f0f2f5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
+            background-color: #0f172a; /* वो डार्क नेवी ब्लू बैकग्राउंड */
+            height: 100vh; 
+            display: flex; flex-direction: column; align-items: center; 
+            color: white; overflow: hidden;
         }
 
-        /* --- HEADER --- */
+        /* --- HEADER & MENU --- */
         .header {
-            background: #1877F2; color: white; padding: 10px 15px;
-            display: flex; align-items: center; justify-content: space-between;
-            height: 60px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 1000;
+            width: 100%; padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
         }
-        .logo { font-size: 1.4rem; font-weight: bold; }
-        .battery-status { font-size: 0.9rem; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;}
-
-        /* --- MAP --- */
-        #map { flex: 1; width: 100%; z-index: 1; }
-
-        /* --- SOS BUTTON --- */
-        .sos-container {
-            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-            z-index: 2000; display: flex; flex-direction: column; align-items: center;
+        .menu-btn { font-size: 1.5rem; cursor: pointer; }
+        .app-logo { font-size: 1.2rem; font-weight: 700; color: #3b82f6; } /* suraksha blue text */
+        
+        /* --- SIDE MENU (Overlay) --- */
+        .side-menu {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background: white; z-index: 5000; transition: 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5); display: flex; flex-direction: column;
         }
-        .sos-btn {
-            width: 70px; height: 70px; background: #dc2626; color: white;
-            border-radius: 50%; border: 4px solid rgba(255,255,255,0.3);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+        .side-menu.open { left: 0; }
+        
+        .menu-header-blue {
+            background: #1877F2; height: 160px; padding: 20px;
+            display: flex; flex-direction: column; justify-content: flex-end; color: white;
+        }
+        .menu-list { padding: 10px 0; }
+        .menu-item {
+            padding: 15px 20px; display: flex; align-items: center; gap: 15px;
+            color: #333; text-decoration: none; font-size: 1rem; font-weight: 500;
+        }
+        .menu-item i { color: #1877F2; width: 20px; text-align: center; }
+
+        /* --- MAIN PROFILE SECTION (Photo 3198.jpg Style) --- */
+        .main-content {
+            flex: 1; display: flex; flex-direction: column; align-items: center; width: 100%; padding-top: 20px;
+        }
+
+        .child-name { font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
+        .status-text { color: #94a3b8; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 30px; text-transform: uppercase; }
+
+        .profile-container { position: relative; margin-bottom: 40px; }
+        .profile-img {
+            width: 140px; height: 140px; border-radius: 50%;
+            border: 4px solid #3b82f6; object-fit: cover;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        .camera-icon {
+            position: absolute; bottom: 5px; right: 5px;
+            background: #f0f2f5; color: #333; width: 35px; height: 35px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: 2px solid white;
+        }
+
+        /* --- BOTTOM CARD (Safety Shield & SOS) --- */
+        .bottom-card {
+            background: white; width: 100%; flex: 1;
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+            padding: 30px 20px; text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+        }
+
+        .connected-badge {
+            background: #e0f2fe; color: #0284c7; padding: 8px 20px;
+            border-radius: 20px; font-weight: 700; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 8px; margin-bottom: 15px;
+        }
+        .dot { width: 8px; height: 8px; background: #0284c7; border-radius: 50%; }
+
+        .info-txt { color: #64748b; font-size: 0.9rem; margin-bottom: 30px; }
+
+        /* 🔥 RED WIDE SOS BUTTON (Photo 3198.jpg) */
+        .sos-btn-wide {
+            width: 100%; max-width: 300px;
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white; padding: 18px; border-radius: 15px;
+            font-size: 1.2rem; font-weight: 700; border: none;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 10px 20px rgba(255, 75, 43, 0.3);
             cursor: pointer; animation: pulse 2s infinite;
         }
-        .sos-label { margin-top: 5px; color: #dc2626; font-weight: bold; font-size: 0.8rem; background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 10px; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
-
-        /* --- BOTTOM TABS --- */
-        .bottom-tabs {
-            height: 60px; background: white; display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid #ddd; z-index: 1000;
-        }
-        .tab { display: flex; flex-direction: column; align-items: center; color: #65676b; font-size: 0.75rem; text-decoration: none; }
-        .tab i { font-size: 1.4rem; margin-bottom: 2px; }
-        .tab.active { color: #1877F2; }
-
-        /* --- 🔥 PAIRING SCREEN (MISSING PART RESTORED) --- */
+        /* --- 🔥 PAIRING OVERLAY (Photo 3205.jpg Style) --- */
         .pairing-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #f0f2f5; z-index: 9999;
@@ -63,21 +106,23 @@
             padding: 20px;
         }
         .pair-card {
-            background: white; padding: 30px; border-radius: 15px;
-            width: 100%; max-width: 350px; text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background: white; padding: 30px; border-radius: 20px;
+            width: 100%; max-width: 340px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
-        .pair-icon { font-size: 3rem; color: #1877F2; margin-bottom: 20px; }
+        .link-icon { font-size: 3rem; color: #1877F2; margin-bottom: 15px; }
         .pair-input {
-            width: 100%; padding: 12px; margin: 20px 0; border: 1px solid #ddd;
-            border-radius: 8px; font-size: 1.2rem; text-align: center; letter-spacing: 2px;
-            text-transform: uppercase;
+            width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e1e8ed;
+            border-radius: 10px; font-size: 1.2rem; text-align: center; font-weight: bold; letter-spacing: 2px;
+            outline: none; transition: 0.3s;
         }
-        .pair-btn {
-            background: #1877F2; color: white; border: none; padding: 12px;
-            width: 100%; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer;
+        .pair-input:focus { border-color: #1877F2; }
+        .pair-btn-blue {
+            background: #1877F2; color: white; border: none; padding: 14px;
+            width: 100%; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer;
         }
-        
+        .logout-link { display: block; margin-top: 20px; color: #dc2626; text-decoration: none; font-size: 0.9rem; }
+
         #child_file_input { display: none; }
     </style>
 </head>
@@ -86,105 +131,103 @@
     {% if not parent %}
     <div class="pairing-overlay">
         <div class="pair-card">
-            <i class="fa-solid fa-link pair-icon"></i>
+            <div class="link-icon"><i class="fa-solid fa-link"></i></div>
             <h2 style="color:#1c1e21; margin-bottom:10px;">Connect Parent</h2>
-            <p style="color:#65676b; font-size:0.9rem;">Enter the pairing code from parent's app to link this device.</p>
+            <p style="color:#65676b; font-size:0.9rem; line-height:1.4;">Enter the pairing code from parent's app to link this device.</p>
             
             <form action="{{ url_for('pair_device') }}" method="POST">
-                <input type="text" name="pairing_code" class="pair-input" placeholder="ENTER CODE" required>
-                <button type="submit" class="pair-btn">Connect Now</button>
+                <input type="text" name="pairing_code" class="pair-input" placeholder="C82461" required autocomplete="off">
+                <button type="submit" class="pair-btn-blue">Connect Now</button>
             </form>
             
-            <a href="{{ url_for('logout') }}" style="display:block; margin-top:20px; color:#dc2626; text-decoration:none; font-size:0.9rem;">Logout</a>
+            <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
         </div>
     </div>
     {% endif %}
 
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header-blue">
+            <h2 style="font-size: 1.5rem;">suraksha</h2>
+            <p style="opacity: 0.9; font-size: 0.9rem;">Premium Protection</p>
+        </div>
+        <div class="menu-list">
+            <a href="#" class="menu-item"><i class="fa-solid fa-user-circle"></i> My Profile</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Location History</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Privacy Policy</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-handshake-angle"></i> Support</a>
+            <a href="{{ url_for('logout') }}" class="menu-item" style="color:red;"><i class="fa-solid fa-power-off" style="color:red;"></i> Logout</a>
+        </div>
+    </div>
+
     <div class="header">
-        <div class="logo">suraksha</div>
-        <div class="battery-status"><i class="fa-solid fa-battery-three-quarters"></i> <span id="bat-level">--%</span></div>
+        <i class="fa-solid fa-bars menu-btn" onclick="document.getElementById('sideMenu').classList.toggle('open')"></i>
+        <div class="app-logo">suraksha</div>
+        <i class="fa-solid fa-ellipsis-vertical menu-btn"></i>
     </div>
 
-    <div id="map"></div>
+    <div class="main-content" onclick="document.getElementById('sideMenu').classList.remove('open')">
+        
+        <div class="child-name">{{ child_info.name if child_info else username }}</div>
+        <div class="status-text">LIVE PROTECTION ACTIVE</div>
 
-    <div class="sos-container">
-        <div class="sos-btn" id="sosBtn" onclick="toggleSOS()">
-            <i class="fa-solid fa-bell"></i>
+        <div class="profile-container" onclick="document.getElementById('child_file_input').click()">
+            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="profile-img" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
+            <div class="camera-icon"><i class="fa-solid fa-camera"></i></div>
         </div>
-        <div class="sos-label">SOS</div>
-    </div>
 
-    <div class="bottom-tabs">
-        <a href="#" class="tab active"><i class="fa-solid fa-map-location-dot"></i> Home</a>
-        <div class="tab" onclick="document.getElementById('child_file_input').click()">
-            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
-            <span>Profile</span>
+        <div class="bottom-card">
+            <div class="connected-badge">
+                <div class="dot"></div> CONNECTED
+            </div>
+            <p class="info-txt">Security shield is active for your safety.</p>
+
+            <button class="sos-btn-wide" id="sosBtn" onclick="triggerSOS()">
+                <i class="fa-solid fa-bell"></i> SOS EMERGENCY
+            </button>
         </div>
-        <a href="{{ url_for('logout') }}" class="tab" style="color:#dc2626;"><i class="fa-solid fa-power-off"></i> Exit</a>
     </div>
 
     <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
         <input type="file" name="profile_pic" id="child_file_input" accept="image/*" onchange="document.getElementById('profileForm').submit()">
     </form>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // --- 1. Map Setup ---
-        var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
-        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
-        var marker = null;
-
-        // --- 2. SOS Logic ---
         var isSOS = false;
-        function toggleSOS() {
+        
+        function triggerSOS() {
             isSOS = !isSOS;
             var btn = document.getElementById('sosBtn');
+            
             if (isSOS) {
-                btn.style.background = "white"; btn.style.color = "red";
+                btn.style.background = "#dc2626"; // Dark Red
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> SENDING ALERT...';
                 alert("SOS ALERT SENT TO PARENT!");
             } else {
-                btn.style.background = "#dc2626"; btn.style.color = "white";
+                btn.style.background = "linear-gradient(to right, #ff416c, #ff4b2b)";
+                btn.innerHTML = '<i class="fa-solid fa-bell"></i> SOS EMERGENCY';
             }
-            sendLocation(true); // Turant update bhejo
+            
+            // Location bhejho SOS flag ke sath
+            sendLocation(true);
         }
 
-        // --- 3. Location & Battery Sync ---
         function sendLocation(immediate=false) {
             if (!navigator.geolocation) return;
             navigator.geolocation.getCurrentPosition(position => {
-                var lat = position.coords.latitude;
-                var lng = position.coords.longitude;
-
-                if (marker) marker.setLatLng([lat, lng]);
-                else {
-                    var icon = L.divIcon({ className: 'c-div', html: '<div style="width:15px;height:15px;background:#1877F2;border:2px solid white;border-radius:50%;"></div>' });
-                    marker = L.marker([lat, lng], {icon: icon}).addTo(map);
-                    map.setView([lat, lng], 17);
-                }
-
-                // API Call to Update Server
                 fetch('/api/update_location', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        latitude: lat,
-                        longitude: lng,
-                        is_sos: isSOS // SOS status bhi bhej rahe hain
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        is_sos: isSOS
                     })
                 });
-
             }, err => console.log(err), { enableHighAccuracy: true });
         }
 
-        // Battery Status
-        navigator.getBattery().then(function(battery) {
-            function updateBattery() { document.getElementById('bat-level').innerText = Math.round(battery.level * 100) + "%"; }
-            updateBattery();
-            battery.addEventListener('levelchange', updateBattery);
-        });
-
         setInterval(sendLocation, 5000);
-        sendLocation();
+        sendLocation(); // Start immediately
     </script>
 </body>
 </html>
