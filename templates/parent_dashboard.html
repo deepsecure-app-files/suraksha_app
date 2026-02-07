@@ -12,17 +12,15 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
-        /* 🔥 PRO FEEL: Anti-Select & Anti-Touch Callout */
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
         img { pointer-events: none; -webkit-user-drag: none; }
 
         html, body { background-color: #f0f2f5; height: 100%; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
 
-        /* HEADER - Facebook Style Blue */
+        /* HEADER */
         .header {
-            background: #1877F2; /* Facebook Blue */
-            padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
+            background: #1877F2; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
             height: 65px; z-index: 2001; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .header-left { flex: 1; display: flex; align-items: center; }
@@ -31,20 +29,26 @@
             object-fit: cover; background-color: white; cursor: pointer; pointer-events: auto;
         }
         .app-brand {
-            font-size: 1.5rem; font-weight: 800; color: white; /* White text for blue bg */
-            text-align: center; flex: 1; letter-spacing: 0.5px;
+            font-size: 1.5rem; font-weight: 800; color: white; text-align: center; flex: 1; letter-spacing: 0.5px;
         }
         .header-right { flex: 1; display: flex; justify-content: flex-end; }
         .menu-btn { color: white; font-size: 1.5rem; cursor: pointer; padding: 5px; }
 
-        /* SIDE MENU */
+        /* SIDE MENU (CLEANED) */
         .side-menu {
             position: absolute; top: 0; left: -320px; width: 300px; height: 100%;
             background: white; transition: 0.3s ease-in-out; z-index: 3000; 
             display: flex; flex-direction: column; box-shadow: 10px 0 20px rgba(0,0,0,0.3);
         }
         .side-menu.open { left: 0; }
-        .menu-header { background: #1877F2; padding: 30px 20px; color: white; }
+        
+        /* 🔥 FIX: Clean Header (No Hello text) */
+        .menu-header { 
+            background: #1877F2; padding: 20px; color: white; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .menu-brand { font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; }
+
         .children-section { flex: 1; overflow-y: auto; padding: 10px; background: #f0f2f5; }
 
         .menu-child-card {
@@ -56,10 +60,13 @@
         .menu-child-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #1877F2; }
         .menu-child-info { flex: 1; }
         
-        /* 🔥 Distance & Battery Row */
         .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
         .dist-badge { font-size: 0.75rem; color: #1877F2; font-weight: bold; background: #e7f3ff; padding: 2px 8px; border-radius: 10px; }
-        .bat-badge { font-size: 0.75rem; color: #16a34a; font-weight: bold; background: #dcfce7; padding: 2px 8px; border-radius: 10px; }
+        
+        /* Battery Colors */
+        .bat-badge { font-size: 0.75rem; font-weight: bold; padding: 2px 8px; border-radius: 10px; }
+        .bat-high { color: #16a34a; background: #dcfce7; }
+        .bat-low { color: #dc2626; background: #fee2e2; }
 
         /* MAP */
         .map-wrapper { flex: 1; position: relative; width: 100%; margin-bottom: 60px; background: #e5e7eb; }
@@ -81,6 +88,15 @@
             align-items: center; justify-content: center; color: white; text-align: center; padding: 20px;
         }
         .sos-btn-stop { background: white; color: #dc2626; padding: 15px 40px; border-radius: 50px; border: none; font-weight: bold; font-size: 1.2rem; margin-top: 30px; }
+
+        /* 🔥 NEW: Custom Toast (No URL Alert) */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+            text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 5000;
+            left: 50%; bottom: 80px; transform: translateX(-50%); font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 100px; }
         
         #parent_file_input { display: none; }
         .child-marker-icon { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.4); object-fit: cover; background: #fff; }
@@ -88,6 +104,8 @@
     </style>
 </head>
 <body oncontextmenu="return false;">
+
+    <div id="toast">Default Message</div>
 
     <div id="sos-overlay">
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 5rem; animation: pulse 0.5s infinite;"></i>
@@ -108,8 +126,7 @@
 
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
-            <div style="font-size: 1.3rem; font-weight: bold;">Hello, {{ username }}</div>
-            <div style="font-size:0.85rem; opacity:0.8;">Parent Account</div>
+            <div class="menu-brand">Suraksha</div>
         </div>
 
         <div class="children-section">
@@ -123,10 +140,10 @@
                         
                         <div class="status-row">
                             <div class="dist-badge" id="dist-{{ child.id }}">
-                                <i class="fa-solid fa-location-arrow"></i> -- m
+                                <i class="fa-solid fa-location-arrow"></i> --
                             </div>
-                            <div class="bat-badge" id="bat-{{ child.id }}">
-                                <i class="fa-solid fa-battery-full"></i> {{ child.last_battery or 0 }}%
+                            <div class="bat-badge {{ 'bat-low' if (child.battery and child.battery < 20) else 'bat-high' }}" id="bat-{{ child.id }}">
+                                <i class="fa-solid fa-battery-full"></i> {{ child.battery or 0 }}%
                             </div>
                         </div>
                     </div>
@@ -171,9 +188,23 @@
         document.getElementById('map').onclick = function() { document.getElementById('sideMenu').classList.remove('open'); }
         function dismissSOS() { document.getElementById('sos-overlay').style.display = 'none'; siren.pause(); siren.currentTime = 0; }
 
+        // 🔥 FIX: Show Custom Toast instead of Alert
+        function showToast(msg) {
+            var x = document.getElementById("toast");
+            x.innerText = msg;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
         function locateChild(lat, lng) {
-            if (lat && lat !== 'None') { map.setView([lat, lng], 18); toggleMenu(); }
-            else { alert("Location not available yet."); }
+            if (lat && lat !== 'None') { 
+                map.setView([lat, lng], 18); 
+                toggleMenu(); 
+            }
+            else { 
+                // 🔥 Replaced Alert with Toast
+                showToast("⚠️ Waiting for location update..."); 
+            }
         }
 
         function updateParentLocation() {
@@ -196,11 +227,12 @@
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
-                        // 1. Update Battery UI (Using the new 'battery' field from API)
                         var batElem = document.getElementById('bat-' + child.id);
-                        if(batElem) batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${child.battery}%`;
+                        if(batElem) {
+                            batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${child.battery}%`;
+                            batElem.className = child.battery < 20 ? "bat-badge bat-low" : "bat-badge bat-high";
+                        }
 
-                        // 2. SOS Alert (Persistent Logic: Checks status from DB)
                         if (child.is_sos) {
                             var overlay = document.getElementById('sos-overlay');
                             if (overlay.style.display !== 'flex') {
@@ -210,7 +242,6 @@
                             }
                         }
 
-                        // 3. Map Marker & Distance
                         if (child.last_latitude) {
                             var lat = child.last_latitude;
                             var lng = child.last_longitude;
@@ -241,4 +272,3 @@
     </script>
 </body>
 </html>
-
