@@ -12,10 +12,8 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
-        /* Anti-Select & Pro Feel */
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
-        img { pointer-events: none; -webkit-user-drag: none; }
 
         html, body { background-color: #f0f2f5; height: 100%; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
 
@@ -57,16 +55,12 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; position: relative;
         }
         .menu-child-card:active { background: #f8fafc; }
-        .menu-child-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; } /* Gold Border */
+        .menu-child-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; }
         .menu-child-info { flex: 1; }
         
-        /* 🔥 GOLDEN NAME STYLE */
+        /* 🔥 GOLDEN NAME */
         .child-name-gold {
-            color: #b45309; /* Deep Gold/Amber */
-            font-weight: 900;
-            font-size: 1.1rem;
-            text-transform: capitalize;
-            margin-bottom: 2px;
+            color: #b45309; font-weight: 900; font-size: 1.1rem; text-transform: capitalize; margin-bottom: 2px;
         }
 
         .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
@@ -76,8 +70,6 @@
             background: #e7f3ff; padding: 4px 10px; border-radius: 15px; 
             display: flex; align-items: center; gap: 5px;
         }
-        
-        /* Battery Colors */
         .bat-badge { font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 15px; display: flex; align-items: center; gap: 5px; }
         .bat-high { color: #16a34a; background: #dcfce7; }
         .bat-low { color: #dc2626; background: #fee2e2; }
@@ -103,7 +95,6 @@
         }
         .sos-btn-stop { background: white; color: #dc2626; padding: 15px 40px; border-radius: 50px; border: none; font-weight: bold; font-size: 1.2rem; margin-top: 30px; }
 
-        /* Custom Toast */
         #toast {
             visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
             text-align: center; border-radius: 50px; padding: 14px; position: fixed; z-index: 5000;
@@ -156,8 +147,8 @@
                             <div class="dist-badge" id="dist-{{ child.id }}">
                                 <i class="fa-solid fa-location-arrow"></i> --
                             </div>
-                            <div class="bat-badge {{ 'bat-low' if (child.battery is none or child.battery < 20) else 'bat-high' }}" id="bat-{{ child.id }}">
-                                <i class="fa-solid fa-battery-full"></i> {{ child.battery or 0 }}%
+                            <div class="bat-badge {{ 'bat-low' if (child.last_battery is none or child.last_battery < 20) else 'bat-high' }}" id="bat-{{ child.id }}">
+                                <i class="fa-solid fa-battery-full"></i> {{ child.last_battery or 0 }}%
                             </div>
                         </div>
                     </div>
@@ -211,7 +202,6 @@
         }
 
         function locateChild(lat, lng) {
-            // Check if lat/lng are valid numbers
             if (lat && lat !== 'None' && lat !== 'null') { 
                 map.setView([lat, lng], 18); 
                 toggleMenu(); 
@@ -220,7 +210,6 @@
             }
         }
 
-        // 🔥 FIX: Improved GPS Logic for Parent
         function updateParentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(position => {
@@ -232,12 +221,10 @@
                     } else {
                         var icon = L.divIcon({ className: 'p-div', html: '<div class="parent-dot"></div>', iconSize: [18, 18] });
                         parentMarker = L.marker([parentLat, parentLng], {icon: icon}).addTo(map);
-                        // Center map on parent initially
                         map.setView([parentLat, parentLng], 15);
                     }
                 }, err => {
-                    console.log("GPS Permission Error");
-                    showToast("⚠️ Turn on GPS for Distance");
+                    console.log("GPS Error");
                 }, { enableHighAccuracy: true, maximumAge: 10000 });
             }
         }
@@ -270,7 +257,6 @@
                             var lat = parseFloat(child.last_latitude);
                             var lng = parseFloat(child.last_longitude);
                             
-                            // Marker update
                             var icon = L.divIcon({
                                 className: 'custom-div',
                                 html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-icon">`,
@@ -280,20 +266,15 @@
                             if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
                             else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
 
-                            // 🔥 FIX: Robust Distance Calculation
                             if (parentLat && parentLng) {
-                                // Draw Line
                                 if (polylines[child.id]) map.removeLayer(polylines[child.id]);
                                 polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 3, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
                                 
-                                // Calculate Distance
                                 var p1 = L.latLng(parentLat, parentLng);
                                 var p2 = L.latLng(lat, lng);
-                                var d = p1.distanceTo(p2); // Metres
+                                var d = p1.distanceTo(p2);
                                 
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
-                                
-                                // Update text in menu
                                 var distElem = document.getElementById('dist-' + child.id);
                                 if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-arrow"></i> ${distText}`;
                             }
@@ -301,9 +282,8 @@
                     });
                 });
         }
-        setInterval(updateData, 4000); // Check every 4 seconds
+        setInterval(updateData, 4000);
         updateData();
     </script>
 </body>
 </html>
-
