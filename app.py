@@ -61,7 +61,7 @@ class Child(db.Model):
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
 
-    # 🔥 SOS Feature (Isse error aa raha tha kyunki DB purana tha)
+    # SOS Feature (Active)
     is_sos = db.Column(db.Boolean, default=False)
 
 class Geofence(db.Model):
@@ -89,23 +89,14 @@ def generate_pairing_code():
 
 # --- 4. ROUTES ---
 
-# 🔥 EMERGENCY DATABASE FIX ROUTE (ISE CLICK KARNA HAI DEPLOY KE BAD)
-@app.route('/reset_db_fix')
-def reset_db_fix():
-    try:
-        db.drop_all()   # Purana kharab database hatayega
-        db.create_all() # Naya database (SOS ke sath) banayega
-        return "DATABASE FIXED SUCCESSFUL! Now SOS will work. Please Sign Up again."
-    except Exception as e:
-        return f"Error fixing DB: {str(e)}"
-
 @app.route('/')
 def home():
     if 'username' in session:
         user = User.query.filter_by(username=session['username']).first()
         if user:
             return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
-    return render_template('home.html') 
+    # 🔥 CHANGE: Ab sidha Login Page khulega (Extra home page hata diya)
+    return redirect(url_for('login'))
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -236,7 +227,7 @@ def get_children_data():
             'last_longitude': c.last_longitude,
             'last_seen': c.last_seen.isoformat() if c.last_seen else None,
             'profile_pic': pic,
-            'is_sos': c.is_sos # SOS status bhej raha hai
+            'is_sos': c.is_sos # SOS status send kar raha hai
         })
     return jsonify(children=data)
 
@@ -264,4 +255,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
-
