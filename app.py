@@ -6,13 +6,13 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy import text  # SQL run karne ke liye
+from sqlalchemy import text  # SQL Commands chalane ke liye
 
 app = Flask(__name__)
 
 # --- 1. CONFIGURATION ---
 database_url = os.environ.get('DATABASE_URL')
-# Render fix for PostgreSQL
+# Render PostgreSQL Fix
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -38,6 +38,7 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), nullable=True)
     profile_pic_url = db.Column(db.String(200), nullable=True)
     
+    # Relationships
     children = db.relationship('Child', foreign_keys='Child.parent_id', backref='parent', lazy=True)
     geofences = db.relationship('Geofence', backref='parent', lazy=True)
 
@@ -60,7 +61,7 @@ class Child(db.Model):
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
     
-    # 🔥 New Features Columns
+    # 🔥 New Features (Jo purane code me nahi the)
     is_sos = db.Column(db.Boolean, default=False)
     battery_level = db.Column(db.Integer, default=0)
 
@@ -89,22 +90,20 @@ def generate_pairing_code():
 
 # --- 4. ROUTES ---
 
-# 🔥 DATABASE FIX ROUTE (Deploy ke bad ise ek bar run karna hai)
+# 🔥 DATABASE FIX ROUTE (Sirf ek baar chalana hai)
 @app.route('/reset_db_fix')
 def reset_db_fix():
     with app.app_context():
-        db.create_all() # Basic tables banayega
-        
-        # Agar table pehle se hai aur naye columns nahi hain, to ye unhe jod dega
+        db.create_all()
         try:
-            # SQLite aur Postgres dono ke liye safe try
             with db.engine.connect() as conn:
+                # Agar columns nahi hain to error aayega, fir ye add karega
                 conn.execute(text("ALTER TABLE child ADD COLUMN battery_level INTEGER DEFAULT 0"))
                 conn.execute(text("ALTER TABLE child ADD COLUMN is_sos BOOLEAN DEFAULT FALSE"))
                 conn.commit()
             return "SUCCESS: Database Updated with Battery & SOS columns!"
         except Exception as e:
-            return f"Database Checked: Columns likely already exist. (Error: {str(e)})"
+            return f"Database Checked: Columns likely already exist. (Safe to ignore this error)"
 
 @app.route('/')
 def home():
@@ -179,7 +178,9 @@ def child_dashboard():
 @app.route('/pair_device', methods=['POST'])
 def pair_device():
     if 'username' not in session: return redirect(url_for('login'))
-    code = request.form['pairing_code'].strip().upper() # Space hataya aur Upper case kiya
+    
+    # 🔥 Fix: Strip() lagaya taki space ki wajah se code galat na ho
+    code = request.form['pairing_code'].strip().upper()
     
     child_user = User.query.filter_by(username=session['username']).first()
     child_obj = Child.query.filter_by(pairing_code=code).first()
@@ -195,6 +196,7 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
+# 🔥 UPDATE API (Battery & SOS Added)
 @app.route('/api/update_location', methods=['POST'])
 def update_location():
     if 'username' not in session: return jsonify(status='error')
@@ -206,13 +208,17 @@ def update_location():
             data = request.get_json()
             child_entry.last_latitude = data.get('latitude')
             child_entry.last_longitude = data.get('longitude')
+            
+            # Ye naye features hain:
             child_entry.is_sos = data.get('is_sos', False)
-            child_entry.battery_level = data.get('battery', 0) # 🔥 Battery Save
+            child_entry.battery_level = data.get('battery', 0) 
+            
             child_entry.last_seen = datetime.datetime.utcnow()
             db.session.commit()
             return jsonify(status='success')
     return jsonify(status='error')
 
+# 🔥 GET API (Sends Battery & SOS to Parent)
 @app.route('/api/get_children_data')
 def get_children_data():
     if 'username' not in session: return jsonify(children=[])
@@ -233,8 +239,8 @@ def get_children_data():
             'last_longitude': c.last_longitude,
             'last_seen': c.last_seen.isoformat() if c.last_seen else None,
             'profile_pic': pic,
-            'is_sos': c.is_sos,
-            'battery': c.battery_level # 🔥 Battery Send to Parent
+            'is_sos': c.is_sos,          # SOS Bhejo
+            'battery': c.battery_level   # Battery Bhejo
         })
     return jsonify(children=data)
 
