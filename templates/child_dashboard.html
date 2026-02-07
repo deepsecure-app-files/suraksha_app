@@ -144,22 +144,32 @@
         var isSOS = false;
         var currentBattery = 100;
 
-        // 🔥 Get Battery Level Logic
-        if(navigator.getBattery) {
-            navigator.getBattery().then(function(battery) {
-                currentBattery = Math.round(battery.level * 100);
-                battery.addEventListener('levelchange', function() {
+        // 🔥 LOGIC FIX 1: Get Battery & Send Immediately (No Waiting)
+        function initBattery() {
+            if(navigator.getBattery) {
+                navigator.getBattery().then(function(battery) {
                     currentBattery = Math.round(battery.level * 100);
+                    // Send once as soon as we get battery
+                    sendLocation(); 
+                    
+                    battery.addEventListener('levelchange', function() {
+                        currentBattery = Math.round(battery.level * 100);
+                        sendLocation();
+                    });
                 });
-            });
+            } else {
+                // If battery API fails, send location anyway with default 100%
+                sendLocation();
+            }
         }
+        initBattery();
 
         function showToast() {
             var x = document.getElementById("toast");
             x.className = "show"; setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
         
-        // 🔥 NEW: 3 Second Timer Logic for SOS
+        // 🔥 LOGIC FIX 2: 3-Second Timer with SOS State
         function triggerSOS() {
             if (isSOS) return;
             
@@ -167,54 +177,47 @@
             var icon = document.querySelector('.sos-icon');
             var timeLeft = 3;
 
-            // Visual Change immediately
             btn.style.background = "white"; 
             btn.style.border = "5px solid #dc2626";
             icon.style.color = "#dc2626";
 
-            // Countdown Timer
             var timer = setInterval(function() {
                 if(timeLeft <= 0) {
                     clearInterval(timer);
-                    isSOS = true;
-                    icon.innerHTML = ""; // Clear number
+                    isSOS = true; // Set State
+                    icon.innerHTML = "";
                     icon.classList.remove('fa-bell');
                     icon.classList.add('fa-triangle-exclamation');
                     showToast();
-                    sendLocation(); // Immediate SOS send after 3 sec
+                    sendLocation(); // 🔥 Send SOS=true immediately
                 } else {
                     icon.classList.remove('fa-bell');
-                    // Show Number inside icon
                     icon.innerHTML = `<span style="font-size:1.8rem; font-weight:bold;">${timeLeft}</span>`;
                     timeLeft--;
                 }
             }, 1000);
 
-            // Auto Reset after 15 seconds of SOS
+            // Auto Reset after 15 seconds
             setTimeout(function() {
-                isSOS = false;
+                isSOS = false; // Reset State
                 icon.innerHTML = "";
                 icon.className = "fa-solid fa-bell sos-icon";
                 btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)";
                 btn.style.border = "4px solid white";
                 icon.style.color = "white";
-                sendLocation(); // Turn off SOS in DB
+                sendLocation(); // 🔥 Send SOS=false immediately
             }, 15000);
         }
 
+        // 🔥 LOGIC FIX 3: Sending 'battery' key to match App.py
         function sendLocation() {
-            var dataPayload = { is_sos: isSOS, battery: currentBattery }; // Sending Battery
+            var dataPayload = { is_sos: isSOS, battery: currentBattery };
+            
             if (!navigator.geolocation) return;
 
             navigator.geolocation.getCurrentPosition(
                 (position) => { sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload); },
-                (error) => {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => { sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload); },
-                        (err) => console.log("Loc Failed"),
-                        { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
-                    );
-                },
+                (error) => { console.log("GPS Waiting..."); },
                 { enableHighAccuracy: true, timeout: 5000 }
             );
         }
@@ -224,14 +227,17 @@
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    latitude: lat, longitude: lng,
+                    latitude: lat, 
+                    longitude: lng,
                     is_sos: extraData.is_sos, 
-                    battery: extraData.battery // Battery included
+                    battery: extraData.battery // Using 'battery' key
                 })
-            });
+            }).catch(err => console.log("Net Error"));
         }
-        setInterval(sendLocation, 5000);
-        sendLocation(); 
+        
+        // Keep updating every 3 seconds for Live Tracking
+        setInterval(sendLocation, 3000);
     </script>
 </body>
 </html>
+
