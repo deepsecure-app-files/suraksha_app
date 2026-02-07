@@ -6,28 +6,28 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from sqlalchemy import text  # SQL run karne ke liye
 
 app = Flask(__name__)
 
-# --- 1. DATABASE CONFIGURATION ---
+# --- 1. CONFIGURATION ---
 database_url = os.environ.get('DATABASE_URL')
-
 # Render fix for PostgreSQL
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_deepak_darbhanga')
-app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_suraksha_app')
+app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=365) # 1 saal tak login rahega
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# Create upload folder if not exists
+# Upload folder banana jaruri hai
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
 
-# --- 2. DATABASE MODELS ---
+# --- 2. MODELS (Database Design) ---
 
 class User(db.Model):
     __tablename__ = 'app_users'
@@ -54,15 +54,15 @@ class Child(db.Model):
     
     parent_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=True)
     child_user_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=True)
-    
     child_user = db.relationship('User', foreign_keys=[child_user_id])
     
     last_seen = db.Column(db.DateTime, nullable=True)
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
-
-    # SOS Feature (Active)
+    
+    # 🔥 New Features Columns
     is_sos = db.Column(db.Boolean, default=False)
+    battery_level = db.Column(db.Integer, default=0)
 
 class Geofence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -89,31 +89,42 @@ def generate_pairing_code():
 
 # --- 4. ROUTES ---
 
+# 🔥 DATABASE FIX ROUTE (Deploy ke bad ise ek bar run karna hai)
+@app.route('/reset_db_fix')
+def reset_db_fix():
+    with app.app_context():
+        db.create_all() # Basic tables banayega
+        
+        # Agar table pehle se hai aur naye columns nahi hain, to ye unhe jod dega
+        try:
+            # SQLite aur Postgres dono ke liye safe try
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE child ADD COLUMN battery_level INTEGER DEFAULT 0"))
+                conn.execute(text("ALTER TABLE child ADD COLUMN is_sos BOOLEAN DEFAULT FALSE"))
+                conn.commit()
+            return "SUCCESS: Database Updated with Battery & SOS columns!"
+        except Exception as e:
+            return f"Database Checked: Columns likely already exist. (Error: {str(e)})"
+
 @app.route('/')
 def home():
     if 'username' in session:
         user = User.query.filter_by(username=session['username']).first()
         if user:
             return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
-    # 🔥 CHANGE: Ab sidha Login Page khulega (Extra home page hata diya)
     return redirect(url_for('login'))
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    # Auto-create tables if missing
     db.create_all()
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']
-        role = request.form['role']
-        is_parent = (role == 'parent')
-        phone_number = request.form.get('phone_number')
-        
         if User.query.filter_by(username=username).first():
             return "Username already exists!"
             
-        new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
-        new_user.set_password(password)
+        is_parent = (request.form['role'] == 'parent')
+        new_user = User(username=username, is_parent=is_parent, phone_number=request.form.get('phone_number'))
+        new_user.set_password(request.form['password'])
         new_user.profile_pic_url = url_for('static', filename='default-profile.png')
         
         db.session.add(new_user)
@@ -125,33 +136,27 @@ def signup():
 def login():
     db.create_all()
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and user.check_password(request.form['password']):
             session['username'] = user.username
             session.permanent = True
             return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
         else:
-            return "Invalid credentials."
+            return "Invalid credentials"
     return render_template('login.html')
 
 @app.route('/parent')
 @is_parent
 def parent_dashboard():
-    user = g.user
     return render_template('parent_dashboard.html', 
-                           username=user.username, 
-                           children=user.children, 
-                           profile_pic_url=user.profile_pic_url)
+                           username=g.user.username, 
+                           children=g.user.children, 
+                           profile_pic_url=g.user.profile_pic_url)
 
 @app.route('/add_child', methods=['POST'])
 @is_parent
 def add_child():
-    user = g.user
-    child_name = request.form['child_name']
-    new_child = Child(name=child_name, pairing_code=generate_pairing_code(), parent=user)
+    new_child = Child(name=request.form['child_name'], pairing_code=generate_pairing_code(), parent=g.user)
     db.session.add(new_child)
     db.session.commit()
     return redirect(url_for('parent_dashboard'))
@@ -174,7 +179,8 @@ def child_dashboard():
 @app.route('/pair_device', methods=['POST'])
 def pair_device():
     if 'username' not in session: return redirect(url_for('login'))
-    code = request.form['pairing_code']
+    code = request.form['pairing_code'].strip().upper() # Space hataya aur Upper case kiya
+    
     child_user = User.query.filter_by(username=session['username']).first()
     child_obj = Child.query.filter_by(pairing_code=code).first()
     
@@ -182,7 +188,7 @@ def pair_device():
         child_obj.child_user_id = child_user.id
         db.session.commit()
         return redirect(url_for('child_dashboard'))
-    return "Invalid Pairing Code"
+    return "Invalid Pairing Code or Device already paired."
 
 @app.route('/logout')
 def logout():
@@ -200,8 +206,8 @@ def update_location():
             data = request.get_json()
             child_entry.last_latitude = data.get('latitude')
             child_entry.last_longitude = data.get('longitude')
-            # SOS Save Logic
             child_entry.is_sos = data.get('is_sos', False)
+            child_entry.battery_level = data.get('battery', 0) # 🔥 Battery Save
             child_entry.last_seen = datetime.datetime.utcnow()
             db.session.commit()
             return jsonify(status='success')
@@ -227,7 +233,8 @@ def get_children_data():
             'last_longitude': c.last_longitude,
             'last_seen': c.last_seen.isoformat() if c.last_seen else None,
             'profile_pic': pic,
-            'is_sos': c.is_sos # SOS status send kar raha hai
+            'is_sos': c.is_sos,
+            'battery': c.battery_level # 🔥 Battery Send to Parent
         })
     return jsonify(children=data)
 
@@ -255,4 +262,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
-
