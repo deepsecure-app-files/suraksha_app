@@ -126,7 +126,7 @@
                                 <i class="fa-solid fa-location-arrow"></i> -- m
                             </div>
                             <div class="bat-badge" id="bat-{{ child.id }}">
-                                <i class="fa-solid fa-battery-full"></i> {{ child.battery or 0 }}%
+                                <i class="fa-solid fa-battery-full"></i> {{ child.last_battery or 0 }}%
                             </div>
                         </div>
                     </div>
@@ -196,11 +196,11 @@
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
-                        // 1. Update Battery UI
+                        // 1. Update Battery UI (Using the new 'battery' field from API)
                         var batElem = document.getElementById('bat-' + child.id);
                         if(batElem) batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${child.battery}%`;
 
-                        // 2. SOS Alert
+                        // 2. SOS Alert (Persistent Logic: Checks status from DB)
                         if (child.is_sos) {
                             var overlay = document.getElementById('sos-overlay');
                             if (overlay.style.display !== 'flex') {
@@ -241,3 +241,4 @@
     </script>
 </body>
 </html>
+
