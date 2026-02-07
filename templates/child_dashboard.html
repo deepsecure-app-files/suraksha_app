@@ -10,83 +10,58 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
-        
-        body { 
-            background-color: #f0f2f5; 
-            height: 100vh; width: 100%;
-            display: flex; flex-direction: column; 
-            overflow: hidden; position: fixed;
-        }
+        /* 🔥 PRO FEEL */
+        * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        input { -webkit-user-select: text !important; user-select: text !important; }
 
-        /* --- HEADER --- */
+        body { background-color: #f0f2f5; height: 100vh; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
+
+        /* HEADER - Facebook Style */
         .header {
-            background: #141e30; padding: 10px 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            height: 70px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 1000;
+            background: #1877F2; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
+            height: 65px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 1000;
         }
-
         .header-left { display: flex; align-items: center; gap: 12px; flex: 1; }
         .child-img-small {
-            width: 45px; height: 45px; border-radius: 50%;
-            border: 2px solid #1877F2; object-fit: cover;
-            background: white;
+            width: 42px; height: 42px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: white;
         }
         .user-name { color: white; font-size: 1.1rem; font-weight: 600; text-transform: capitalize; }
-
+        
         .app-brand {
-            font-size: 1.5rem; font-weight: 900;
-            background: linear-gradient(to right, #FFD700, #FFA500);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            position: absolute; left: 50%; transform: translateX(-50%);
+            font-size: 1.5rem; font-weight: 800; color: white; /* White text */
+            position: absolute; left: 50%; transform: translateX(-50%); letter-spacing: 0.5px;
         }
-
         .menu-btn { color: white; font-size: 1.4rem; cursor: pointer; flex: 1; text-align: right; }
 
-        /* --- MAIN CONTENT (Clean Look) --- */
+        /* MAIN CONTENT */
         .main-container {
-            flex: 1; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center;
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: white; margin: 20px; border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative;
         }
-
-        /* Shield Animation */
         .shield-box {
-            width: 220px; height: 220px;
-            background: #f0f9ff; border-radius: 50%;
+            width: 220px; height: 220px; background: #f0f9ff; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 40px rgba(24, 119, 242, 0.1);
-            animation: pulse-shield 3s infinite;
-            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(24, 119, 242, 0.1); animation: pulse-shield 3s infinite; margin-bottom: 30px;
         }
         .shield-icon { font-size: 6rem; color: #1877F2; }
-        
         .status-title { font-size: 1.5rem; font-weight: 800; color: #141e30; }
-        .status-desc { 
-            color: #10b981; font-weight: 600; font-size: 1rem; margin-top: 10px; 
-            display: flex; align-items: center; gap: 8px; 
-        }
+        .status-desc { color: #10b981; font-weight: 600; font-size: 1rem; margin-top: 10px; display: flex; align-items: center; gap: 8px; }
         .live-dot { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
 
         @keyframes pulse-shield { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* --- SOS FAB (Bottom Right) --- */
+        /* SOS FAB */
         .sos-fab {
-            position: fixed; bottom: 40px; right: 30px;
-            width: 75px; height: 75px;
-            background: linear-gradient(145deg, #dc2626, #ef4444);
-            border-radius: 50%; border: 4px solid white;
+            position: fixed; bottom: 40px; right: 30px; width: 75px; height: 75px;
+            background: linear-gradient(145deg, #dc2626, #ef4444); border-radius: 50%; border: 4px solid white;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
-            cursor: pointer; z-index: 2000; transition: 0.3s;
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s;
         }
         .sos-fab:active { transform: scale(0.9); }
         .sos-icon { font-size: 2rem; color: white; }
 
-        /* --- TOAST NOTIFICATION (No Popup) --- */
+        /* TOAST */
         #toast {
             visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
             text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 5000;
@@ -95,15 +70,14 @@
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
-        /* --- SIDE MENU --- */
+        /* SIDE MENU */
         .side-menu {
             position: absolute; top: 0; left: -300px; width: 280px; height: 100%;
-            background: white; transition: 0.3s ease-in-out; 
-            z-index: 3000; display: flex; flex-direction: column;
-            box-shadow: 10px 0 20px rgba(0,0,0,0.3);
+            background: white; transition: 0.3s ease-in-out; z-index: 3000; 
+            display: flex; flex-direction: column; box-shadow: 10px 0 20px rgba(0,0,0,0.3);
         }
         .side-menu.open { left: 0; }
-        .menu-header { background: #141e30; padding: 30px 20px; color: white; border-bottom: 4px solid #FFD700; }
+        .menu-header { background: #1877F2; padding: 30px 20px; color: white; }
         .menu-item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f2f5; }
 
         /* PAIRING SCREEN */
@@ -115,7 +89,7 @@
         #child_file_input { display: none; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
     <div id="toast"><i class="fa-solid fa-check-circle"></i> SOS Alert Sent!</div>
 
@@ -145,7 +119,7 @@
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
             <h2 style="color:white;">Suraksha</h2>
-            <p style="color:#cbd5e1; font-size:0.9rem;">My Device</p>
+            <p style="color:#e0f2fe; font-size:0.9rem;">My Device</p>
         </div>
         <div style="padding: 10px 0;">
             <a href="#" class="menu-item" onclick="document.getElementById('child_file_input').click()"><i class="fa-solid fa-camera"></i> Change Profile Pic</a>
@@ -155,16 +129,12 @@
     </div>
 
     <div class="main-container" onclick="document.getElementById('sideMenu').classList.remove('open')">
-        <div class="shield-box">
-            <i class="fa-solid fa-shield-halved shield-icon"></i>
-        </div>
+        <div class="shield-box"><i class="fa-solid fa-shield-halved shield-icon"></i></div>
         <div class="status-title">You are Safe</div>
         <div class="status-desc"><div class="live-dot"></div> Protection Active</div>
     </div>
 
-    <div class="sos-fab" id="sosBtn" onclick="triggerSOS()">
-        <i class="fa-solid fa-bell sos-icon"></i>
-    </div>
+    <div class="sos-fab" id="sosBtn" onclick="triggerSOS()"><i class="fa-solid fa-bell sos-icon"></i></div>
 
     <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
         <input type="file" name="profile_pic" id="child_file_input" accept="image/*" onchange="document.getElementById('profileForm').submit()">
@@ -172,9 +142,8 @@
 
     <script>
         var isSOS = false;
-        var currentBattery = 100; // Default
+        var currentBattery = 100;
 
-        // 🔥 Battery Listener (Chupke se monitor karega)
         if(navigator.getBattery) {
             navigator.getBattery().then(function(battery) {
                 currentBattery = Math.round(battery.level * 100);
@@ -186,66 +155,43 @@
 
         function showToast() {
             var x = document.getElementById("toast");
-            x.className = "show";
-            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+            x.className = "show"; setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
         
         function triggerSOS() {
             if (isSOS) return;
             isSOS = true;
-            
             var btn = document.getElementById('sosBtn');
             var icon = document.querySelector('.sos-icon');
             
-            btn.style.background = "white";
-            btn.style.border = "5px solid #dc2626";
-            icon.style.color = "#dc2626";
-            icon.classList.remove('fa-bell');
-            icon.classList.add('fa-triangle-exclamation');
+            btn.style.background = "white"; btn.style.border = "5px solid #dc2626";
+            icon.style.color = "#dc2626"; icon.classList.remove('fa-bell'); icon.classList.add('fa-triangle-exclamation');
 
             showToast();
-            sendLocation(); // Immediate alert
+            sendLocation();
 
-            // Auto Reset after 5 seconds
             setTimeout(function() {
                 isSOS = false;
-                btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)";
-                btn.style.border = "4px solid white";
-                icon.style.color = "white";
-                icon.classList.add('fa-bell');
-                icon.classList.remove('fa-triangle-exclamation');
+                btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)"; btn.style.border = "4px solid white";
+                icon.style.color = "white"; icon.classList.add('fa-bell'); icon.classList.remove('fa-triangle-exclamation');
                 sendLocation();
             }, 5000);
         }
 
-        // 🔥 SMART LOCATION LOGIC (GPS + Fallback)
         function sendLocation() {
-            // Hum Location ke sath Battery Data bhi bhejenge (Hidden)
-            var dataPayload = {
-                is_sos: isSOS,
-                battery: currentBattery 
-            };
-
+            var dataPayload = { is_sos: isSOS, battery: currentBattery };
             if (!navigator.geolocation) return;
 
-            // Step 1: Koshish karo High Accuracy (GPS) lene ki
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    // Success: GPS mil gaya
-                    sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload);
-                },
+                (position) => { sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload); },
                 (error) => {
-                    console.log("GPS Failed/Slow, switching to Network...");
-                    // Step 2: Fallback (Agar GPS fail hua, to Network se location lo)
                     navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload);
-                        },
-                        (err) => console.log("Location completely failed"),
+                        (position) => { sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload); },
+                        (err) => console.log("Loc Failed"),
                         { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
                     );
                 },
-                { enableHighAccuracy: true, timeout: 5000 } // 5 sec wait for GPS
+                { enableHighAccuracy: true, timeout: 5000 }
             );
         }
 
@@ -254,16 +200,14 @@
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    latitude: lat,
-                    longitude: lng,
-                    is_sos: extraData.is_sos,
-                    battery: extraData.battery // Ab battery server par ja rahi hai
+                    latitude: lat, longitude: lng,
+                    is_sos: extraData.is_sos, battery: extraData.battery
                 })
             });
         }
-
         setInterval(sendLocation, 5000);
         sendLocation(); 
     </script>
 </body>
 </html>
+
