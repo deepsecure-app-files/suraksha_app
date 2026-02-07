@@ -103,7 +103,7 @@ def reset_db_fix():
                 conn.commit()
             return "SUCCESS: Database Updated with Battery & SOS columns!"
         except Exception as e:
-            return f"Database Checked: Columns likely already exist. (Safe to ignore this error)"
+            return f"Database Checked: Columns likely already exist. (Safe to ignore this error: {str(e)})"
 
 @app.route('/')
 def home():
