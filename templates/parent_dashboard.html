@@ -15,21 +15,20 @@
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
 
-        /* 🔥 FIX: Ensure Body takes full height */
         html, body { background-color: #f0f2f5; height: 100%; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
 
         /* HEADER */
         .header {
             background: #1877F2; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
-            height: 60px; z-index: 2001; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            height: 65px; z-index: 2001; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .header-left { flex: 1; display: flex; align-items: center; }
         .parent-img-large {
-            width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; 
+            width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; 
             object-fit: cover; background-color: white; cursor: pointer; pointer-events: auto;
         }
         .app-brand {
-            font-size: 1.4rem; font-weight: 800; color: white; text-align: center; flex: 1; letter-spacing: 0.5px;
+            font-size: 1.5rem; font-weight: 800; color: white; text-align: center; flex: 1; letter-spacing: 0.5px;
         }
         .header-right { flex: 1; display: flex; justify-content: flex-end; }
         .menu-btn { color: white; font-size: 1.5rem; cursor: pointer; padding: 5px; }
@@ -77,17 +76,9 @@
         .bat-high { color: #16a34a; background: #dcfce7; }
         .bat-low { color: #dc2626; background: #fee2e2; }
 
-        /* 🔥 MAP FIX: Ensure Map takes remaining height properly */
-        .map-wrapper { 
-            flex-grow: 1; 
-            width: 100%; 
-            position: relative; 
-            z-index: 1; 
-            /* Fix for overlapping bottom nav */
-            padding-bottom: 60px; 
-        }
+        /* MAP */
+        .map-wrapper { flex: 1; position: relative; width: 100%; margin-bottom: 60px; background: #e5e7eb; }
         #map { width: 100%; height: 100%; }
-        
         .leaflet-control-attribution { display: none !important; }
 
         /* NAV */
@@ -225,7 +216,6 @@
         // Parent GPS Logic
         function updateParentLocation() {
             if (navigator.geolocation) {
-                console.log("Requesting GPS...");
                 navigator.geolocation.watchPosition(position => {
                     parentLat = position.coords.latitude;
                     parentLng = position.coords.longitude;
@@ -236,14 +226,10 @@
                         var icon = L.divIcon({ className: 'p-div', html: '<div class="parent-dot"></div>', iconSize: [18, 18] });
                         parentMarker = L.marker([parentLat, parentLng], {icon: icon}).addTo(map);
                         map.setView([parentLat, parentLng], 15);
-                        showToast("✅ Parent GPS Locked");
                     }
                 }, err => {
-                    console.log("GPS Error", err);
-                    showToast("⚠️ Turn on GPS/Location for Line");
-                }, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
-            } else {
-                showToast("GPS not supported");
+                    console.log("GPS Error");
+                }, { enableHighAccuracy: true, maximumAge: 10000 });
             }
         }
         updateParentLocation();
@@ -253,14 +239,16 @@
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
-                        // Battery Update
+                        // 1. Update Battery (Fixed the Logic)
                         var batElem = document.getElementById('bat-' + child.id);
                         if(batElem) {
-                            batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${child.last_battery or 0}%`;
-                            batElem.className = (child.last_battery < 20) ? "bat-badge bat-low" : "bat-badge bat-high";
+                            // 🔥 FIXED: Used '||' instead of 'or' for JavaScript
+                            var batteryVal = child.last_battery || 0; 
+                            batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${batteryVal}%`;
+                            batElem.className = (batteryVal < 20) ? "bat-badge bat-low" : "bat-badge bat-high";
                         }
 
-                        // SOS Logic
+                        // 2. SOS Logic
                         if (child.is_sos) {
                             var overlay = document.getElementById('sos-overlay');
                             if (overlay.style.display !== 'flex') {
@@ -270,7 +258,7 @@
                             }
                         }
 
-                        // Map & Distance Logic
+                        // 3. Map & Distance Logic
                         if (child.last_latitude && child.last_latitude !== 'None') {
                             var lat = parseFloat(child.last_latitude);
                             var lng = parseFloat(child.last_longitude);
@@ -284,17 +272,13 @@
                             if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
                             else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
 
-                            // BLUE LINE
                             if (parentLat && parentLng) {
                                 if (polylines[child.id]) map.removeLayer(polylines[child.id]);
-                                polylines[child.id] = L.polyline(
-                                    [[parentLat, parentLng], [lat, lng]], 
-                                    { color: '#1877F2', weight: 3, opacity: 0.8, dashArray: '10, 10' }
-                                ).addTo(map);
+                                polylines[child.id] = L.polyline([[parentLat, parentLng], [lat, lng]], { color: '#1877F2', weight: 3, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
                                 
                                 var p1 = L.latLng(parentLat, parentLng);
                                 var p2 = L.latLng(lat, lng);
-                                var d = p1.distanceTo(p2); 
+                                var d = p1.distanceTo(p2);
                                 
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
                                 var distElem = document.getElementById('dist-' + child.id);
