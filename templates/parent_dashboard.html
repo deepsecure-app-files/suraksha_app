@@ -43,8 +43,7 @@
         
         .menu-header { 
             background: #1877F2; padding: 30px 20px; color: white; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
         }
         .menu-brand { font-size: 2rem; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
         .menu-user { font-size: 1.1rem; font-weight: 500; opacity: 0.9; }
@@ -57,13 +56,12 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; position: relative;
         }
         .menu-child-card:active { background: #f8fafc; }
-        .menu-child-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; }
+        
+        /* 🔥 FIX: Default Image Logic via CSS/JS */
+        .menu-child-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; background: #eee; }
         .menu-child-info { flex: 1; }
         
-        /* GOLDEN NAME */
-        .child-name-gold {
-            color: #b45309; font-weight: 900; font-size: 1.1rem; text-transform: capitalize; margin-bottom: 2px;
-        }
+        .child-name-gold { color: #b45309; font-weight: 900; font-size: 1.1rem; text-transform: capitalize; margin-bottom: 2px; }
 
         .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
         
@@ -97,7 +95,6 @@
         }
         .sos-btn-stop { background: white; color: #dc2626; padding: 15px 40px; border-radius: 50px; border: none; font-weight: bold; font-size: 1.2rem; margin-top: 30px; }
 
-        /* Debug Toast */
         #toast {
             visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
             text-align: center; border-radius: 50px; padding: 12px; position: fixed; z-index: 5000;
@@ -107,13 +104,14 @@
         #toast.show { visibility: visible; opacity: 1; bottom: 100px; }
         
         #parent_file_input { display: none; }
+        /* 🔥 FIX: Icon Style */
         .child-marker-icon { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.4); object-fit: cover; background: #fff; }
         .parent-dot { width: 18px; height: 18px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 15px rgba(24, 119, 242, 0.6); }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="toast">Ready</div>
+    <div id="toast">Initializing...</div>
 
     <div id="sos-overlay">
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 5rem; animation: pulse 0.5s infinite;"></i>
@@ -142,14 +140,14 @@
             {% if children %}
                 {% for child in children %}
                 <div class="menu-child-card" onclick="locateChild('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
-                    <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="menu-child-img">
+                    <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="menu-child-img" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
                     <div class="menu-child-info">
                         <div class="child-name-gold">{{ child.name }}</div>
                         <span style="font-size:0.75rem; color:#64748b;">ID: {{ child.pairing_code }}</span>
                         
                         <div class="status-row">
                             <div class="dist-badge" id="dist-{{ child.id }}">
-                                <i class="fa-solid fa-location-arrow"></i> Finding...
+                                <i class="fa-solid fa-location-arrow"></i> Wait...
                             </div>
                             <div class="bat-badge {{ 'bat-low' if ((child.last_battery or 0) < 20) else 'bat-high' }}" id="bat-{{ child.id }}">
                                 <i class="fa-solid fa-battery-full"></i> {{ child.last_battery or 0 }}%
@@ -210,16 +208,18 @@
                 map.setView([lat, lng], 18); 
                 toggleMenu(); 
             } else { 
-                showToast("⚠️ Location not updated yet."); 
+                showToast("⚠️ Location not available yet."); 
             }
         }
 
-        // 🔥 STRONGER GPS LOGIC
+        // 🔥 FIX 1: Robust GPS Logic
         function updateParentLocation() {
             if (!navigator.geolocation) {
-                showToast("GPS not supported");
+                showToast("❌ GPS Not Supported");
                 return;
             }
+            showToast("📍 Finding Parent GPS...");
+            
             navigator.geolocation.watchPosition(position => {
                 parentLat = position.coords.latitude;
                 parentLng = position.coords.longitude;
@@ -235,8 +235,8 @@
                 }
             }, err => {
                 console.warn("GPS Error", err);
-                // Don't annoy user with error alert, just log it
-            }, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+                showToast("⚠️ Please Turn On GPS for Distance");
+            }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
         }
         updateParentLocation();
 
@@ -245,23 +245,21 @@
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
-                        // 1. BATTERY FIX: Check 'battery' (API key) OR 'last_battery' (Safety fallback)
-                        var batVal = (child.battery !== undefined) ? child.battery : (child.last_battery || 0);
-                        
+                        // 1. BATTERY FIX: Robust check
+                        var batVal = (child.last_battery !== undefined && child.last_battery !== null) ? child.last_battery : 0;
                         var batElem = document.getElementById('bat-' + child.id);
                         if(batElem) {
                             batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${batVal}%`;
                             batElem.className = (batVal < 20) ? "bat-badge bat-low" : "bat-badge bat-high";
                         }
 
-                        // 2. SOS FIX: Auto-Trigger on Sync
+                        // 2. SOS FIX
                         if (child.is_sos) {
                             var overlay = document.getElementById('sos-overlay');
                             if (overlay.style.display !== 'flex') {
                                 overlay.style.display = 'flex';
                                 document.getElementById('sos-text').innerText = child.name + " needs help!";
-                                // Try to play sound
-                                siren.play().catch(e => console.log("Audio waiting for interaction"));
+                                siren.play().catch(e => console.log("Audio waiting"));
                             }
                         }
 
@@ -270,9 +268,11 @@
                             var lat = parseFloat(child.last_latitude);
                             var lng = parseFloat(child.last_longitude);
                             
+                            // 🔥 FIX: Broken Image Handler in Marker
+                            var imgSrc = child.profile_pic || '/static/default-profile.png';
                             var icon = L.divIcon({
                                 className: 'custom-div',
-                                html: `<img src="${child.profile_pic || '/static/default-profile.png'}" class="child-marker-icon">`,
+                                html: `<img src="${imgSrc}" class="child-marker-icon" onerror="this.src='/static/default-profile.png'">`,
                                 iconSize: [45, 45], iconAnchor: [22, 22]
                             });
 
@@ -290,19 +290,23 @@
                                 
                                 var p1 = L.latLng(parentLat, parentLng);
                                 var p2 = L.latLng(lat, lng);
-                                var d = p1.distanceTo(p2); // Meters
+                                var d = p1.distanceTo(p2);
                                 
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
                                 var distElem = document.getElementById('dist-' + child.id);
                                 if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-arrow"></i> ${distText}`;
+                            } else {
+                                // Explain why distance is missing
+                                var distElem = document.getElementById('dist-' + child.id);
+                                if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-slash"></i> GPS Off`;
                             }
                         }
                     });
                 });
         }
-        // Run every 3 seconds for faster sync
         setInterval(updateData, 3000);
         updateData();
     </script>
 </body>
 </html>
+
