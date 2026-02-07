@@ -19,29 +19,21 @@
             overflow: hidden; position: fixed;
         }
 
-        /* --- 1. HEADER (New Facebook Style) --- */
+        /* --- HEADER --- */
         .header {
-            background: #141e30; 
-            padding: 10px 15px;
+            background: #141e30; padding: 10px 15px;
             display: flex; justify-content: space-between; align-items: center;
             height: 70px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 1000;
         }
 
-        /* Profile Pic + Name ek sath */
-        .header-left { 
-            display: flex; align-items: center; gap: 10px; flex: 1;
-        }
+        .header-left { display: flex; align-items: center; gap: 12px; flex: 1; }
         .child-img-small {
-            width: 42px; height: 42px; border-radius: 50%;
+            width: 45px; height: 45px; border-radius: 50%;
             border: 2px solid #1877F2; object-fit: cover;
             background: white;
         }
-        .user-name {
-            color: white; font-size: 1rem; font-weight: 600;
-            text-transform: capitalize;
-        }
+        .user-name { color: white; font-size: 1.1rem; font-weight: 600; text-transform: capitalize; }
 
-        /* Golden Branding Center */
         .app-brand {
             font-size: 1.5rem; font-weight: 900;
             background: linear-gradient(to right, #FFD700, #FFA500);
@@ -52,7 +44,58 @@
 
         .menu-btn { color: white; font-size: 1.4rem; cursor: pointer; flex: 1; text-align: right; }
 
-        /* --- 2. SIDE MENU --- */
+        /* --- MAIN CONTENT (Clean Look) --- */
+        .main-container {
+            flex: 1; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center;
+            background: white; margin: 20px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        /* Shield Animation */
+        .shield-box {
+            width: 220px; height: 220px;
+            background: #f0f9ff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 40px rgba(24, 119, 242, 0.1);
+            animation: pulse-shield 3s infinite;
+            margin-bottom: 30px;
+        }
+        .shield-icon { font-size: 6rem; color: #1877F2; }
+        
+        .status-title { font-size: 1.5rem; font-weight: 800; color: #141e30; }
+        .status-desc { 
+            color: #10b981; font-weight: 600; font-size: 1rem; margin-top: 10px; 
+            display: flex; align-items: center; gap: 8px; 
+        }
+        .live-dot { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
+
+        @keyframes pulse-shield { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* --- SOS FAB (Bottom Right) --- */
+        .sos-fab {
+            position: fixed; bottom: 40px; right: 30px;
+            width: 75px; height: 75px;
+            background: linear-gradient(145deg, #dc2626, #ef4444);
+            border-radius: 50%; border: 4px solid white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+            cursor: pointer; z-index: 2000; transition: 0.3s;
+        }
+        .sos-fab:active { transform: scale(0.9); }
+        .sos-icon { font-size: 2rem; color: white; }
+
+        /* --- TOAST NOTIFICATION (No Popup) --- */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
+            text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 5000;
+            left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.5s, bottom 0.5s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        /* --- SIDE MENU --- */
         .side-menu {
             position: absolute; top: 0; left: -300px; width: 280px; height: 100%;
             background: white; transition: 0.3s ease-in-out; 
@@ -60,82 +103,21 @@
             box-shadow: 10px 0 20px rgba(0,0,0,0.3);
         }
         .side-menu.open { left: 0; }
+        .menu-header { background: #141e30; padding: 30px 20px; color: white; border-bottom: 4px solid #FFD700; }
+        .menu-item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f2f5; }
+
+        /* PAIRING SCREEN */
+        .pairing-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .pair-card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .pair-input { width: 100%; padding: 14px; margin: 20px 0; border: 2px solid #e1e8ed; border-radius: 10px; font-size: 1.4rem; text-align: center; font-weight: bold; outline: none; text-transform: uppercase; }
+        .pair-btn { background: #1877F2; color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
         
-        .menu-header { 
-            background: #141e30; padding: 30px 20px; color: white; 
-            border-bottom: 4px solid #FFD700;
-        }
-        .menu-item {
-            padding: 15px 20px; display: flex; align-items: center; gap: 15px;
-            color: #333; text-decoration: none; font-size: 1rem; font-weight: 500;
-            border-bottom: 1px solid #f0f2f5;
-        }
-        .menu-item i { color: #1877F2; width: 25px; text-align: center; }
-
-        /* --- 3. MAIN CONTENT (Center Shield) --- */
-        .main-container {
-            flex: 1; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center;
-            position: relative;
-        }
-
-        /* Shield Animation */
-        .shield-box {
-            width: 200px; height: 200px;
-            background: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 40px rgba(24, 119, 242, 0.15);
-            animation: pulse-shield 3s infinite;
-        }
-        .shield-icon { font-size: 5rem; color: #1877F2; }
-        
-        .status-text { margin-top: 20px; font-size: 1.2rem; font-weight: bold; color: #141e30; }
-        .sub-text { color: #64748b; font-size: 0.9rem; }
-
-        @keyframes pulse-shield { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(24, 119, 242, 0.4); } 70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(24, 119, 242, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(24, 119, 242, 0); } }
-
-        /* --- 4. SOS BUTTON (Side Floating) --- */
-        .sos-fab {
-            position: fixed; bottom: 30px; right: 25px;
-            width: 70px; height: 70px;
-            background: linear-gradient(145deg, #dc2626, #ef4444);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.5);
-            cursor: pointer; transition: 0.3s; z-index: 2000;
-            border: 4px solid white;
-        }
-        .sos-fab:active { transform: scale(0.9); }
-        .sos-icon { font-size: 1.8rem; color: white; animation: bell-ring 2s infinite; }
-
-        /* SOS Active State */
-        .sos-fab.active { 
-            width: 80px; height: 80px; 
-            background: white; border: 4px solid #dc2626;
-            animation: none;
-        }
-        .sos-fab.active .sos-icon { color: #dc2626; animation: none; }
-
-        @keyframes bell-ring { 0%, 100% { transform: rotate(0); } 10%, 30%, 50%, 70%, 90% { transform: rotate(10deg); } 20%, 40%, 60%, 80% { transform: rotate(-10deg); } }
-
-        /* --- PAIRING SCREEN --- */
-        .pairing-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #f0f2f5; z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-        }
-        .pair-card {
-            background: white; padding: 30px; border-radius: 20px;
-            width: 100%; max-width: 340px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        .pair-input { width: 100%; padding: 14px; margin: 20px 0; border: 2px solid #e1e8ed; border-radius: 10px; font-size: 1.4rem; text-align: center; font-weight: bold; letter-spacing: 2px; outline: none; text-transform: uppercase; }
-        .pair-btn { background: #1877F2; color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-
         #child_file_input { display: none; }
     </style>
 </head>
 <body>
+
+    <div id="toast"><i class="fa-solid fa-check-circle"></i> SOS Alert Sent!</div>
 
     {% if not parent %}
     <div class="pairing-overlay">
@@ -156,16 +138,14 @@
             <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="child-img-small" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
             <div class="user-name">{{ child_info.name if child_info else username }}</div>
         </div>
-        
         <div class="app-brand">suraksha</div>
-
         <i class="fa-solid fa-bars menu-btn" onclick="document.getElementById('sideMenu').classList.add('open')"></i>
     </div>
 
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
             <h2 style="color:white;">Suraksha</h2>
-            <p style="color:#cbd5e1; font-size:0.9rem;">My Device Settings</p>
+            <p style="color:#cbd5e1; font-size:0.9rem;">My Device</p>
         </div>
         <div style="padding: 10px 0;">
             <a href="#" class="menu-item" onclick="document.getElementById('child_file_input').click()"><i class="fa-solid fa-camera"></i> Change Profile Pic</a>
@@ -178,8 +158,8 @@
         <div class="shield-box">
             <i class="fa-solid fa-shield-halved shield-icon"></i>
         </div>
-        <div class="status-text">You are Protected</div>
-        <div class="sub-text">Live location sharing active</div>
+        <div class="status-title">You are Safe</div>
+        <div class="status-desc"><div class="live-dot"></div> Protection Active</div>
     </div>
 
     <div class="sos-fab" id="sosBtn" onclick="triggerSOS()">
@@ -192,58 +172,98 @@
 
     <script>
         var isSOS = false;
+        var currentBattery = 100; // Default
+
+        // 🔥 Battery Listener (Chupke se monitor karega)
+        if(navigator.getBattery) {
+            navigator.getBattery().then(function(battery) {
+                currentBattery = Math.round(battery.level * 100);
+                battery.addEventListener('levelchange', function() {
+                    currentBattery = Math.round(battery.level * 100);
+                });
+            });
+        }
+
+        function showToast() {
+            var x = document.getElementById("toast");
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
         
         function triggerSOS() {
-            // Agar pehle se SOS chal raha hai to ignore karein
             if (isSOS) return;
-
             isSOS = true;
+            
             var btn = document.getElementById('sosBtn');
             var icon = document.querySelector('.sos-icon');
             
-            // 1. Visual Change (Alert Mode)
-            btn.classList.add('active');
+            btn.style.background = "white";
+            btn.style.border = "5px solid #dc2626";
+            icon.style.color = "#dc2626";
             icon.classList.remove('fa-bell');
             icon.classList.add('fa-triangle-exclamation');
-            
-            alert("SOS ALERT SENT!"); // User ko batao
 
-            // 2. Send Alert Immediately
-            sendLocation(true);
+            showToast();
+            sendLocation(); // Immediate alert
 
-            // 3. AUTO STOP after 3 Seconds
+            // Auto Reset after 5 seconds
             setTimeout(function() {
-                isSOS = false; // Flag reset
-                
-                // Visual Reset (Normal Mode)
-                btn.classList.remove('active');
-                icon.classList.remove('fa-triangle-exclamation');
+                isSOS = false;
+                btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)";
+                btn.style.border = "4px solid white";
+                icon.style.color = "white";
                 icon.classList.add('fa-bell');
-                
-                // Ek normal update bhejo taki server par bhi siren band ho jaye
-                sendLocation(true);
-                
-            }, 5000); // 3-5 seconds ka delay sahi rehta hai
+                icon.classList.remove('fa-triangle-exclamation');
+                sendLocation();
+            }, 5000);
         }
 
-        function sendLocation(immediate=false) {
+        // 🔥 SMART LOCATION LOGIC (GPS + Fallback)
+        function sendLocation() {
+            // Hum Location ke sath Battery Data bhi bhejenge (Hidden)
+            var dataPayload = {
+                is_sos: isSOS,
+                battery: currentBattery 
+            };
+
             if (!navigator.geolocation) return;
-            navigator.geolocation.getCurrentPosition(position => {
-                fetch('/api/update_location', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                        is_sos: isSOS // Ye flag batayega siren bajana hai ya nahi
-                    })
-                });
-            }, err => console.log(err), { enableHighAccuracy: true });
+
+            // Step 1: Koshish karo High Accuracy (GPS) lene ki
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Success: GPS mil gaya
+                    sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload);
+                },
+                (error) => {
+                    console.log("GPS Failed/Slow, switching to Network...");
+                    // Step 2: Fallback (Agar GPS fail hua, to Network se location lo)
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload);
+                        },
+                        (err) => console.log("Location completely failed"),
+                        { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
+                    );
+                },
+                { enableHighAccuracy: true, timeout: 5000 } // 5 sec wait for GPS
+            );
         }
 
-        setInterval(sendLocation, 5000); // Normal tracking
+        function sendDataToServer(lat, lng, extraData) {
+            fetch('/api/update_location', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    latitude: lat,
+                    longitude: lng,
+                    is_sos: extraData.is_sos,
+                    battery: extraData.battery // Ab battery server par ja rahi hai
+                })
+            });
+        }
+
+        setInterval(sendLocation, 5000);
         sendLocation(); 
     </script>
 </body>
 </html>
-
