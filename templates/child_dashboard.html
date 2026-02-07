@@ -3,209 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Suraksha OneView</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Suraksha Child</title>
     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="preload" as="image" href="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         
-        /* 🔥 सुधार 1: स्क्रीन को पूरी तरह JAM (Lock) करना और COPY रोकना */
-        html, body { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden !important; position: fixed; 
-            background: #0f172a; 
-            display: flex; flex-direction: column; align-items: center; 
-            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; 
+        body { 
+            background-color: #f0f2f5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
+        }
+
+        /* --- HEADER --- */
+        .header {
+            background: #1877F2; color: white; padding: 10px 15px;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 60px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 1000;
+        }
+        .logo { font-size: 1.4rem; font-weight: bold; }
+        .battery-status { font-size: 0.9rem; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;}
+
+        /* --- MAP --- */
+        #map { flex: 1; width: 100%; z-index: 1; }
+
+        /* --- SOS BUTTON --- */
+        .sos-container {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            z-index: 2000; display: flex; flex-direction: column; align-items: center;
+        }
+        .sos-btn {
+            width: 70px; height: 70px; background: #dc2626; color: white;
+            border-radius: 50%; border: 4px solid rgba(255,255,255,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+            cursor: pointer; animation: pulse 2s infinite;
+        }
+        .sos-label { margin-top: 5px; color: #dc2626; font-weight: bold; font-size: 0.8rem; background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 10px; }
+
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+
+        /* --- BOTTOM TABS --- */
+        .bottom-tabs {
+            height: 60px; background: white; display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #ddd; z-index: 1000;
+        }
+        .tab { display: flex; flex-direction: column; align-items: center; color: #65676b; font-size: 0.75rem; text-decoration: none; }
+        .tab i { font-size: 1.4rem; margin-bottom: 2px; }
+        .tab.active { color: #1877F2; }
+
+        /* --- 🔥 PAIRING SCREEN (MISSING PART RESTORED) --- */
+        .pairing-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f0f2f5; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .pair-card {
+            background: white; padding: 30px; border-radius: 15px;
+            width: 100%; max-width: 350px; text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .pair-icon { font-size: 3rem; color: #1877F2; margin-bottom: 20px; }
+        .pair-input {
+            width: 100%; padding: 12px; margin: 20px 0; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 1.2rem; text-align: center; letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .pair-btn {
+            background: #1877F2; color: white; border: none; padding: 12px;
+            width: 100%; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer;
         }
         
-        * { box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
-
-        /* --- Facebook Style Top Branding --- */
-        .top-bar {
-            width: 100%; padding: 15px 20px; display: flex; 
-            justify-content: space-between; align-items: center; z-index: 100;
-        }
-        .app-name-brand {
-            color: #1877F2; font-size: 1.8rem; font-weight: 800; 
-            letter-spacing: -1px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .top-bar i { color: white; font-size: 1.4rem; cursor: pointer; padding: 5px; }
-
-        /* --- 🔥 सुधार 2: Side Panel (Side Menu) को अलग-अलग लाइन में करना --- */
-        .side-panel {
-            position: absolute; top: 0; left: -280px; width: 280px; height: 100%;
-            background: white; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.6);
-            display: flex; flex-direction: column; /* ऑप्शंस को ऊपर-नीचे करने के लिए */
-        }
-        .side-panel.open { left: 0; }
-        .panel-header { background: #1877F2; padding: 40px 20px; color: white; }
-        .panel-header h3 { font-size: 1.5rem; margin-bottom: 5px; font-weight: 800; }
-        .panel-header p { font-size: 0.85rem; opacity: 0.9; }
-        
-        /* मेनू के हर ऑप्शन को अलग लाइन में और गैप के साथ सेट करना */
-        .menu-list { flex: 1; overflow-y: auto; padding-top: 10px; }
-        .menu-item { 
-            display: flex; align-items: center; gap: 15px; padding: 18px 25px;
-            color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;
-            font-size: 1rem; font-weight: 500; transition: 0.2s;
-        }
-        .menu-item:active { background: #f8fafc; }
-        .menu-item i { font-size: 1.2rem; width: 25px; color: #1877F2; }
-
-        .dot-menu {
-            position: absolute; top: 65px; right: 20px; background: white;
-            border-radius: 12px; width: 190px; display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 1000;
-        }
-        .dot-menu a {
-            display: flex; align-items: center; gap: 12px; padding: 14px 18px;
-            text-decoration: none; color: #333; font-size: 0.95rem; border-bottom: 1px solid #f0f2f5;
-        }
-
-        /* --- प्रोफाइल और नाम --- */
-        .profile-container { text-align: center; margin-top: 5px; width: 100%; }
-        .child-display-name { 
-            color: white; font-size: 2.2rem; font-weight: 700; 
-            margin-bottom: 5px; text-transform: capitalize;
-        }
-        .sub-text { color: #94a3b8; font-size: 0.85rem; letter-spacing: 2px; font-weight: 500; }
-
-        .image-wrapper { position: relative; display: inline-block; margin-top: 25px; }
-        .profile-pic { 
-            width: 140px; height: 140px; border-radius: 50%; 
-            border: 5px solid #1877F2; object-fit: cover;
-            box-shadow: 0 0 25px rgba(24, 119, 242, 0.3);
-        }
-        .cam-icon-btn {
-            position: absolute; bottom: 8px; right: 8px; 
-            background: #e4e6eb; color: #1c1e21; width: 38px; height: 38px;
-            border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        /* --- Main Status Card --- */
-        .main-card {
-            background: white; width: 92%; margin-top: 35px;
-            border-radius: 30px; padding: 35px 20px;
-            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-        .active-label {
-            display: inline-flex; align-items: center; gap: 10px;
-            color: #1877F2; font-weight: 800; font-size: 1rem; margin-bottom: 25px;
-            background: #e7f3ff; padding: 8px 20px; border-radius: 50px;
-        }
-        .pulse-ring { width: 10px; height: 10px; background: #1877F2; border-radius: 50%; animation: ring 2s infinite; }
-        @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0.5); } 70% { box-shadow: 0 0 0 15px rgba(24, 119, 242, 0); } 100% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0); } }
-
-        .sos-action-btn {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b); 
-            color: white; border: none; width: 100%; padding: 20px; 
-            border-radius: 20px; font-size: 1.4rem; font-weight: 900; 
-            cursor: pointer; box-shadow: 0 10px 20px rgba(255, 75, 43, 0.3);
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-        }
-
         #child_file_input { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <i class="fa-solid fa-bars-staggered" onclick="openNav()"></i>
-        <div class="app-name-brand">suraksha</div>
-        <i class="fa-solid fa-ellipsis-vertical" onclick="openDots()"></i>
-    </div>
-
-    <div class="side-panel" id="sideNav">
-        <div class="panel-header">
-            <h3>suraksha</h3>
-            <p>Premium Protection</p>
-        </div>
-        <div class="menu-list">
-            <a href="#" class="menu-item"><i class="fa-solid fa-circle-user"></i> My Profile</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Location History</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Privacy Policy</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-handshake-angle"></i> Support</a>
-        </div>
-    </div>
-
-    <div class="dot-menu" id="dotNav">
-        <a href="#"><i class="fa-solid fa-gears"></i> Settings</a>
-        <a href="#"><i class="fa-solid fa-bell"></i> Alerts</a>
-        <a href="{{ url_for('logout') }}" style="color: #ff4b2b;"><i class="fa-solid fa-power-off"></i> Logout</a>
-    </div>
-
-    <div class="profile-container">
-        <div class="child-display-name">{{ username }}</div>
-        <div class="sub-text">LIVE PROTECTION ACTIVE</div>
-
-        <div class="image-wrapper">
-            <form id="childProfileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
-                <input type="file" name="profile_pic" id="child_file_input" accept="image/*" onchange="document.getElementById('childProfileForm').submit()">
+    {% if not parent %}
+    <div class="pairing-overlay">
+        <div class="pair-card">
+            <i class="fa-solid fa-link pair-icon"></i>
+            <h2 style="color:#1c1e21; margin-bottom:10px;">Connect Parent</h2>
+            <p style="color:#65676b; font-size:0.9rem;">Enter the pairing code from parent's app to link this device.</p>
+            
+            <form action="{{ url_for('pair_device') }}" method="POST">
+                <input type="text" name="pairing_code" class="pair-input" placeholder="ENTER CODE" required>
+                <button type="submit" class="pair-btn">Connect Now</button>
             </form>
-            <div onclick="document.getElementById('child_file_input').click()">
-                <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="profile-pic">
-                <div class="cam-icon-btn"><i class="fa-solid fa-camera"></i></div>
-            </div>
+            
+            <a href="{{ url_for('logout') }}" style="display:block; margin-top:20px; color:#dc2626; text-decoration:none; font-size:0.9rem;">Logout</a>
         </div>
     </div>
+    {% endif %}
 
-    <div class="main-card">
-        <div class="active-label">
-            <div class="pulse-ring"></div> CONNECTED
-        </div>
-        <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 30px; font-weight: 500;">
-            Security shield is active for your safety.
-        </p>
-        <button class="sos-action-btn" onclick="triggerSOSAlert()">
-            <i class="fa-solid fa-bell"></i> SOS EMERGENCY
-        </button>
+    <div class="header">
+        <div class="logo">suraksha</div>
+        <div class="battery-status"><i class="fa-solid fa-battery-three-quarters"></i> <span id="bat-level">--%</span></div>
     </div>
 
+    <div id="map"></div>
+
+    <div class="sos-container">
+        <div class="sos-btn" id="sosBtn" onclick="toggleSOS()">
+            <i class="fa-solid fa-bell"></i>
+        </div>
+        <div class="sos-label">SOS</div>
+    </div>
+
+    <div class="bottom-tabs">
+        <a href="#" class="tab active"><i class="fa-solid fa-map-location-dot"></i> Home</a>
+        <div class="tab" onclick="document.getElementById('child_file_input').click()">
+            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
+            <span>Profile</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="tab" style="color:#dc2626;"><i class="fa-solid fa-power-off"></i> Exit</a>
+    </div>
+
+    <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
+        <input type="file" name="profile_pic" id="child_file_input" accept="image/*" onchange="document.getElementById('profileForm').submit()">
+    </form>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        function openNav() { document.getElementById("sideNav").classList.toggle("open"); }
-        function openDots() {
-            var d = document.getElementById("dotNav");
-            d.style.display = (d.style.display === "block") ? "none" : "block";
-        }
-        
-        // स्क्रीन पर कहीं भी क्लिक करने पर मेनू बंद करें
-        window.onclick = function(e) {
-            if (!e.target.matches('.fa-bars-staggered') && !e.target.closest('.side-panel')) {
-                document.getElementById("sideNav").classList.remove("open");
+        // --- 1. Map Setup ---
+        var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
+        var marker = null;
+
+        // --- 2. SOS Logic ---
+        var isSOS = false;
+        function toggleSOS() {
+            isSOS = !isSOS;
+            var btn = document.getElementById('sosBtn');
+            if (isSOS) {
+                btn.style.background = "white"; btn.style.color = "red";
+                alert("SOS ALERT SENT TO PARENT!");
+            } else {
+                btn.style.background = "#dc2626"; btn.style.color = "white";
             }
-            if (!e.target.matches('.fa-ellipsis-vertical')) {
-                document.getElementById("dotNav").style.display = "none";
-            }
+            sendLocation(true); // Turant update bhejo
         }
 
-        function triggerSOSAlert() {
-            if(confirm("Send Emergency Alert to Parent?")) {
-                sendLocation(true);
-                alert("SOS Sent! Parent has been notified.");
-            }
+        // --- 3. Location & Battery Sync ---
+        function sendLocation(immediate=false) {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(position => {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+
+                if (marker) marker.setLatLng([lat, lng]);
+                else {
+                    var icon = L.divIcon({ className: 'c-div', html: '<div style="width:15px;height:15px;background:#1877F2;border:2px solid white;border-radius:50%;"></div>' });
+                    marker = L.marker([lat, lng], {icon: icon}).addTo(map);
+                    map.setView([lat, lng], 17);
+                }
+
+                // API Call to Update Server
+                fetch('/api/update_location', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        latitude: lat,
+                        longitude: lng,
+                        is_sos: isSOS // SOS status bhi bhej rahe hain
+                    })
+                });
+
+            }, err => console.log(err), { enableHighAccuracy: true });
         }
 
-        function sendLocation(isSOS = false) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    fetch('/api/update_location', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            latitude: pos.coords.latitude,
-                            longitude: pos.coords.longitude,
-                            accuracy: pos.coords.accuracy,
-                            is_sos: isSOS
-                        })
-                    });
-                }, err => { console.log("Network Mode Active"); }, 
-                { enableHighAccuracy: true, timeout: 10000 });
-            }
-        }
-        setInterval(() => sendLocation(false), 5000);
-        sendLocation(false);
+        // Battery Status
+        navigator.getBattery().then(function(battery) {
+            function updateBattery() { document.getElementById('bat-level').innerText = Math.round(battery.level * 100) + "%"; }
+            updateBattery();
+            battery.addEventListener('levelchange', updateBattery);
+        });
+
+        setInterval(sendLocation, 5000);
+        sendLocation();
     </script>
 </body>
 </html>
