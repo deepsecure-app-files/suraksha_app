@@ -4,6 +4,7 @@ import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, g
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text # 🔥 FIX: Imported for database repair
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -61,7 +62,7 @@ class Child(db.Model):
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
     
-    # 🔥 NEW: Battery Saving Column
+    # 🔥 Battery Column (This caused the error, we will fix it below)
     last_battery = db.Column(db.Integer, default=0)
 
     # SOS Feature (Active)
@@ -91,6 +92,18 @@ def generate_pairing_code():
     return secrets.token_hex(3).upper()
 
 # --- 4. ROUTES ---
+
+# 🔥 MAGIC FIX ROUTE: Run this ONCE to fix the database error
+@app.route('/fix_db')
+def fix_db():
+    try:
+        with db.engine.connect() as conn:
+            # This command forces the database to create the missing 'last_battery' column
+            conn.execute(text('ALTER TABLE child ADD COLUMN IF NOT EXISTS last_battery INTEGER DEFAULT 0;'))
+            conn.commit()
+        return "<h1>✅ Database Successfully Repaired!</h1><p>Battery column added. You can now go back to <a href='/'>Home</a>.</p>"
+    except Exception as e:
+        return f"<h1>⚠️ Error:</h1><p>{str(e)}</p>"
 
 @app.route('/')
 def home():
@@ -259,4 +272,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
-
