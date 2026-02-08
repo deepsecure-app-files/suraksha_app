@@ -7,33 +7,29 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="preload" as="image" href="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}">
-
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
+        /* --- 1. GLOBAL STYLES --- */
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         input, textarea { -webkit-user-select: text !important; user-select: text !important; }
-
         html, body { background-color: #f0f2f5; height: 100%; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
 
-        /* HEADER */
+        /* --- 2. HEADER --- */
         .header {
             background: #1877F2; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
             height: 65px; z-index: 2001; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .header-left { flex: 1; display: flex; align-items: center; }
+        .header-left { flex: 1; display: flex; align-items: center; gap: 10px; }
         .parent-img-large {
             width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; 
-            object-fit: cover; background-color: white; cursor: pointer; pointer-events: auto;
+            object-fit: cover; background-color: white; cursor: pointer;
         }
-        .app-brand {
-            font-size: 1.5rem; font-weight: 800; color: white; text-align: center; flex: 1; letter-spacing: 0.5px;
-        }
-        .header-right { flex: 1; display: flex; justify-content: flex-end; }
+        .app-brand { font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: 0.5px; }
         .menu-btn { color: white; font-size: 1.5rem; cursor: pointer; padding: 5px; }
 
-        /* SIDE MENU */
+        /* --- 3. SIDE MENU (Child List) --- */
         .side-menu {
             position: absolute; top: 0; left: -320px; width: 300px; height: 100%;
             background: white; transition: 0.3s ease-in-out; z-index: 3000; 
@@ -42,69 +38,70 @@
         .side-menu.open { left: 0; }
         
         .menu-header { 
-            background: #1877F2; padding: 30px 20px; color: white; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            background: #1877F2; padding: 25px; color: white; 
+            text-align: center;
         }
-        .menu-brand { font-size: 2rem; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
-        .menu-user { font-size: 1.1rem; font-weight: 500; opacity: 0.9; }
+        .menu-user-name { font-size: 1.2rem; font-weight: bold; margin-top: 5px; }
 
         .children-section { flex: 1; overflow-y: auto; padding: 10px; background: #f0f2f5; }
 
+        /* Child Card Design */
         .menu-child-card {
             background: white; border-radius: 12px; padding: 12px; margin-bottom: 12px;
             display: flex; align-items: center; gap: 12px; border: 1px solid #e1e4e8;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; position: relative;
         }
         .menu-child-card:active { background: #f8fafc; }
-        
-        /* 🔥 FIX: Default Image Logic via CSS/JS */
         .menu-child-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; background: #eee; }
         .menu-child-info { flex: 1; }
         
         .child-name-gold { color: #b45309; font-weight: 900; font-size: 1.1rem; text-transform: capitalize; margin-bottom: 2px; }
+        .child-id { font-size: 0.75rem; color: #64748b; }
 
         .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
         
+        /* Badges */
         .dist-badge { 
             font-size: 0.8rem; color: #1877F2; font-weight: bold; 
             background: #e7f3ff; padding: 4px 10px; border-radius: 15px; 
             display: flex; align-items: center; gap: 5px;
         }
         .bat-badge { font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 15px; display: flex; align-items: center; gap: 5px; }
-        .bat-high { color: #16a34a; background: #dcfce7; }
-        .bat-low { color: #dc2626; background: #fee2e2; }
+        .bat-high { color: #16a34a; background: #dcfce7; } /* Green */
+        .bat-low { color: #dc2626; background: #fee2e2; }   /* Red */
 
-        /* MAP */
+        /* --- 4. MAP AREA --- */
         .map-wrapper { flex: 1; position: relative; width: 100%; margin-bottom: 60px; background: #e5e7eb; }
         #map { width: 100%; height: 100%; }
         .leaflet-control-attribution { display: none !important; }
 
-        /* NAV */
+        /* --- 5. BOTTOM NAVIGATION --- */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: white;
             display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; z-index: 2000;
         }
-        .nav-item { color: #94a3b8; font-size: 1.4rem; height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; }
+        .nav-item { color: #94a3b8; font-size: 1.4rem; height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .nav-item.active { color: #1877F2; border-top: 3px solid #1877F2; }
 
-        /* SOS Alert */
+        /* --- 6. SOS OVERLAY --- */
         #sos-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(220, 38, 38, 0.95); z-index: 9999; flex-direction: column;
+            background: rgba(220, 38, 38, 0.98); z-index: 9999; flex-direction: column;
             align-items: center; justify-content: center; color: white; text-align: center; padding: 20px;
         }
-        .sos-btn-stop { background: white; color: #dc2626; padding: 15px 40px; border-radius: 50px; border: none; font-weight: bold; font-size: 1.2rem; margin-top: 30px; }
+        .sos-btn-stop { background: white; color: #dc2626; padding: 15px 40px; border-radius: 50px; border: none; font-weight: bold; font-size: 1.2rem; margin-top: 30px; cursor: pointer; }
 
+        /* --- 7. TOAST NOTIFICATION --- */
         #toast {
-            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
-            text-align: center; border-radius: 50px; padding: 12px; position: fixed; z-index: 5000;
-            left: 50%; bottom: 80px; transform: translateX(-50%); font-size: 0.9rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s;
+            visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
+            text-align: center; border-radius: 50px; padding: 14px; position: fixed; z-index: 5000;
+            left: 50%; bottom: 80px; transform: translateX(-50%); font-size: 0.95rem; font-weight: 500;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 100px; }
         
+        /* Map Markers */
         #parent_file_input { display: none; }
-        /* 🔥 FIX: Icon Style */
         .child-marker-icon { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.4); object-fit: cover; background: #fff; }
         .parent-dot { width: 18px; height: 18px; background: #1877F2; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 15px rgba(24, 119, 242, 0.6); }
     </style>
@@ -116,15 +113,15 @@
     <div id="sos-overlay">
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 5rem; animation: pulse 0.5s infinite;"></i>
         <h1 style="font-size: 2.5rem; margin-top: 20px;">SOS ALERT!</h1>
-        <p id="sos-text" style="font-size: 1.2rem;">Child needs help!</p>
-        <button class="sos-btn-stop" onclick="dismissSOS()">I AM SAFE</button>
+        <p id="sos-text" style="font-size: 1.5rem; font-weight: bold;">Child needs help!</p>
+        <button class="sos-btn-stop" onclick="dismissSOS()">I AM SAFE (STOP)</button>
     </div>
 
     <div class="header">
         <div class="header-left" onclick="document.getElementById('parent_file_input').click()">
             <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="parent-img-large" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
+            <div class="app-brand">Suraksha</div>
         </div>
-        <div class="app-brand">suraksha</div>
         <div class="header-right">
             <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
         </div>
@@ -132,8 +129,8 @@
 
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
-            <div class="menu-brand">Suraksha</div>
-            <div class="menu-user">Hello, {{ username }}</div>
+            <div style="font-size: 1.8rem; font-weight: 900;">Suraksha</div>
+            <div class="menu-user-name">Hello, {{ username }}</div>
         </div>
 
         <div class="children-section">
@@ -141,9 +138,10 @@
                 {% for child in children %}
                 <div class="menu-child-card" onclick="locateChild('{{ child.last_latitude }}', '{{ child.last_longitude }}')">
                     <img src="{{ child.profile_pic if child.profile_pic else url_for('static', filename='default-profile.png') }}" class="menu-child-img" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
+                    
                     <div class="menu-child-info">
                         <div class="child-name-gold">{{ child.name }}</div>
-                        <span style="font-size:0.75rem; color:#64748b;">ID: {{ child.pairing_code }}</span>
+                        <div class="child-id">ID: {{ child.pairing_code }}</div>
                         
                         <div class="status-row">
                             <div class="dist-badge" id="dist-{{ child.id }}">
@@ -162,7 +160,7 @@
 
             <div style="padding: 15px; border-top: 1px solid #eee; background: white;">
                 <form action="{{ url_for('add_child') }}" method="POST">
-                    <input type="text" name="child_name" placeholder="Child Name" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;" required>
+                    <input type="text" name="child_name" placeholder="Child Name" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" required>
                     <button type="submit" style="width: 100%; padding: 12px; background: #1877F2; color: white; border: none; border-radius: 8px; font-weight: 600;"><i class="fa-solid fa-plus"></i> Add Child</button>
                 </form>
             </div>
@@ -185,11 +183,14 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
+        // 1. Map Initialization
         var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
         L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
 
-        var markers = {}; var polylines = {}; 
-        var parentMarker = null; var parentLat = null, parentLng = null;
+        var markers = {}; 
+        var polylines = {}; 
+        var parentMarker = null; 
+        var parentLat = null, parentLng = null;
         var siren = new Audio('https://www.soundjay.com/buttons/sounds/alarm-siren-01.mp3');
 
         function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
@@ -208,18 +209,18 @@
                 map.setView([lat, lng], 18); 
                 toggleMenu(); 
             } else { 
-                showToast("⚠️ Location not available yet."); 
+                showToast("⚠️ Child location not updated yet."); 
             }
         }
 
-        // 🔥 FIX 1: Robust GPS Logic
+        // 2. FORCE PARENT GPS (Essential for Blue Line)
         function updateParentLocation() {
             if (!navigator.geolocation) {
                 showToast("❌ GPS Not Supported");
                 return;
             }
-            showToast("📍 Finding Parent GPS...");
             
+            console.log("Requesting GPS...");
             navigator.geolocation.watchPosition(position => {
                 parentLat = position.coords.latitude;
                 parentLng = position.coords.longitude;
@@ -235,25 +236,27 @@
                 }
             }, err => {
                 console.warn("GPS Error", err);
-                showToast("⚠️ Please Turn On GPS for Distance");
+                showToast("⚠️ Turn On GPS for Blue Line");
             }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
         }
         updateParentLocation();
 
+        // 3. MAIN DATA SYNC LOOP (Every 3 Seconds)
         function updateData() {
             fetch('/api/get_children_data')
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
-                        // 1. BATTERY FIX: Robust check
-                        var batVal = (child.last_battery !== undefined && child.last_battery !== null) ? child.last_battery : 0;
+                        
+                        // A. UPDATE BATTERY (Handles both 'battery' and 'last_battery' keys)
+                        var batVal = (child.last_battery !== undefined) ? child.last_battery : 0;
                         var batElem = document.getElementById('bat-' + child.id);
                         if(batElem) {
                             batElem.innerHTML = `<i class="fa-solid fa-battery-full"></i> ${batVal}%`;
                             batElem.className = (batVal < 20) ? "bat-badge bat-low" : "bat-badge bat-high";
                         }
 
-                        // 2. SOS FIX
+                        // B. SOS ALERT CHECK
                         if (child.is_sos) {
                             var overlay = document.getElementById('sos-overlay');
                             if (overlay.style.display !== 'flex') {
@@ -263,12 +266,12 @@
                             }
                         }
 
-                        // 3. MAP & LINE FIX
+                        // C. UPDATE MAP MARKERS & LINE
                         if (child.last_latitude && child.last_latitude !== 'None') {
                             var lat = parseFloat(child.last_latitude);
                             var lng = parseFloat(child.last_longitude);
                             
-                            // 🔥 FIX: Broken Image Handler in Marker
+                            // Image with Error Handler
                             var imgSrc = child.profile_pic || '/static/default-profile.png';
                             var icon = L.divIcon({
                                 className: 'custom-div',
@@ -279,34 +282,38 @@
                             if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
                             else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
 
-                            // Draw Line ONLY if we have Parent Location
+                            // D. DRAW BLUE LINE (Only if Parent GPS is Locked)
                             if (parentLat && parentLng) {
+                                // Remove old line
                                 if (polylines[child.id]) map.removeLayer(polylines[child.id]);
                                 
+                                // Draw new line
                                 polylines[child.id] = L.polyline(
                                     [[parentLat, parentLng], [lat, lng]], 
                                     { color: '#1877F2', weight: 4, opacity: 0.8, dashArray: '10, 10' }
                                 ).addTo(map);
                                 
+                                // Calculate Distance
                                 var p1 = L.latLng(parentLat, parentLng);
                                 var p2 = L.latLng(lat, lng);
-                                var d = p1.distanceTo(p2);
+                                var d = p1.distanceTo(p2); // Meters
                                 
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
                                 var distElem = document.getElementById('dist-' + child.id);
                                 if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-arrow"></i> ${distText}`;
                             } else {
-                                // Explain why distance is missing
+                                // Explain waiting
                                 var distElem = document.getElementById('dist-' + child.id);
-                                if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-slash"></i> GPS Off`;
+                                if(distElem && distElem.innerText === 'Wait...') distElem.innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> GPS?`;
                             }
                         }
                     });
                 });
         }
+        
+        // Start Loop
         setInterval(updateData, 3000);
         updateData();
     </script>
 </body>
 </html>
-
