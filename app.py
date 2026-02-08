@@ -1,31 +1,29 @@
 import os
 import secrets
 import datetime
+import math  # Geofence math ke liye
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, g
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text # 🔥 FIX: Imported for database repair
+from sqlalchemy import text
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# --- 1. DATABASE CONFIGURATION ---
+# --- 1. CONFIGURATION ---
+# Database URL Fix for Render
 database_url = os.environ.get('DATABASE_URL')
-
-# Render fix for PostgreSQL
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_deepak_darbhanga')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super_secret_key_suraksha_app')
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=31)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# Create upload folder if not exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
 db = SQLAlchemy(app)
 
 # --- 2. DATABASE MODELS ---
@@ -39,6 +37,7 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), nullable=True)
     profile_pic_url = db.Column(db.String(200), nullable=True)
     
+    # Relationships
     children = db.relationship('Child', foreign_keys='Child.parent_id', backref='parent', lazy=True)
     geofences = db.relationship('Geofence', backref='parent', lazy=True)
 
@@ -56,16 +55,13 @@ class Child(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=True)
     child_user_id = db.Column(db.Integer, db.ForeignKey('app_users.id'), nullable=True)
     
-    child_user = db.relationship('User', foreign_keys=[child_user_id])
-    
+    # Tracking Info
     last_seen = db.Column(db.DateTime, nullable=True)
     last_latitude = db.Column(db.Float, nullable=True)
     last_longitude = db.Column(db.Float, nullable=True)
     
-    # 🔥 Battery Column (This caused the error, we will fix it below)
+    # 🔥 New Features
     last_battery = db.Column(db.Integer, default=0)
-
-    # SOS Feature (Active)
     is_sos = db.Column(db.Boolean, default=False)
 
 class Geofence(db.Model):
@@ -74,7 +70,7 @@ class Geofence(db.Model):
     location_name = db.Column(db.String(100), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    radius = db.Column(db.Float, nullable=False)
+    radius = db.Column(db.Float, nullable=False) # In meters
 
 # --- 3. HELPER FUNCTIONS ---
 
@@ -91,19 +87,22 @@ def is_parent(f):
 def generate_pairing_code():
     return secrets.token_hex(3).upper()
 
-# --- 4. ROUTES ---
+# Haversine Formula for Geofence Calculation
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371000 # Earth radius in meters
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_phi = math.radians(lat2 - lat1)
+    delta_lambda = math.radians(lon2 - lon1)
+    
+    a = math.sin(delta_phi / 2.0)**2 + \
+        math.cos(phi1) * math.cos(phi2) * \
+        math.sin(delta_lambda / 2.0)**2
+    
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
 
-# 🔥 MAGIC FIX ROUTE: Run this ONCE to fix the database error
-@app.route('/fix_db')
-def fix_db():
-    try:
-        with db.engine.connect() as conn:
-            # This command forces the database to create the missing 'last_battery' column
-            conn.execute(text('ALTER TABLE child ADD COLUMN IF NOT EXISTS last_battery INTEGER DEFAULT 0;'))
-            conn.commit()
-        return "<h1>✅ Database Successfully Repaired!</h1><p>Battery column added. You can now go back to <a href='/'>Home</a>.</p>"
-    except Exception as e:
-        return f"<h1>⚠️ Error:</h1><p>{str(e)}</p>"
+# --- 4. ROUTES ---
 
 @app.route('/')
 def home():
@@ -113,21 +112,19 @@ def home():
             return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
     return redirect(url_for('login'))
 
+# --- AUTHENTICATION ---
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    # Auto-create tables if missing
     db.create_all()
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
-        is_parent = (role == 'parent')
-        phone_number = request.form.get('phone_number')
         
         if User.query.filter_by(username=username).first():
             return "Username already exists!"
             
-        new_user = User(username=username, is_parent=is_parent, phone_number=phone_number)
+        new_user = User(username=username, is_parent=(role == 'parent'))
         new_user.set_password(password)
         new_user.profile_pic_url = url_for('static', filename='default-profile.png')
         
@@ -140,11 +137,8 @@ def signup():
 def login():
     db.create_all()
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and user.check_password(request.form['password']):
             session['username'] = user.username
             session.permanent = True
             return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
@@ -152,6 +146,12 @@ def login():
             return "Invalid credentials."
     return render_template('login.html')
 
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
+
+# --- PARENT ROUTES ---
 @app.route('/parent')
 @is_parent
 def parent_dashboard():
@@ -171,6 +171,12 @@ def add_child():
     db.session.commit()
     return redirect(url_for('parent_dashboard'))
 
+@app.route('/geofence')
+@is_parent
+def geofence_page():
+    return render_template('geofence.html', username=g.user.username)
+
+# --- CHILD ROUTES ---
 @app.route('/child')
 def child_dashboard():
     if 'username' not in session: return redirect(url_for('login'))
@@ -199,11 +205,9 @@ def pair_device():
         return redirect(url_for('child_dashboard'))
     return "Invalid Pairing Code"
 
-@app.route('/logout')
-def logout():
-    session.pop('username', None)
-    return redirect(url_for('login'))
+# --- API ROUTES (The Brains) ---
 
+# 🔥 UPDATE LOCATION (Includes Battery & SOS Fix)
 @app.route('/api/update_location', methods=['POST'])
 def update_location():
     if 'username' not in session: return jsonify(status='error')
@@ -215,14 +219,19 @@ def update_location():
             data = request.get_json()
             child_entry.last_latitude = data.get('latitude')
             child_entry.last_longitude = data.get('longitude')
-            # 🔥 Save Battery & SOS
+            
+            # 🔥 Battery & SOS Update
             child_entry.last_battery = data.get('battery', 0)
             child_entry.is_sos = data.get('is_sos', False)
+            
             child_entry.last_seen = datetime.datetime.utcnow()
             db.session.commit()
+            
+            # (Optional) Check Geofence here logic could go here
             return jsonify(status='success')
     return jsonify(status='error')
 
+# 🔥 GET DATA (For Parent Dashboard)
 @app.route('/api/get_children_data')
 def get_children_data():
     if 'username' not in session: return jsonify(children=[])
@@ -243,11 +252,54 @@ def get_children_data():
             'last_longitude': c.last_longitude,
             'last_seen': c.last_seen.isoformat() if c.last_seen else None,
             'profile_pic': pic,
-            'battery': c.last_battery, # 🔥 Sending Battery Data
+            'last_battery': c.last_battery, # Match DB column name
+            'battery': c.last_battery,      # Send as 'battery' too for safety
             'is_sos': c.is_sos
         })
     return jsonify(children=data)
 
+# --- GEOFENCE API ---
+@app.route('/api/add_geofence', methods=['POST'])
+def add_geofence():
+    if 'username' not in session: return jsonify(status='error')
+    user = User.query.filter_by(username=session['username']).first()
+    if user and user.is_parent:
+        data = request.get_json()
+        new_geo = Geofence(
+            parent=user,
+            location_name=data['name'],
+            latitude=data['lat'],
+            longitude=data['lng'],
+            radius=data['radius']
+        )
+        db.session.add(new_geo)
+        db.session.commit()
+        return jsonify(status='success', id=new_geo.id)
+    return jsonify(status='error')
+
+@app.route('/api/get_geofences')
+def get_geofences():
+    if 'username' not in session: return jsonify(geofences=[])
+    user = User.query.filter_by(username=session['username']).first()
+    if user and user.is_parent:
+        data = [{'id': g.id, 'name': g.location_name, 'lat': g.latitude, 'lng': g.longitude, 'radius': g.radius} for g in user.geofences]
+        return jsonify(geofences=data)
+    return jsonify(geofences=[])
+
+@app.route('/api/delete_geofence', methods=['POST'])
+def delete_geofence():
+    if 'username' not in session: return jsonify(status='error')
+    user = User.query.filter_by(username=session['username']).first()
+    if user and user.is_parent:
+        data = request.get_json()
+        geo = Geofence.query.get(data['id'])
+        if geo and geo.parent_id == user.id:
+            db.session.delete(geo)
+            db.session.commit()
+            return jsonify(status='success')
+    return jsonify(status='error')
+
+# --- UTILS ---
 @app.route('/upload_profile_pic', methods=['POST'])
 def upload_profile_pic():
     if 'username' not in session: return redirect(url_for('home'))
@@ -256,6 +308,7 @@ def upload_profile_pic():
     
     if file and file.filename != '':
         fname = secure_filename(file.filename)
+        # Using timestamp to avoid cache issues
         new_name = f"u{user.id}_{int(datetime.datetime.now().timestamp())}_{fname}"
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_name))
         user.profile_pic_url = url_for('static', filename='uploads/' + new_name)
@@ -263,12 +316,20 @@ def upload_profile_pic():
         
     return redirect(url_for('parent_dashboard')) if user.is_parent else redirect(url_for('child_dashboard'))
 
-@app.route('/geofence')
-@is_parent
-def geofence_page():
-    return render_template('geofence.html', username=g.user.username)
+# 🔥 REPAIR DB ROUTE (Run once if error)
+@app.route('/fix_db')
+def fix_db():
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE child ADD COLUMN IF NOT EXISTS last_battery INTEGER DEFAULT 0;'))
+            conn.execute(text('ALTER TABLE child ADD COLUMN IF NOT EXISTS is_sos BOOLEAN DEFAULT FALSE;'))
+            conn.commit()
+        return "<h1>✅ Database Successfully Repaired!</h1>"
+    except Exception as e:
+        return f"<h1>⚠️ Error:</h1><p>{str(e)}</p>"
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', debug=True, port=10000)
+
