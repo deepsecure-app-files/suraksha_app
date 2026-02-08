@@ -10,13 +10,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
-        /* 🔥 PRO FEEL: Anti-Select to look like native App */
+        /* GLOBAL */
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         input { -webkit-user-select: text !important; user-select: text !important; }
-
         body { background-color: #f0f2f5; height: 100vh; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
 
-        /* HEADER - Facebook Style */
+        /* HEADER */
         .header {
             background: #1877F2; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
             height: 65px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 1000;
@@ -26,14 +25,10 @@
             width: 42px; height: 42px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: white;
         }
         .user-name { color: white; font-size: 1.1rem; font-weight: 600; text-transform: capitalize; }
-        
-        .app-brand {
-            font-size: 1.5rem; font-weight: 800; color: white; /* White text */
-            position: absolute; left: 50%; transform: translateX(-50%); letter-spacing: 0.5px;
-        }
+        .app-brand { font-size: 1.5rem; font-weight: 800; color: white; position: absolute; left: 50%; transform: translateX(-50%); letter-spacing: 0.5px; }
         .menu-btn { color: white; font-size: 1.4rem; cursor: pointer; flex: 1; text-align: right; }
 
-        /* MAIN CONTENT */
+        /* MAIN SHIELD AREA */
         .main-container {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: white; margin: 20px; border-radius: 20px;
@@ -51,7 +46,7 @@
 
         @keyframes pulse-shield { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* SOS FAB */
+        /* SOS BUTTON */
         .sos-fab {
             position: fixed; bottom: 40px; right: 30px; width: 75px; height: 75px;
             background: linear-gradient(145deg, #dc2626, #ef4444); border-radius: 50%; border: 4px solid white;
@@ -80,7 +75,7 @@
         .menu-header { background: #1877F2; padding: 30px 20px; color: white; }
         .menu-item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f2f5; }
 
-        /* PAIRING SCREEN */
+        /* PAIRING SCREEN (IF NOT PAIRED) */
         .pairing-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .pair-card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .pair-input { width: 100%; padding: 14px; margin: 20px 0; border: 2px solid #e1e8ed; border-radius: 10px; font-size: 1.4rem; text-align: center; font-weight: bold; outline: none; text-transform: uppercase; }
@@ -144,12 +139,12 @@
         var isSOS = false;
         var currentBattery = 100;
 
-        // 🔥 LOGIC FIX 1: Get Battery & Send Immediately (No Waiting)
+        // 1. FAST BATTERY SEND (Sends immediately on load)
         function initBattery() {
             if(navigator.getBattery) {
                 navigator.getBattery().then(function(battery) {
                     currentBattery = Math.round(battery.level * 100);
-                    // Send once as soon as we get battery
+                    // Send immediately
                     sendLocation(); 
                     
                     battery.addEventListener('levelchange', function() {
@@ -158,18 +153,17 @@
                     });
                 });
             } else {
-                // If battery API fails, send location anyway with default 100%
-                sendLocation();
+                sendLocation(); // Fallback if battery API not supported
             }
         }
-        initBattery();
+        initBattery(); // Run on load
 
         function showToast() {
             var x = document.getElementById("toast");
             x.className = "show"; setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
         
-        // 🔥 LOGIC FIX 2: 3-Second Timer with SOS State
+        // 2. SOS LOGIC (3 Seconds Timer)
         function triggerSOS() {
             if (isSOS) return;
             
@@ -177,6 +171,7 @@
             var icon = document.querySelector('.sos-icon');
             var timeLeft = 3;
 
+            // Visual Change
             btn.style.background = "white"; 
             btn.style.border = "5px solid #dc2626";
             icon.style.color = "#dc2626";
@@ -184,12 +179,12 @@
             var timer = setInterval(function() {
                 if(timeLeft <= 0) {
                     clearInterval(timer);
-                    isSOS = true; // Set State
+                    isSOS = true;
                     icon.innerHTML = "";
                     icon.classList.remove('fa-bell');
                     icon.classList.add('fa-triangle-exclamation');
                     showToast();
-                    sendLocation(); // 🔥 Send SOS=true immediately
+                    sendLocation(); // Send ALERT=TRUE immediately
                 } else {
                     icon.classList.remove('fa-bell');
                     icon.innerHTML = `<span style="font-size:1.8rem; font-weight:bold;">${timeLeft}</span>`;
@@ -199,17 +194,17 @@
 
             // Auto Reset after 15 seconds
             setTimeout(function() {
-                isSOS = false; // Reset State
+                isSOS = false;
                 icon.innerHTML = "";
                 icon.className = "fa-solid fa-bell sos-icon";
                 btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)";
                 btn.style.border = "4px solid white";
                 icon.style.color = "white";
-                sendLocation(); // 🔥 Send SOS=false immediately
+                sendLocation(); // Send ALERT=FALSE
             }, 15000);
         }
 
-        // 🔥 LOGIC FIX 3: Sending 'battery' key to match App.py
+        // 3. SEND LOCATION + BATTERY + SOS
         function sendLocation() {
             var dataPayload = { is_sos: isSOS, battery: currentBattery };
             
@@ -230,14 +225,13 @@
                     latitude: lat, 
                     longitude: lng,
                     is_sos: extraData.is_sos, 
-                    battery: extraData.battery // Using 'battery' key
+                    battery: extraData.battery // Sends as 'battery'
                 })
             }).catch(err => console.log("Net Error"));
         }
         
-        // Keep updating every 3 seconds for Live Tracking
+        // Loop every 3 seconds
         setInterval(sendLocation, 3000);
     </script>
 </body>
 </html>
-
