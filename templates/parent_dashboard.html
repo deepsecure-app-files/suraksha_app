@@ -7,9 +7,8 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
@@ -36,6 +35,8 @@
             position: absolute; top: 0; left: -320px; width: 300px; height: 100%;
             background: white; transition: 0.3s ease-in-out; z-index: 3000; 
             display: flex; flex-direction: column; box-shadow: 10px 0 20px rgba(0,0,0,0.3);
+            /* ✨ FIX: Logout Button Space - नीचे से जगह छोड़ें ताकि बटन न लड़ें ✨ */
+            padding-bottom: 80px; 
         }
         .side-menu.open { left: 0; }
         
@@ -60,7 +61,7 @@
         .child-name-gold { color: #b45309; font-weight: 900; font-size: 1.1rem; text-transform: capitalize; margin-bottom: 2px; }
         .child-id { font-size: 0.75rem; color: #64748b; }
 
-        /* ✨ NEW: Last Seen Style ✨ */
+        /* Last Seen Style */
         .child-seen {
             font-size: 0.75rem; color: #64748b; margin-top: 4px; margin-bottom: 4px;
             font-weight: 500; display: flex; align-items: center; gap: 5px;
@@ -79,7 +80,6 @@
         .bat-low { color: #dc2626; background: #fee2e2; }   /* Red */
 
         /* --- 4. MAP AREA & AD SPACE --- */
-        /* ✨ NEW: Ad Container Style ✨ */
         .ad-container-middle {
             width: 100%; height: 60px; background-color: #e5e7eb;
             display: flex; justify-content: center; align-items: center;
@@ -193,7 +193,7 @@
             </div>
         </div>
 
-        <a href="{{ url_for('logout') }}" style="padding: 15px; color: #dc2626; text-align: center; font-weight: bold; text-decoration: none; border-top: 1px solid #eee; display: block;">Logout</a>
+        <a href="{{ url_for('logout') }}" style="padding: 15px; margin-bottom: 20px; color: #dc2626; text-align: center; font-weight: bold; text-decoration: none; border-top: 1px solid #eee; display: block;">Logout</a>
     </div>
 
     <div class="map-wrapper"><div id="map"></div></div>
@@ -240,24 +240,20 @@
             }
         }
 
-        // 2. FORCE PARENT GPS (Essential for Blue Line)
+        // 2. FORCE PARENT GPS
         function updateParentLocation() {
             if (!navigator.geolocation) {
                 showToast("❌ GPS Not Supported");
                 return;
             }
-            
-            console.log("Requesting GPS...");
             navigator.geolocation.watchPosition(position => {
                 parentLat = position.coords.latitude;
                 parentLng = position.coords.longitude;
-                
                 if (parentMarker) {
                     parentMarker.setLatLng([parentLat, parentLng]);
                 } else {
                     var icon = L.divIcon({ className: 'p-div', html: '<div class="parent-dot"></div>', iconSize: [18, 18] });
                     parentMarker = L.marker([parentLat, parentLng], {icon: icon}).addTo(map);
-                    // Center map on parent initially
                     map.setView([parentLat, parentLng], 15);
                     showToast("✅ Parent GPS Connected");
                 }
@@ -268,22 +264,25 @@
         }
         updateParentLocation();
 
-        // 3. MAIN DATA SYNC LOOP (Every 3 Seconds)
+        // 3. MAIN DATA SYNC LOOP
         function updateData() {
             fetch('/api/get_children_data')
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
 
-                        // ✨ NEW: Last Seen Update Logic ✨
+                        // ✨ FIX: CORRECT TIMEZONE LOGIC (UTC to Phone Local Time) ✨
                         var seenElem = document.getElementById('seen-' + child.id);
                         if(seenElem && child.last_seen) {
-                            var date = new Date(child.last_seen);
+                            // सर्वर का टाइम UTC में आता है, उसमें 'Z' जोड़कर JS को बता रहे हैं
+                            var utcString = child.last_seen.endsWith('Z') ? child.last_seen : child.last_seen + 'Z';
+                            var date = new Date(utcString);
+                            // यह लाइन उसे आपके फोन के सही टाइम में बदल देगी
                             var timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                             seenElem.innerHTML = `<i class="fa-regular fa-clock"></i> ${timeStr}`;
                         }
                         
-                        // A. UPDATE BATTERY (Handles both 'battery' and 'last_battery' keys)
+                        // Battery Update
                         var batVal = (child.last_battery !== undefined) ? child.last_battery : 0;
                         var batElem = document.getElementById('bat-' + child.id);
                         if(batElem) {
@@ -291,7 +290,7 @@
                             batElem.className = (batVal < 20) ? "bat-badge bat-low" : "bat-badge bat-high";
                         }
 
-                        // B. SOS ALERT CHECK
+                        // SOS Check
                         if (child.is_sos) {
                             var overlay = document.getElementById('sos-overlay');
                             if (overlay.style.display !== 'flex') {
@@ -301,12 +300,10 @@
                             }
                         }
 
-                        // C. UPDATE MAP MARKERS & LINE
+                        // Map Update
                         if (child.last_latitude && child.last_latitude !== 'None') {
                             var lat = parseFloat(child.last_latitude);
                             var lng = parseFloat(child.last_longitude);
-                            
-                            // Image with Error Handler
                             var imgSrc = child.profile_pic || '/static/default-profile.png';
                             var icon = L.divIcon({
                                 className: 'custom-div',
@@ -317,36 +314,24 @@
                             if (markers[child.id]) markers[child.id].setLatLng([lat, lng]);
                             else markers[child.id] = L.marker([lat, lng], {icon: icon}).addTo(map);
 
-                            // D. DRAW BLUE LINE (Only if Parent GPS is Locked)
                             if (parentLat && parentLng) {
-                                // Remove old line
                                 if (polylines[child.id]) map.removeLayer(polylines[child.id]);
-                                
-                                // Draw new line
                                 polylines[child.id] = L.polyline(
                                     [[parentLat, parentLng], [lat, lng]], 
                                     { color: '#1877F2', weight: 4, opacity: 0.8, dashArray: '10, 10' }
                                 ).addTo(map);
-                                
-                                // Calculate Distance
                                 var p1 = L.latLng(parentLat, parentLng);
                                 var p2 = L.latLng(lat, lng);
-                                var d = p1.distanceTo(p2); // Meters
-                                
+                                var d = p1.distanceTo(p2);
                                 var distText = d < 1000 ? Math.round(d) + " m" : (d/1000).toFixed(1) + " km";
                                 var distElem = document.getElementById('dist-' + child.id);
                                 if(distElem) distElem.innerHTML = `<i class="fa-solid fa-location-arrow"></i> ${distText}`;
-                            } else {
-                                // Explain waiting
-                                var distElem = document.getElementById('dist-' + child.id);
-                                if(distElem && distElem.innerText === 'Wait...') distElem.innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> GPS?`;
                             }
                         }
                     });
                 });
         }
         
-        // Start Loop
         setInterval(updateData, 3000);
         updateData();
     </script>
