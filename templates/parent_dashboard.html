@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
@@ -58,6 +60,12 @@
         .child-name-gold { color: #b45309; font-weight: 900; font-size: 1.1rem; text-transform: capitalize; margin-bottom: 2px; }
         .child-id { font-size: 0.75rem; color: #64748b; }
 
+        /* ✨ NEW: Last Seen Style ✨ */
+        .child-seen {
+            font-size: 0.75rem; color: #64748b; margin-top: 4px; margin-bottom: 4px;
+            font-weight: 500; display: flex; align-items: center; gap: 5px;
+        }
+
         .status-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
         
         /* Badges */
@@ -70,14 +78,21 @@
         .bat-high { color: #16a34a; background: #dcfce7; } /* Green */
         .bat-low { color: #dc2626; background: #fee2e2; }   /* Red */
 
-        /* --- 4. MAP AREA --- */
-        .map-wrapper { flex: 1; position: relative; width: 100%; margin-bottom: 60px; background: #e5e7eb; }
+        /* --- 4. MAP AREA & AD SPACE --- */
+        /* ✨ NEW: Ad Container Style ✨ */
+        .ad-container-middle {
+            width: 100%; height: 60px; background-color: #e5e7eb;
+            display: flex; justify-content: center; align-items: center;
+            flex-shrink: 0; color: #9ca3af; font-size: 0.8rem; border-bottom: 1px solid #d1d5db;
+        }
+
+        .map-wrapper { flex: 1; position: relative; width: 100%; margin-bottom: 80px; background: #e5e7eb; }
         #map { width: 100%; height: 100%; }
         .leaflet-control-attribution { display: none !important; }
 
         /* --- 5. BOTTOM NAVIGATION --- */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: white;
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; padding-bottom: 20px; background: white;
             display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; z-index: 2000;
         }
         .nav-item { color: #94a3b8; font-size: 1.4rem; height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -118,13 +133,20 @@
     </div>
 
     <div class="header">
-        <div class="header-left" onclick="document.getElementById('parent_file_input').click()">
-            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" class="parent-img-large" onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
+        <div class="header-left">
+            <img src="{{ profile_pic_url or url_for('static', filename='default-profile.png') }}" 
+                 class="parent-img-large" 
+                 onclick="document.getElementById('parent_file_input').click()"
+                 onerror="this.src='{{ url_for('static', filename='default-profile.png') }}'">
             <div class="app-brand">Suraksha</div>
         </div>
         <div class="header-right">
             <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
         </div>
+    </div>
+
+    <div class="ad-container-middle">
+        <p>Advertisement Space</p>
     </div>
 
     <div class="side-menu" id="sideMenu">
@@ -142,6 +164,11 @@
                     <div class="menu-child-info">
                         <div class="child-name-gold">{{ child.name }}</div>
                         <div class="child-id">ID: {{ child.pairing_code }}</div>
+
+                        <div class="child-seen" id="seen-{{ child.id }}">
+                            <i class="fa-regular fa-clock"></i> 
+                            {{ child.last_seen.strftime('%I:%M %p') if child.last_seen else 'Offline' }}
+                        </div>
                         
                         <div class="status-row">
                             <div class="dist-badge" id="dist-{{ child.id }}">
@@ -247,6 +274,14 @@
                 .then(res => res.json())
                 .then(data => {
                     data.children.forEach(child => {
+
+                        // ✨ NEW: Last Seen Update Logic ✨
+                        var seenElem = document.getElementById('seen-' + child.id);
+                        if(seenElem && child.last_seen) {
+                            var date = new Date(child.last_seen);
+                            var timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            seenElem.innerHTML = `<i class="fa-regular fa-clock"></i> ${timeStr}`;
+                        }
                         
                         // A. UPDATE BATTERY (Handles both 'battery' and 'last_battery' keys)
                         var batVal = (child.last_battery !== undefined) ? child.last_battery : 0;
