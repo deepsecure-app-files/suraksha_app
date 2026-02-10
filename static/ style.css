@@ -1,4 +1,4 @@
-/* --- SURAKSHA MASTER THEME (Final Fix for Samsung Buttons) --- */
+/* --- SURAKSHA MASTER THEME (Final Super Safe Fix) --- */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
 /* --- 1. VARIABLES --- */
@@ -13,21 +13,21 @@
     --fb-blue: #1877F2; /* Facebook Blue for specific buttons */
 }
 
-/* --- 2. GLOBAL SETTINGS --- */
+/* --- 2. GLOBAL SETTINGS (Professional APK Feel) --- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Roboto', sans-serif;
 
-    /* 🔥 Touch & Select Fixes */
+    /* 🔥 'Copy' aur 'Share' menu rokne ke liye */
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
 }
 
-/* Input boxes permission */
+/* Input boxes aur Forms me likhne ki anumati rahe */
 input, textarea, select {
     -webkit-user-select: text !important;
     user-select: text !important;
@@ -39,16 +39,15 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden; 
-    /* 🔥 Body Padding Fix: Content ko upar dhakela taaki Nav ke piche na chupe */
-    padding-bottom: 130px !important; 
+    /* 🔥 Body ke neeche jagah taaki content Nav ke peeche na chupe */
+    padding-bottom: 130px !important;
 }
 
-/* --- 3. LOGIN / SIGNUP CARD --- */
+/* --- 3. LOGIN / SIGNUP CARD (Modern Facebook Style) --- */
 body.auth-page {
     align-items: center;
     justify-content: center;
     overflow: auto;
-    padding-bottom: 0 !important;
 }
 
 .container {
@@ -62,7 +61,7 @@ body.auth-page {
     margin: auto;
 }
 
-/* --- 4. HEADER --- */
+/* --- 4. HEADER (Gradient & Curved) --- */
 .header {
     background: linear-gradient(135deg, var(--accent-blue), var(--primary-blue));
     color: white;
@@ -97,7 +96,7 @@ body.auth-page {
     border: 1px solid white;
 }
 
-/* ✨ ADVERTISEMENT SPACE (Gray Bar) ✨ */
+/* ✨ ADVERTISEMENT SPACE CSS ✨ */
 .ad-container-middle {
     width: 100%; 
     height: 60px; 
@@ -171,8 +170,8 @@ body.auth-page {
     flex-grow: 1;
     position: relative;
     background: #e0e0e0;
-    /* 🔥 Map Margin Fix: Map ko Nav se dur rakha */
-    margin-bottom: 0; 
+    /* Map ko neeche se margin diya */
+    margin-bottom: 120px; 
     z-index: 1;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
@@ -180,17 +179,17 @@ body.auth-page {
 }
 #map { height: 100%; width: 100%; }
 
-/* --- 7. BOTTOM NAV (SUPER SAFE MODE) --- */
+/* --- 7. BOTTOM NAV (SUPER SAFE FIX) --- */
 .bottom-nav {
     background: white;
     
-    /* 🔥 Height increased to 110px (Very Safe) */
+    /* 🔥 Height ko 110px kiya (Bahut bada safe area) */
     height: 110px !important; 
     
     display: flex; 
     justify-content: space-around; 
     
-    /* 🔥 Alignment Fix: Buttons ko upar chipkaya */
+    /* 🔥 Icons ko upar chipkaya taaki neeche khali jagah rahe */
     align-items: flex-start; 
     padding-top: 15px; 
     
@@ -200,8 +199,8 @@ body.auth-page {
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     
-    /* 🔥 Bottom Padding 45px: Samsung Buttons ke liye jagah */
-    padding-bottom: 45px !important; 
+    /* 🔥 Neeche 40px ki khali jagah System buttons ke liye */
+    padding-bottom: 40px !important; 
 }
 
 .nav-item { 
@@ -211,25 +210,25 @@ body.auth-page {
     font-size: 0.75rem; 
     transition: 0.3s;
     
-    /* Icon alignment */
+    /* Icon aur text ko align kiya */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
 }
 
 .nav-item i { 
     font-size: 1.6rem; 
     display: block; 
-    margin-bottom: 2px; 
+    margin-bottom: 4px; 
 }
 
 .nav-item.active { 
     color: var(--fb-blue); 
-    /* Border hata diya taaki neat lage */
+    /* Border hata diya taaki clean dikhe */
 }
 
-/* --- 8. FORMS --- */
+/* --- 8. FORMS (Modern Look) --- */
 input[type="text"], input[type="password"], input[type="number"], select {
     width: 100%; padding: 14px;
     border: 1px solid #dddfe2; border-radius: 10px;
@@ -252,7 +251,7 @@ button, .button {
 
 button:active, .button:active { transform: scale(0.96); }
 
-/* Custom Map Marker */
+/* Custom Map Marker (Bache ki Photo) */
 .custom-map-marker {
     width: 45px; height: 45px;
     border-radius: 50%;
