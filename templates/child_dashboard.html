@@ -233,15 +233,12 @@
         // Loop every 3 seconds
         setInterval(sendLocation, 3000);
     </script>
-</body>
-</html>
-    // ... (आपका पुराना script यहाँ खत्म हो रहा है)
-
-    // 🔥 KODULAR CONNECTION CODE (Isse App Inventor ko ID milegi)
+    <script>
     if (window.AppInventor) {
-        // Hum 'pairing_code' bhej rahe hain jo unique ID hai
         var childID = "{{ child_info.pairing_code if child_info else '' }}";
         window.AppInventor.setWebViewString(childID);
     }
-    
-    </script> </body>
+</script>
+
+</body>
+</html>
