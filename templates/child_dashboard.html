@@ -9,81 +9,187 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
-
-        /* GLOBAL */
-        * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
-        input { -webkit-user-select: text !important; user-select: text !important; }
-        body { background-color: #f0f2f5; height: 100vh; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
+        
+        /* 🔥 ANTI-COPY & PROFESSIONAL UI 🔥 */
+        * { 
+            -webkit-tap-highlight-color: transparent; 
+            -webkit-touch-callout: none; 
+            -webkit-user-select: none; 
+            user-select: none; 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Roboto', sans-serif; 
+        }
+        input { 
+            -webkit-user-select: text !important; 
+            user-select: text !important; 
+        }
+        body { 
+            background-color: #f0f2f5; 
+            height: 100vh; 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            position: fixed; 
+        }
 
         /* HEADER */
-        .header {
-            background: #1877F2; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
-            height: 65px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 1000;
+        .header { 
+            background: #1877F2; 
+            padding: 10px 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            height: 65px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            z-index: 1000; 
         }
         .header-left { display: flex; align-items: center; gap: 12px; flex: 1; }
-        .child-img-small {
-            width: 42px; height: 42px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: white;
-        }
+        .child-img-small { width: 42px; height: 42px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: white; }
         .user-name { color: white; font-size: 1.1rem; font-weight: 600; text-transform: capitalize; }
-        .app-brand { font-size: 1.5rem; font-weight: 800; color: white; position: absolute; left: 50%; transform: translateX(-50%); letter-spacing: 0.5px; }
+        .app-brand { font-size: 1.5rem; font-weight: 800; color: white; position: absolute; left: 50%; transform: translateX(-50%); }
         .menu-btn { color: white; font-size: 1.4rem; cursor: pointer; flex: 1; text-align: right; }
 
-        /* MAIN SHIELD AREA */
-        .main-container {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: white; margin: 20px; border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative;
+        /* MAIN SHIELD CONTAINER */
+        .main-container { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            background: white; 
+            margin: 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+            position: relative; 
         }
-        .shield-box {
-            width: 220px; height: 220px; background: #f0f9ff; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 40px rgba(24, 119, 242, 0.1); animation: pulse-shield 3s infinite; margin-bottom: 30px;
+        .shield-box { 
+            width: 220px; 
+            height: 220px; 
+            background: #f0f9ff; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 10px 40px rgba(24, 119, 242, 0.1); 
+            animation: pulse-shield 3s infinite; 
+            margin-bottom: 30px; 
         }
         .shield-icon { font-size: 6rem; color: #1877F2; }
         .status-title { font-size: 1.5rem; font-weight: 800; color: #141e30; }
         .status-desc { color: #10b981; font-weight: 600; font-size: 1rem; margin-top: 10px; display: flex; align-items: center; gap: 8px; }
         .live-dot { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
-
-        @keyframes pulse-shield { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        @keyframes pulse-shield { 
+            0% { transform: scale(1); } 
+            50% { transform: scale(1.05); } 
+            100% { transform: scale(1); } 
+        }
 
         /* SOS BUTTON */
-        .sos-fab {
-            position: fixed; bottom: 40px; right: 30px; width: 75px; height: 75px;
-            background: linear-gradient(145deg, #dc2626, #ef4444); border-radius: 50%; border: 4px solid white;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s;
+        .sos-fab { 
+            position: fixed; 
+            bottom: 40px; 
+            right: 30px; 
+            width: 75px; 
+            height: 75px; 
+            background: linear-gradient(145deg, #dc2626, #ef4444); 
+            border-radius: 50%; 
+            border: 4px solid white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4); 
+            cursor: pointer; 
+            z-index: 2000; 
+            transition: 0.3s; 
         }
         .sos-fab:active { transform: scale(0.9); }
         .sos-icon { font-size: 2rem; color: white; }
 
-        /* TOAST */
-        #toast {
-            visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
-            text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 5000;
-            left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 1rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.5s, bottom 0.5s;
+        /* TOAST NOTIFICATION */
+        #toast { 
+            visibility: hidden; 
+            min-width: 250px; 
+            background-color: #1e293b; 
+            color: #fff; 
+            text-align: center; 
+            border-radius: 50px; 
+            padding: 16px; 
+            position: fixed; 
+            z-index: 5000; 
+            left: 50%; 
+            bottom: 30px; 
+            transform: translateX(-50%); 
+            font-size: 1rem; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            opacity: 0; 
+            transition: opacity 0.5s, bottom 0.5s; 
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
         /* SIDE MENU */
-        .side-menu {
-            position: absolute; top: 0; left: -300px; width: 280px; height: 100%;
-            background: white; transition: 0.3s ease-in-out; z-index: 3000; 
-            display: flex; flex-direction: column; box-shadow: 10px 0 20px rgba(0,0,0,0.3);
+        .side-menu { 
+            position: absolute; 
+            top: 0; 
+            left: -300px; 
+            width: 280px; 
+            height: 100%; 
+            background: white; 
+            transition: 0.3s ease-in-out; 
+            z-index: 3000; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 10px 0 20px rgba(0,0,0,0.3); 
         }
         .side-menu.open { left: 0; }
         .menu-header { background: #1877F2; padding: 30px 20px; color: white; }
         .menu-item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f2f5; }
 
-        /* PAIRING SCREEN (IF NOT PAIRED) */
-        .pairing-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .pair-card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .pair-input { width: 100%; padding: 14px; margin: 20px 0; border: 2px solid #e1e8ed; border-radius: 10px; font-size: 1.4rem; text-align: center; font-weight: bold; outline: none; text-transform: uppercase; }
+        /* PAIRING OVERLAY */
+        .pairing-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: #f0f2f5; 
+            z-index: 9999; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px; 
+        }
+        .pair-card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            width: 100%; 
+            max-width: 340px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        }
+        .pair-input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 20px 0; 
+            border: 2px solid #e1e8ed; 
+            border-radius: 10px; 
+            font-size: 1.4rem; 
+            text-align: center; 
+            font-weight: bold; 
+            outline: none; 
+            text-transform: uppercase; 
+        }
         .pair-btn { background: #1877F2; color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
         
         #child_file_input { display: none; }
     </style>
 </head>
+
 <body oncontextmenu="return false;">
 
     <div id="toast"><i class="fa-solid fa-check-circle"></i> SOS Alert Sent!</div>
@@ -117,8 +223,12 @@
             <p style="color:#e0f2fe; font-size:0.9rem;">My Device</p>
         </div>
         <div style="padding: 10px 0;">
-            <a href="#" class="menu-item" onclick="document.getElementById('child_file_input').click()"><i class="fa-solid fa-camera"></i> Change Profile Pic</a>
-            <a href="{{ url_for('logout') }}" class="menu-item" style="color:#dc2626;"><i class="fa-solid fa-power-off"></i> Logout</a>
+            <a href="#" class="menu-item" onclick="document.getElementById('child_file_input').click()">
+                <i class="fa-solid fa-camera"></i> Change Profile Pic
+            </a>
+            <a href="{{ url_for('logout') }}" class="menu-item" style="color:#dc2626;">
+                <i class="fa-solid fa-power-off"></i> Logout
+            </a>
         </div>
         <div style="flex:1;" onclick="document.getElementById('sideMenu').classList.remove('open')"></div>
     </div>
@@ -129,7 +239,9 @@
         <div class="status-desc"><div class="live-dot"></div> Protection Active</div>
     </div>
 
-    <div class="sos-fab" id="sosBtn" onclick="triggerSOS()"><i class="fa-solid fa-bell sos-icon"></i></div>
+    <div class="sos-fab" id="sosBtn" onclick="triggerSOS()">
+        <i class="fa-solid fa-bell sos-icon"></i>
+    </div>
 
     <form id="profileForm" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
         <input type="file" name="profile_pic" id="child_file_input" accept="image/*" onchange="document.getElementById('profileForm').submit()">
@@ -139,106 +251,101 @@
         var isSOS = false;
         var currentBattery = 100;
 
-        // 1. FAST BATTERY SEND (Sends immediately on load)
-        function initBattery() {
-            if(navigator.getBattery) {
-                navigator.getBattery().then(function(battery) {
-                    currentBattery = Math.round(battery.level * 100);
-                    // Send immediately
-                    sendLocation(); 
-                    
-                    battery.addEventListener('levelchange', function() {
-                        currentBattery = Math.round(battery.level * 100);
-                        sendLocation();
-                    });
+        // 1. Fetch Battery Level
+        if(navigator.getBattery) {
+            navigator.getBattery().then(function(battery) {
+                currentBattery = Math.round(battery.level * 100);
+                battery.addEventListener('levelchange', function() { 
+                    currentBattery = Math.round(battery.level * 100); 
                 });
-            } else {
-                sendLocation(); // Fallback if battery API not supported
-            }
+            });
         }
-        initBattery(); // Run on load
 
-        function showToast() {
-            var x = document.getElementById("toast");
-            x.className = "show"; setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        // 2. SOS Trigger Logic
+        function showToast() { 
+            var x = document.getElementById("toast"); 
+            x.className = "show"; 
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); 
         }
-        
-        // 2. SOS LOGIC (3 Seconds Timer)
+
         function triggerSOS() {
-            if (isSOS) return;
+            if (isSOS) return; 
+            isSOS = true;
             
-            var btn = document.getElementById('sosBtn');
+            var btn = document.getElementById('sosBtn'); 
             var icon = document.querySelector('.sos-icon');
-            var timeLeft = 3;
-
-            // Visual Change
+            
+            // Visual Change for SOS Active
             btn.style.background = "white"; 
             btn.style.border = "5px solid #dc2626";
-            icon.style.color = "#dc2626";
-
-            var timer = setInterval(function() {
-                if(timeLeft <= 0) {
-                    clearInterval(timer);
-                    isSOS = true;
-                    icon.innerHTML = "";
-                    icon.classList.remove('fa-bell');
-                    icon.classList.add('fa-triangle-exclamation');
-                    showToast();
-                    sendLocation(); // Send ALERT=TRUE immediately
-                } else {
-                    icon.classList.remove('fa-bell');
-                    icon.innerHTML = `<span style="font-size:1.8rem; font-weight:bold;">${timeLeft}</span>`;
-                    timeLeft--;
-                }
-            }, 1000);
-
-            // Auto Reset after 15 seconds
+            icon.style.color = "#dc2626"; 
+            icon.classList.remove('fa-bell'); 
+            icon.classList.add('fa-triangle-exclamation');
+            
+            showToast(); 
+            sendLocation(); // Immediate alert dispatch
+            
+            // Auto reset SOS after 5 seconds
             setTimeout(function() {
-                isSOS = false;
-                icon.innerHTML = "";
-                icon.className = "fa-solid fa-bell sos-icon";
-                btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)";
+                isSOS = false; 
+                btn.style.background = "linear-gradient(145deg, #dc2626, #ef4444)"; 
                 btn.style.border = "4px solid white";
-                icon.style.color = "white";
-                sendLocation(); // Send ALERT=FALSE
-            }, 15000);
+                icon.style.color = "white"; 
+                icon.classList.add('fa-bell'); 
+                icon.classList.remove('fa-triangle-exclamation');
+                sendLocation();
+            }, 5000);
         }
 
-        // 3. SEND LOCATION + BATTERY + SOS
+        // 3. Send Data to Python Server (Web Fallback)
         function sendLocation() {
             var dataPayload = { is_sos: isSOS, battery: currentBattery };
-            
             if (!navigator.geolocation) return;
-
+            
             navigator.geolocation.getCurrentPosition(
-                (position) => { sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload); },
-                (error) => { console.log("GPS Waiting..."); },
+                (position) => { 
+                    sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload); 
+                },
+                (error) => { 
+                    // Fallback to low accuracy if high fails
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => { sendDataToServer(position.coords.latitude, position.coords.longitude, dataPayload); }, 
+                        (err) => console.log("Location Failed"), 
+                        { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
+                    ); 
+                },
                 { enableHighAccuracy: true, timeout: 5000 }
             );
         }
 
         function sendDataToServer(lat, lng, extraData) {
-            fetch('/api/update_location', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
+            fetch('/api/update_location', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ 
                     latitude: lat, 
-                    longitude: lng,
+                    longitude: lng, 
                     is_sos: extraData.is_sos, 
-                    battery: extraData.battery // Sends as 'battery'
-                })
-            }).catch(err => console.log("Net Error"));
+                    battery: extraData.battery 
+                }) 
+            }).catch(e => console.log("Server error", e));
         }
-        
-        // Loop every 3 seconds
-        setInterval(sendLocation, 3000);
-    </script>
-    <script>
-    if (window.AppInventor) {
-        var childID = "{{ child_info.pairing_code if child_info else '' }}";
-        window.AppInventor.setWebViewString(childID);
-    }
-</script>
 
+        // Send location every 5 seconds while web page is open
+        setInterval(sendLocation, 5000); 
+        sendLocation(); 
+
+        // 🔥 4. FLUTTER (DART) BRIDGE LOGIC 🔥
+        // This instantly passes the pairing code to your background Flutter app
+        document.addEventListener("DOMContentLoaded", function() {
+            {% if child_info and child_info.pairing_code %}
+                var childID = "{{ child_info.pairing_code }}";
+                if (window.SurakshaBridge && childID !== "") {
+                    // Send child ID to Flutter Dart code
+                    window.SurakshaBridge.postMessage(childID);
+                }
+            {% endif %}
+        });
+    </script>
 </body>
 </html>
